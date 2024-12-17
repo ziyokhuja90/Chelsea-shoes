@@ -1,0 +1,59 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+<div class="container">
+  <div class="card rounded-1  p-2 mt-3">
+    <div class="card-header rounded-2 shadow-sm d-flex align-items-center justify-content-between">
+      <h3>Oyoq kiyim modellari</h3>
+      <a class="btn btn-primary text-white" href="{% url "shoe_model_create" %}">Qo'shish</a>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      {% for shoe_model in shoe_models %}
+      <div class="col-md-6 col-lg-4 mb-3 mt-5">
+          <div class="card h-100 shadow-lg">
+              <div class="card-body">
+                  <div class="d-flex justify-content-between">
+                      <h5 class="card-title">{{shoe_model.name}}</h5>
+                      <div class="dropdown">
+                          <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="bx bx-dots-vertical-rounded"></i>
+                          </button>
+                          <div class="dropdown-menu">
+                              <a class="dropdown-item" href="{% url 'shoe_model_read' shoe_model.id %}"><i class="bx bx-show me-1"></i> Ochish</a>
+                              <a class="dropdown-item" href="{% url 'shoe_model_update' shoe_model.id %}"><i class="bx bx-edit-alt me-1"></i> Yangilash</a>
+                              <a class="dropdown-item" href="{% url 'shoe_model_delete' shoe_model.id %}"><i class="bx bx-trash me-1"></i> O'chirish</a>
+                          </div>
+                      </div>
+                  </div>
+                  <h6 class="card-subtitle text-muted">{{shoe_model.code}}</h6>
+                  <a href="{% url 'shoe_model_read' shoe_model.id %}">
+                      <img class="img-fluid d-flex mx-auto my-4" src="{{shoe_model.image.url}}" alt="oyoq kiyim rasmi">
+                  </a>
+                  <p class="card-text">{{shoe_model.description}}</p>
+  
+                  <!-- Display total quantity for this shoe model -->
+                  <p><strong>Umumiy miqdori: </strong><span class="total-quantity"></span>ta</p>
+              </div>
+          </div>
+      </div>
+  {% endfor %}
+  
+  </div>
+  </div>
+</div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+<script>
+  $(document).ready(function() {
+      // Parse the JSON object passed from the Django view
+      var quantityProducements = JSON.parse('{{ quantity_producements|escapejs }}');
+
+      // Loop through each shoe model and update the total quantity
+      $('.card').each(function() {
+          var shoeModelName = $(this).find('.card-title').text().trim();  // Get the shoe model name
+          var totalQuantity = quantityProducements[shoeModelName] ? quantityProducements[shoeModelName].total : 0;  // Get total quantity or 0
+
+          // Set the total quantity in the span
+          $(this).find('.total-quantity').text(totalQuantity);
+      });
+  });
+</script>
+{% endblock content %}

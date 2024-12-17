@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+<div class="card mt-3">
+  <div class="d-flex justify-content-between align-items-center p-3">
+    
+    <h5 class="card-header p-0">Xaridor</h5>
+    <a class="btn btn-primary" href="{% url "clients_create" %}">Yangi xaridor</a>
+
+  </div>
+    <div class="table-responsive text-nowrap">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ismi</th>
+            <th>telefon raqami</th>
+            <th>manzil</th>
+            <th>Pul birligi</th>
+            <th>Amallar</th>
+          </tr>
+        </thead>
+        <tbody class="table-border-bottom-0">
+          {% for client in clients_list %}
+          <tr>
+            <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>{{client.name}}</strong></td>
+            <td>
+              {{client.phone_number}}
+            </td>
+            <td>
+                {{client.address}}
+            </td>
+            <td>
+                {{client.currency}}
+            </td>
+            <td>
+
+                  <a class="btn btn-sm btn-warning" href="{% url "clients_update" client.id %}"><i class="bx bx-edit-alt"></i></a>
+                  <a class="btn btn-sm btn-danger" href="{% url "clients_delete" client.id %}"><i class="bx bx-trash"></i></a>
+            </td>
+          </tr>
+          
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}

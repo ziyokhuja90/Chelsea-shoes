@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  <div class="card mt-3">
+    <div class="d-flex justify-content-between align-items-center p-3">
+      <h5 class="card-header p-0">Buyurtmalar</h5>
+      <a class="btn btn-primary" href="{% url "orders_create" %}">Yangi buyurtma</a>
+    </div>
+    <div class="table-responsive text-nowrap">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Buyurtma ID</th>
+            <th>Klient</th>
+            <th>Model</th>
+            <th>Miqdor</th>
+            <th>Birlik Narxi</th>
+            <th>Jami Narxi</th>
+            <th>Status</th>
+            <th>Tahrirlash</th>
+          </tr>
+        </thead>
+        <tbody class="table-border-bottom-0">
+          {% for order in orders_list %}
+          <tr>
+            <td><strong>{{ order.id }}</strong></td>
+            <td>{{ order.client_id }}</td>
+            <td>{{ order.model_id }}</td>
+            <td>{{ order.quantity }}</td>
+            <td>{{ order.price }}</td>
+            <td>{{ order.total_amount }}</td>
+            <td>{{ order.status }}</td>
+            <td>
+
+                  <a class="btn btn-sm btn-info" href="{% url "order_read" order.id %}"> <i class="bx  bx-show "></i></a>
+                  <a class="btn btn-sm btn-warning" href="{% url "orders_update" order.id %}"> <i class="bx bx-edit-alt"></i></a>
+                  <a class="btn btn-sm btn-danger" href="{% url "orders_delete" order.id %}"> <i class="bx bx-trash"></i></a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center">Buyurtmalar mavjud emas.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}

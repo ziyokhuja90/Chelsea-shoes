@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card mt-3">
+        <div class="d-flex justify-content-between align-items-center p-3">
+            <h5 class="card-header p-0">Ishlab chiqarish</h5>
+            <a class="btn btn-primary" href="{% url "producement_create" %}">Yangi ishlab chiqarish</a>
+        </div>
+
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Xodim</th>
+                        <th>Model</th>
+                        <th>Buyurtma</th>
+                        <th>Miqdor</th>
+                        <th>Birlik Narxi</th>
+                        <th>Status</th>
+                        <th>Tahrirlash</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    {% for producement in producement_list %}
+                    <tr>
+                        <td><strong>{{ producement.id }}</strong></td>
+                        <td>{{ producement.staff_id }}</td>
+                        <td>{{ producement.shoe_model_id }}</td>
+                        <td>{{ producement.order_id }}</td>
+                        <td>{{ producement.quantity }}</td>
+                        <td>{{ producement.price }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if producement.status.value == 'Yakunlangan' %} bg-success
+                                {% elif producement.status.value == 'Faol' %} bg-warning
+                                {% else %} bg-secondary
+                                {% endif %}">   
+                                {{ producement.status }}
+                            </span>
+                        </td>
+                        <td>
+
+                                <a class="btn btn-sm btn-info" href="{% url "producement_read" producement.id %}">
+                                    <i class="bx bx-show "></i>
+                                </a>
+                                <a class="btn btn-sm btn-warning" href="{% url "producement_update" producement.id %}">
+                                    <i class="bx bx-edit-alt "></i>
+                                </a>
+                                <a class="btn btn-sm btn-danger" href="{% url "producement_delete" producement.id %}">
+                                    <i class="bx bx-trash "></i>
+                                </a>
+                             
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">Ishlab chiqarish mavjud emas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

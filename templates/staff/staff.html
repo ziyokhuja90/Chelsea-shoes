@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+<div class="card mt-3">
+  <div class="d-flex justify-content-between align-items-center p-3">
+    
+    <h5 class="card-header p-0">Xodimlar</h5>
+    <a class="btn btn-primary" href="{% url "staff_create" %}">Yangi xodim</a>
+
+  </div>
+    <div class="table-responsive text-nowrap">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ismi</th>
+            <th>to'g'ilgan sanasi</th>
+            <th>jinsi</th>
+            <th>kasbi</th>
+            <th>ishga kirgan sanasi</th>
+            <th>telefon raqami</th>
+            <th>  tahrirlash</th>
+          </tr>
+        </thead>
+        <tbody class="table-border-bottom-0">
+          {% for staff in staff_list %}
+          <tr>
+            <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>{{staff.full_name}}</strong></td>
+            <td>{{staff.birth_date|date:"Y-m-d"}}</td>
+            <td>
+              {{staff.gender}}
+            </td>
+            <td>
+              
+              {{staff.profession}}
+            </td>
+            <td>
+              {{staff.entered_date|date:"Y-m-d"}}
+            </td>
+            <td>
+              {{staff.phone_number}}
+            </td>
+            <td>
+
+                  <a class="btn btn-sm btn-warning" href="{% url "staff_update" staff.id %}"><i class="bx bx-edit-alt "></i></a>
+                  <a class="btn btn-sm btn-danger" href="{% url "staff_delete" staff.id %}"><i class="bx bx-trash "></i></a>
+            </td>
+          </tr>
+          
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}

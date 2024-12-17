@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Ish Tafsilotlari</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white mb-3">
+            <h5 class="mb-0">Ish ID: {{ producement.id }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-6">
+                    <h6 class="text-muted">Asosiy Tafsilotlar</h6>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item"><strong>Xodim:</strong> {{ producement.staff_id }}</li>
+                        <li class="list-group-item"><strong>Model:</strong> {{ producement.shoe_model_id }}</li>
+                        <li class="list-group-item"><strong>Ish Sanasi:</strong> {{ producement.date|date:"Y-m-d" }}</li>
+                    </ul>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <h6 class="text-muted">Ish Tafsilotlari</h6>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item"><strong>Rang:</strong> {{ producement.color_id }}</li>
+                        <li class="list-group-item"><strong>Teri:</strong> {{ producement.leather_type }}</li>
+                        <li class="list-group-item"><strong>Taglik:</strong> {{ producement.solo_type }}</li>
+                        <li class="list-group-item"><strong>Miqdor:</strong> {{ producement.quantity }}</li>
+                        <li class="list-group-item"><strong>Birlik Narxi:</strong> {{ producement.price }}</li>
+                        <li class="list-group-item"><strong>Holati:</strong> {{ producement.status }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-3 d-flex justify-content-end gap-2">
+                <a href="{% url 'producement_update' producement.id %}" class="btn btn-warning">
+                    <i class="bx bx-edit-alt"></i> Yangilash
+                </a>    
+                <a href="{% url 'producement_delete' producement.id %}" class="btn btn-danger">
+                    <i class="bx bx-trash"></i> O'chirish
+                </a>
+                <a href="{% if request.GET.next == 'shoe_model_read' %} 
+                {% url 'shoe_model_read' producement.shoe_model_id.id %}
+            {% else %} 
+                {% url 'producement_view' %}
+            {% endif %}" class="btn btn-secondary">
+                <i class="bx bx-arrow-back"></i> Orqaga
+            </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
