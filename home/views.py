@@ -42,13 +42,12 @@ def home(request):
         
         quantity_producements[item.shoe_model_id.name]["total"] = sum(quantity_producements[item.shoe_model_id.name]["quantity"])
 
-    # statusTypes = StatusType()
+  
         
     quantity_producements_json = json.dumps(quantity_producements)
     context ={
         "shoe_models":shoe_models,
         "quantity_producements":quantity_producements_json,
-        
     }
     
     return render(request , "index.html" , context=context)
@@ -61,29 +60,20 @@ def reference_view(request):
         if type == "--------":
             pass
         else:
-            if int(type) == ReferenceType.COLOR.value:
-                print()
+            if references.objects.filter(type=int(type), value=value).exists() and not references.objects.filter(type=int(type), value=value ,IsDeleted=True):
+                pass
             else:
-                print(f"{type}")
-            new_entry = references(type=type , value=value)
-            # new_entry.save()
+                if ReferenceType(int(type)) in ReferenceType:
+                    print(True)
+                new_entry = references(type=int(type) , value=value)
+                new_entry.save()
+            
             
     reference_models = references.objects.all()
-    reference_type = set()
-    values = dict()
-    for item in reference_models:
-        reference_type.add(item.type)
-        for type in reference_type:
-            if item.type == type:
-                if item.type not in values:
-                    values[item.type] = [{'value': item.value, 'id': item.id}]
-                else:
-                    values[item.type].append({'value': item.value, 'id': item.id})
+
     
     context = {
         "reference": reference_models,
-        "values": values,
-        "types": reference_type
     }
     return render(request , "references.html", context=context)
 
@@ -101,7 +91,8 @@ def update_reference(request, pk):
 def delete_reference(request, pk):
     try:
         reference_item = references.objects.get(id=pk)
-        reference_item.delete()
+        reference_item.IsDeleted = True
+        reference_item.save()
         return redirect("reference")
     except references.DoesNotExist:
         return HttpResponse("Item not found", status=404)

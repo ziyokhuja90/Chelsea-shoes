@@ -2,13 +2,14 @@ from django.db import models
 from enum import Enum
 
 class ReferenceType(Enum):
-    STATUS = 1
-    GENDER = 2
+    STATUS = 1 # System
+    GENDER = 2 # System
     COLOR = 3
     LEATHER_TYPE = 4
     PROFESSION = 5
-    QUANTITY_TYPE = 6
-    CURRENCY = 7
+    QUANTITY_TYPE = 6 # System
+    CURRENCY = 7 # System
+    SOLO_TYPE = 8
     
 class StatusType(Enum):
     Created = 0
@@ -52,7 +53,7 @@ class clients(models.Model):
     address = models.CharField(max_length=255 , verbose_name="xaridor manzili")
     currency = models.ForeignKey(
         references,
-        on_delete=models.DO_NOTHING, 
+        on_delete=models.CASCADE, 
         related_name="currency_reference_client"
     )
     class Meta:
@@ -64,7 +65,7 @@ class clients(models.Model):
 class client_payments(models.Model):
     client_id = models.ForeignKey(
         clients,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         verbose_name="xaridor",
         related_name="client_id_clients"
         )
@@ -80,21 +81,21 @@ class client_payments(models.Model):
 class orders(models.Model):
     client_id = models.ForeignKey(
         clients,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="client_orders",
         verbose_name="xaridor"
     )
     date = models.DateField(verbose_name="Buyurtma sanasi")
     model_id = models.ForeignKey(
         to=shoe_model,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="model_id_orders",
         verbose_name="buyurtma modeli"
     )
     quantity = models.IntegerField(verbose_name="buyurtma miqdori")
     quantity_type_id = models.ForeignKey(
         to=references,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="quantity_type_orders",
         verbose_name="buyurtma miqdor turi"
     )
@@ -102,13 +103,13 @@ class orders(models.Model):
     total_amount = models.DecimalField(verbose_name="buyurtma jami narxi" , max_digits=20 , decimal_places=2)
     color_id = models.ForeignKey(
         to=references,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="color_id_orders",
         verbose_name="buyurtma rangi"
     )
     leather_id = models.ForeignKey(
         to=references,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="leather_id_reference",
         verbose_name="terisi"    
     )
@@ -116,7 +117,7 @@ class orders(models.Model):
     complete_date = models.DateField(verbose_name="buyurtma topshirish sanasi")
     status = models.ForeignKey(
         references,
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name="status_orders",
         verbose_name="buyurtma xolati"
     )
@@ -132,14 +133,14 @@ class staff(models.Model):
     birth_date = models.DateField(verbose_name="xodim to'g'ilgan sanasi")
     gender = models.ForeignKey(
         to=references,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="gender_reference",
         verbose_name="xodim jinsi"
     )
     entered_date = models.DateField(verbose_name="xodim ishga kirgan sanasi")
     profession = models.ForeignKey(
         references, 
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name="profession_reference",
         verbose_name="xodim kasbi"
     )
@@ -154,7 +155,7 @@ class staff(models.Model):
 class staff_payments(models.Model):
     staff_id = models.ForeignKey(
         staff,
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name='staff_id_staff',
         verbose_name="xodim"
     )
@@ -170,46 +171,46 @@ class staff_payments(models.Model):
 class producement(models.Model):
     staff_id = models.ForeignKey(
         staff,
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name="staff_id_staff_producement",
         verbose_name="xodim"
     )
     shoe_model_id = models.ForeignKey(
         shoe_model,
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name="shoe_model_id_producement",
         verbose_name="ish modeli"
     )
     date = models.DateField(verbose_name="ish qo'shilgan sanasi")
     color_id = models.ForeignKey(
         to=references,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="color_id_producement",
         verbose_name="ish rangi"
     )
     leather_type = models.ForeignKey(
         to=references,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="leather_type_reference",
         verbose_name="terisi"    
     )
     solo_type = models.ForeignKey(
         to=references,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="solo_type_reference",
         verbose_name="tagliki"    
     )
     quantity = models.IntegerField(verbose_name="ish miqdori")
     quantity_type_id = models.ForeignKey(
         to=references,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="quantity_type_producement",
         verbose_name="ish miqdor turi"
     )
     price = models.DecimalField(verbose_name="ish narxi" , max_digits=20 , decimal_places=2)
     order_id = models.ForeignKey(
         orders,
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name="orders_producement",
         verbose_name="ish buyurtmasi",
         null=True,
@@ -217,7 +218,7 @@ class producement(models.Model):
     )
     status = models.ForeignKey(
         references,
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name="status_producement",
         verbose_name="ish xolati"
     )
@@ -236,7 +237,7 @@ class debts(models.Model):
     balance = models.DecimalField(verbose_name="qoldiq" , max_digits=20 , decimal_places=2)
     currency = models.ForeignKey(
         references,
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name="debts_currency",
         verbose_name="qarz pul birligi"
     )
@@ -250,7 +251,7 @@ class expenses(models.Model):
     date = models.DateField(verbose_name="xarajat sanasi")
     type = models.ForeignKey(
         references,
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name="type_expenses",
         verbose_name="xarajat turi"
     )
@@ -258,7 +259,7 @@ class expenses(models.Model):
     amount = models.DecimalField(verbose_name="xarajat miqdori" , max_digits=20 , decimal_places=2)
     debt_id = models.ForeignKey(
         debts,
-        models.DO_NOTHING,
+        models.CASCADE,
         related_name="debt_id_expenses",
         verbose_name="xarajat qarzi"
     )
