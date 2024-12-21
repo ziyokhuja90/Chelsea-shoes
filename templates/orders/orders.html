@@ -4,7 +4,7 @@
 <div class="container">
   <div class="card mt-3">
     <div class="d-flex justify-content-between align-items-center p-3">
-      <h5 class="card-header p-0">Buyurtmalar</h5>
+      <h5 class="card-header p-0 bg-white border-0">Buyurtmalar</h5>
       <a class="btn btn-primary" href="{% url "orders_create" %}">Yangi buyurtma</a>
     </div>
     <div class="table-responsive text-nowrap">
@@ -34,7 +34,7 @@
             <td>
 
                   <a class="btn btn-sm btn-info" href="{% url "order_read" order.id %}"> <i class="bx  bx-show "></i></a>
-                  <a class="btn btn-sm btn-warning" href="{% url "orders_update" order.id %}"> <i class="bx bx-edit-alt"></i></a>
+                  <a class="btn btn-sm btn-warning" href="{% url "orders_update" order.id %}"> <i class="bx bx-edit-alt text-white"></i></a>
                   <a class="btn btn-sm btn-danger" href="{% url "orders_delete" order.id %}"> <i class="bx bx-trash"></i></a>
             </td>
           </tr>

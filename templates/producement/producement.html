@@ -4,7 +4,7 @@
 <div class="container">
     <div class="card mt-3">
         <div class="d-flex justify-content-between align-items-center p-3">
-            <h5 class="card-header p-0">Ishlab chiqarish</h5>
+            <h5 class="card-header p-0 bg-white border-0">Ishlab chiqarish</h5>
             <a class="btn btn-primary" href="{% url "producement_create" %}">Yangi ishlab chiqarish</a>
         </div>
 
@@ -33,7 +33,7 @@
                         <td>{{ producement.price }}</td>
                         <td>
                             <span class="badge 
-                                {% if producement.status.value == 'Yakunlangan' %} bg-success
+                                {% if producement.status.value == 'Bajarildi' %} bg-success
                                 {% elif producement.status.value == 'Faol' %} bg-warning
                                 {% else %} bg-secondary
                                 {% endif %}">   
@@ -45,7 +45,7 @@
                                 <a class="btn btn-sm btn-info" href="{% url "producement_read" producement.id %}">
                                     <i class="bx bx-show "></i>
                                 </a>
-                                <a class="btn btn-sm btn-warning" href="{% url "producement_update" producement.id %}">
+                                <a class="btn btn-sm btn-warning text-white" href="{% url "producement_update" producement.id %}">
                                     <i class="bx bx-edit-alt "></i>
                                 </a>
                                 <a class="btn btn-sm btn-danger" href="{% url "producement_delete" producement.id %}">

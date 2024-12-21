@@ -6,7 +6,7 @@
 <div class="card mt-3">
   <div class="d-flex justify-content-between align-items-center p-3">
     
-    <h5 class="card-header p-0">Xodimlar</h5>
+    <h5 class="card-header p-0 bg-white border-0">Xodimlar</h5>
     <a class="btn btn-primary" href="{% url "staff_create" %}">Yangi xodim</a>
 
   </div>
@@ -26,7 +26,7 @@
         <tbody class="table-border-bottom-0">
           {% for staff in staff_list %}
           <tr>
-            <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>{{staff.full_name}}</strong></td>
+            <td> <strong>{{staff.full_name}}</strong></td>
             <td>{{staff.birth_date|date:"Y-m-d"}}</td>
             <td>
               {{staff.gender}}
@@ -43,7 +43,7 @@
             </td>
             <td>
 
-                  <a class="btn btn-sm btn-warning" href="{% url "staff_update" staff.id %}"><i class="bx bx-edit-alt "></i></a>
+                  <a class="btn btn-sm btn-warning" href="{% url "staff_update" staff.id %}"><i class="bx bx-edit-alt text-white"></i></a>
                   <a class="btn btn-sm btn-danger" href="{% url "staff_delete" staff.id %}"><i class="bx bx-trash "></i></a>
             </td>
           </tr>

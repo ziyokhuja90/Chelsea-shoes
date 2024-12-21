@@ -1,11 +1,14 @@
 {% load static %}
+
 <!DOCTYPE html>
+
 <html
+
   lang="en"
   class="light-style layout-menu-fixed"
   dir="ltr"
   data-theme="theme-default"
-  data-assets-path="{% static "/assets/" %}"
+  data-assets-path="../assets/"
   data-template="vertical-menu-template-free"
 >
   <head>
@@ -14,18 +17,21 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
     />
-
     <title>
       
-     Chelsea shoes
-    
-    </title>
+      Chelsea shoes
+     
+     </title>
+ 
+    <style>            
+    </style>
 
     <meta name="description" content="" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{% static "chelsea-shoes.png" %}" />
-
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -34,8 +40,8 @@
       rel="stylesheet"
     />
 
-    <!-- Icons. Uncomment required icon fonts -->
-    <link rel="stylesheet" href="{% static 'assets/vendor/fonts/boxicons.css' %}" />
+   <!-- Icons. Uncomment required icon fonts -->
+    <link rel="stylesheet" href="{% static '/assets/vendor/fonts/boxicons.css' %}" />
 
     <!-- Core CSS -->
     <link rel="stylesheet" href="{% static '/assets/vendor/css/core.css' %}" class="template-customizer-core-css" />
@@ -46,6 +52,7 @@
     <link rel="stylesheet" href="{% static '/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}" />
 
     <link rel="stylesheet" href="{% static '/assets/vendor/libs/apex-charts/apex-charts.css' %}" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
     <!-- Page CSS -->
 
@@ -65,7 +72,7 @@
 
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
           <div class="app-brand demo">
-            <a href="" class="app-brand-link">
+            <a href="" class="app-brand-link text-decoration-none">
               <span class="app-brand-logo demo">
                 <img src="{% static 'Chelsea-shoes.png' %}" alt="Chelsea-shoes" width="35">
               </span>
@@ -80,7 +87,7 @@
           <ul class="menu-inner py-1">  
             
             <li class="menu-item">
-              <a href="{% url "home" %}" class="menu-link">
+              <a href="{% url "home" %}" class="menu-link text-decoration-none">
                 <i class="menu-icon tf-icons bx bxs-spreadsheet"></i>
                 <div data-i18n="Basic">
                   <span class="fw-bolder">
@@ -90,7 +97,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="" class="menu-link">
+              <a href="" class="menu-link text-decoration-none">
                 <i class="menu-icon tf-icons bx bx-cart-alt"></i>
                 <div data-i18n="Basic">
                   <span class="fw-bolder">
@@ -100,7 +107,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="" class="menu-link">
+              <a href="" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-money"></i>
                   <span class="fw-bolder">
@@ -111,7 +118,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="{% url "staff_view" %}" class="menu-link">
+              <a href="{% url "staff_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-briefcase"></i>
                   <span class="fw-bolder">
@@ -122,7 +129,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="" class="menu-link">
+              <a href="" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-credit-card"></i>
 
@@ -136,7 +143,7 @@
             </li>
 
             <li class="menu-item">
-              <a href="{% url "producement_view" %}" class="menu-link">
+              <a href="{% url "producement_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-package"></i>
                   <span class="fw-bolder">
@@ -147,7 +154,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="{% url "clients_view" %}" class="menu-link">
+              <a href="{% url "clients_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-group"></i>
                   <span class="fw-bolder">
@@ -157,7 +164,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="" class="menu-link">
+              <a href="" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-wallet"></i>
                   <span class="fw-bolder">
@@ -168,7 +175,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="{% url "orders_view" %}" class="menu-link">
+              <a href="{% url "orders_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-receipt"></i>
                   <span class="fw-bolder">
@@ -179,7 +186,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="{% url "reference" %}" class="menu-link">
+              <a href="{% url "reference" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-file"></i>
                   <span class="fw-bolder">

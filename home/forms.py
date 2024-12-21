@@ -32,11 +32,10 @@ class staff_forms(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         # Filter gender options
-        self.fields['gender'].queryset = models.references.objects.filter(type="gender")
+        self.fields['gender'].queryset = models.references.objects.filter(type=models.ReferenceType.GENDER.value)
         
         # Filter profession options
-        self.fields['profession'].queryset = models.references.objects.filter(type="profession")
-
+        self.fields['profession'].queryset = models.references.objects.filter(type=models.ReferenceType.PROFESSION.value)
 
 class clients_forms(forms.ModelForm):
     class Meta:
@@ -53,7 +52,7 @@ class clients_forms(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.fields['currency'].queryset = models.references.objects.filter(type="currency")
+        self.fields['currency'].queryset = models.references.objects.filter(type=models.ReferenceType.CURRENCY.value)
 
 class orders_forms(forms.ModelForm):
     class Meta:
@@ -76,10 +75,10 @@ class orders_forms(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.fields['quantity_type_id'].queryset = models.references.objects.filter(type="quantity_type")
-        self.fields['color_id'].queryset = models.references.objects.filter(type='color')
-        self.fields['leather_id'].queryset = models.references.objects.filter(type="leather_type")
-        self.fields['status'].queryset = models.references.objects.filter(type="status")
+        self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
+        self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value)
+        self.fields['leather_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value)
+        self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
         
 class producement_forms(forms.ModelForm):
     class Meta:
@@ -107,8 +106,8 @@ class producement_forms(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.fields['quantity_type_id'].queryset = models.references.objects.filter(type="quantity_type")
-        self.fields['color_id'].queryset = models.references.objects.filter(type="color")
-        self.fields['leather_type'].queryset = models.references.objects.filter(type="leather_type")
-        self.fields['solo_type'].queryset = models.references.objects.filter(type="sole_type")
-        self.fields['status'].queryset = models.references.objects.filter(type="status")
+        self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
+        self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value)
+        self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value)
+        self.fields['solo_type'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value)
+        self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)

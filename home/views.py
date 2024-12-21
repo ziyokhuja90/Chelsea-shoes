@@ -32,7 +32,7 @@ def login_view(request):
 
 def home(request):
     shoe_models = shoe_model.objects.all()
-    finished_producements = producement.objects.filter(status__value='Yakunlangan')
+    finished_producements = producement.objects.filter(status__value='Bajarildi')
     quantity_producements = dict()
     for item in finished_producements:
         if item.shoe_model_id.name not in quantity_producements:
@@ -113,7 +113,7 @@ def shoe_model_create(request):
 
 def shoe_model_read(request , pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
-    producement_list = producement.objects.filter(status__value="Yakunlangan", shoe_model_id=shoe_model_item)
+    producement_list = producement.objects.filter(status__value="Bajarildi", shoe_model_id=shoe_model_item)
     
     context = {
         "producement_list":producement_list,

@@ -27,7 +27,7 @@
                   <a href="{% url 'shoe_model_read' shoe_model.id %}">
                       <img class="img-fluid d-flex mx-auto my-4" src="{{shoe_model.image.url}}" alt="oyoq kiyim rasmi">
                   </a>
-                  <p class="card-text">{{shoe_model.description}}</p>
+                  <p class="card-text">{{shoe_model.description|slice:":100"}}...</p>
   
                   <!-- Display total quantity for this shoe model -->
                   <p><strong>Umumiy miqdori: </strong><span class="total-quantity"></span>ta</p>

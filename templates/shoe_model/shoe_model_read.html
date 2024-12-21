@@ -4,7 +4,7 @@
 <div class="container">
     <div class="card mt-3">
         <div class="d-flex justify-content-between align-items-center p-3">
-            <h5 class="card-header p-0">
+            <h5 class="card-header p-0 bg-white border-0">
                 {{shoe_model_item.code}}
             </h5>
         </div>
@@ -34,7 +34,7 @@
                         <td>{{ producement.price }}</td>
                         <td>
                             <span class="badge 
-                                {% if producement.status.value == 'Yakunlangan' %} bg-success
+                                {% if producement.status.value == 'Bajarildi' %} bg-success
                                 {% elif producement.status.value == 'Faol' %} bg-warning
                                 {% else %} bg-secondary
                                 {% endif %}">   
@@ -47,7 +47,7 @@
                                     <i class="bx bx-show "></i>
                                 </a>
                                 <a class="btn btn-sm btn-warning" href="{% url "producement_update" producement.id %}?next=shoe_model_read">
-                                    <i class="bx bx-edit-alt "></i>
+                                    <i class="bx bx-edit-alt text-white"></i>
                                 </a>
                                 <a class="btn btn-sm btn-danger" href="{% url "producement_delete" producement.id %}">
                                     <i class="bx bx-trash "></i>
