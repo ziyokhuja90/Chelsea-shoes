@@ -56,6 +56,7 @@ class clients(models.Model):
         on_delete=models.CASCADE, 
         related_name="currency_reference_client"
     )
+    balance = models.DecimalField(max_digits=20 , decimal_places=2)
     class Meta:
         db_table = "clients"
         
@@ -145,12 +146,13 @@ class staff(models.Model):
         verbose_name="xodim kasbi"
     )
     phone_number = models.CharField(max_length=255 , verbose_name="xodim telefon raqami")
-    
+    balance = models.DecimalField(max_digits=20 , decimal_places=2)
+
     class Meta:
         db_table = "staff"
         
     def __str__(self):
-        return f"{self.full_name} -- {self.profession}"
+        return f"{self.full_name} ({self.profession})"
 
 class staff_payments(models.Model):
     staff_id = models.ForeignKey(

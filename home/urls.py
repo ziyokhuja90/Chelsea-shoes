@@ -20,6 +20,7 @@ urlpatterns = [
     # staff
     path("staff" , views.staff_view ,  name="staff_view"),
     path("staff/create" , views.staff_create , name="staff_create"),
+    path("staff/read/<int:pk>", views.staff_read, name="staff_read"),
     path("staff/update/<int:pk>" , views.staff_update , name="staff_update"),
     path("staff/delete/<int:pk>" , views.staff_delete , name="staff_delete"),
     

@@ -19,7 +19,7 @@
                         <th>Miqdor</th>
                         <th>Birlik Narxi</th>
                         <th>Status</th>
-                        <th>Tahrirlash</th>
+                        <th>Amallar</th>
                     </tr>
                 </thead>
                 <tbody class="table-border-bottom-0">
@@ -28,7 +28,13 @@
                         <td><strong>{{ producement.id }}</strong></td>
                         <td>{{ producement.staff_id }}</td>
                         <td>{{ producement.shoe_model_id }}</td>
-                        <td>{{ producement.order_id }}</td>
+                        <td>
+                            <strong>Xaridor:</strong> {{ producement.order_id.client_id }}<br>
+                            <strong>Madel:</strong> {{ producement.order_id.model_id }}<br>
+                            <strong>Miqdor:</strong> {{ producement.order_id.quantity }}<br>
+                            <strong>Sana:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
+                            
+                        </td>
                         <td>{{ producement.quantity }}</td>
                         <td>{{ producement.price }}</td>
                         <td>

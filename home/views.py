@@ -3,7 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import logout
-from .models import references , shoe_model , staff  , clients , orders , producement, ReferenceType, StatusType
+from .models import references , shoe_model , staff  , clients , orders , producement, ReferenceType, StatusType , staff_payments
 from django.http.response import HttpResponse
 from .forms import shoe_model_forms , staff_forms , clients_forms , orders_forms ,producement_forms
 # Create your views here.
@@ -119,8 +119,7 @@ def shoe_model_read(request , pk):
         "producement_list":producement_list,
         "shoe_model_item":shoe_model_item
     }
-    return render(request , 'shoe_model/shoe_model_read.html' , context=context)
-    
+    return render(request , 'shoe_model/shoe_model_read.html' , context=context)  
 
 def shoe_model_update(request, pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
@@ -149,6 +148,16 @@ def staff_view(request):
         "staff_list":staff_list,
     }
     return render(request , "staff/staff.html" , context=context)
+
+def staff_read(request, pk):
+    staff_item = staff.objects.get(pk=pk)
+    payment_list = staff_payments.objects.all()
+    context = {
+        "staff":staff_item,
+        "payment_list":payment_list
+    }
+    return render(request, "staff/staff_read.html", context=context)
+
 
 def staff_create(request):
     forms = staff_forms()
