@@ -152,12 +152,13 @@ def staff_view(request):
 def staff_read(request, pk):
     staff_item = staff.objects.get(pk=pk)
     payment_list = staff_payments.objects.all()
+    pruducements = producement.objects.filter(staff_id=staff_item, status__value="Bajarildi")
     context = {
         "staff":staff_item,
-        "payment_list":payment_list
+        "payment_list":payment_list,
+        "pruducements":pruducements
     }
     return render(request, "staff/staff_read.html", context=context)
-
 
 def staff_create(request):
     forms = staff_forms()

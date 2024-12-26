@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load filter %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Card Wrapper -->
+    <div class="card shadow-sm">
+        <!-- Card Header with Balance -->
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ staff }}</h5>
+            <h5>Balance: <span class="text-success">{{ staff.balance }}</span></h5>
+        </div>
+
+        <!-- Card Body with Tabs -->
+        <div class="card-body">
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs" id="staffTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab" aria-controls="payments" aria-selected="true">
+                        Staff Payments
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="work-tab" data-bs-toggle="tab" data-bs-target="#work" type="button" role="tab" aria-controls="work" aria-selected="false">
+                        Staff Work
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tabs Content -->
+            <div class="tab-content mt-3" id="staffTabsContent">
+                <!-- Staff Payments Tab -->
+                <div class="tab-pane fade show active" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Payment List</h5>
+                        <!-- Add Payment Button -->
+                        <a class="btn btn-primary" href="">
+                            <i class="bx bx-plus"></i> Add Payment
+                        </a>
+                    </div>
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payment_list %}
+                            <tr>
+                                <td>{{ payment.id }}</td>
+                                <td>{{ payment.amount }}</td>
+                                <td>{{ payment.date|date:"Y.m.d" }}</td>
+                                <td>
+                                    <a class="btn btn-sm btn-info" href="#">View</a>
+                                    <a class="btn btn-sm btn-warning text-white" href="#">Edit</a>
+                                    <a class="btn btn-sm btn-danger" href="#">Delete</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No payments found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Staff Work Tab -->
+                <div class="tab-pane fade" id="work" role="tabpanel" aria-labelledby="work-tab">
+                    <table class="table table-hover  ">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Madel</th>
+                                <th>Narxi</th>
+                                <th>Miqdori</th>
+                                <th>Jami</th>
+                                <th>Holati</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for work in pruducements %}
+                            <tr>
+                                <td>{{ work.id }}</td>
+                                <td>{{ work.shoe_model_id }}</td>
+                                <td>{{ work.price }}</td>
+                                <td>{{ work.quantity }}</td>
+                                <td>
+                                    <p>Total: {{ work.price|multiply:work.quantity }}</p>
+
+
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        {{ work.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm btn-info" href="#">View</a>
+                                    <a class="btn btn-sm btn-warning text-white" href="#">Edit</a>
+                                    <a class="btn btn-sm btn-danger" href="#">Delete</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No work records found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
