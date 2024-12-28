@@ -194,12 +194,12 @@
         </button>
         <!-- Delete Button -->
         <form
-        action="{% url "delete_reference" value_item.id %}"
+        action="{% url 'delete_reference' value_item.id %}"
         method="POST"
         style="display: inline"
-        >
+      >
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger btn-sm">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
           <i class="bx bx-trash"></i>
         </button>
       </form>
@@ -256,12 +256,12 @@
         </button>
         <!-- Delete Button -->
         <form
-        action="{% url "delete_reference" value_item.id %}"
+        action="{% url 'delete_reference' value_item.id %}"
         method="POST"
         style="display: inline"
-        >
+      >
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger btn-sm">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
           <i class="bx bx-trash"></i>
         </button>
       </form>
@@ -323,7 +323,7 @@
         style="display: inline"
         >
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger btn-sm">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
           <i class="bx bx-trash"></i>
         </button>
       </form>
@@ -440,7 +440,7 @@
     >
       <div class="accordion-body">
         {% for value_item in reference %}
-        {% if value_item.type == 8 and not value.IsDeleted %}
+        {% if value_item.type == 8 and not value_item.IsDeleted %}
         <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
           <h5>{{ value_item.value }}</h5>
           <!-- Edit Button -->
@@ -462,9 +462,10 @@
         action="{% url "delete_reference" value_item.id %}"
         method="POST"
         style="display: inline"
+        
         >
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger btn-sm">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
           <i class="bx bx-trash"></i>
         </button>
       </form>
@@ -516,5 +517,5 @@
     });
 </script>
 
-  
+
 {% endblock content %}
