@@ -35,7 +35,12 @@
 
                   <a class="btn btn-sm btn-info" href="{% url "order_read" order.id %}"> <i class="bx  bx-show "></i></a>
                   <a class="btn btn-sm btn-warning" href="{% url "orders_update" order.id %}"> <i class="bx bx-edit-alt text-white"></i></a>
-                  <a class="btn btn-sm btn-danger" href="{% url "orders_delete" order.id %}"> <i class="bx bx-trash"></i></a>
+                  <a class="btn btn-sm btn-danger"
+                  href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteModal"
+                  data-delete-url="{% url 'orders_delete' order.id %}"> 
+                  <i class="bx bx-trash"></i></a>
             </td>
           </tr>
           {% empty %}

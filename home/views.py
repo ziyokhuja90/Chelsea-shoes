@@ -341,4 +341,4 @@ def producement_update(request , pk):
 def producement_delete(request ,pk):
     producement_item = producement.objects.get(pk=pk)
     producement_item.delete()
-    return redirect('producement')
+    return redirect('producement_view') 

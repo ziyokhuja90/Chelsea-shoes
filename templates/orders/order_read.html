@@ -40,7 +40,11 @@
                 <a href="{% url 'orders_update' order.id %}" class="btn btn-warning text-white">
                     <i class="bx bx-edit-alt"></i> Yangilash
                 </a>
-                <a href="{% url 'orders_delete' order.id %}" class="btn btn-danger">
+                <a                   href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteModal"
+                data-delete-url="{% url 'orders_delete' order.id %}" 
+class="btn btn-danger">
                     <i class="bx bx-trash"></i> O'chirish
                 </a>
                 <a href="{% url 'orders_view' %}" class="btn btn-secondary">

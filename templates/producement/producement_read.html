@@ -39,9 +39,14 @@
                 <a href="{% url 'producement_update' producement.id %}" class="btn btn-warning text-white">
                     <i class="bx bx-edit-alt"></i> Yangilash
                 </a>    
-                <a href="{% url 'producement_delete' producement.id %}" class="btn btn-danger">
-                    <i class="bx bx-trash"></i> O'chirish
-                </a>
+                <a class="btn  btn-danger" href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteModal"
+                data-delete-url="{% url 'producement_delete' producement.id %}"> 
+
+                    <i class="bx bx-trash "></i>
+                    O'chirish
+                </a>    
                 <a href="{% if request.GET.next == 'shoe_model_read' %} 
                 {% url 'shoe_model_read' producement.shoe_model_id.id %}
             {% else %} 

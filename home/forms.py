@@ -35,7 +35,7 @@ class staff_forms(forms.ModelForm):
         self.fields['gender'].queryset = models.references.objects.filter(type=models.ReferenceType.GENDER.value)
         
         # Filter profession options
-        self.fields['profession'].queryset = models.references.objects.filter(type=models.ReferenceType.PROFESSION.value)
+        self.fields['profession'].queryset = models.references.objects.filter(type=models.ReferenceType.PROFESSION.value, IsDeleted=False)
 
 class clients_forms(forms.ModelForm):
     class Meta:
@@ -76,8 +76,8 @@ class orders_forms(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
-        self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value)
-        self.fields['leather_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value)
+        self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
+        self.fields['leather_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
         
 class producement_forms(forms.ModelForm):
@@ -107,7 +107,18 @@ class producement_forms(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
-        self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value)
-        self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value)
-        self.fields['solo_type'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value)
+        self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
+        self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
+        self.fields['solo_type'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
+
+class staff_payments_forms(forms.ModelForm):
+    class Meta:
+        model  = models.staff_payments
+        fields = ['staff_id', 'date', 'amount']
+        
+        widgets = {
+            'staff_id':forms.Select(attrs={"class":"form-Select"}),    
+            'date':forms.DateInput(attrs={"class":"form-control", "type":"date"}),
+            'amount':forms.NumberInput(attrs={"class":"form-control"})    
+        }

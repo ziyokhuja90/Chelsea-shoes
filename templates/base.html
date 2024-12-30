@@ -66,23 +66,24 @@
 
   <body>
     <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Are you sure you want to delete this item? This action cannot be undone.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button id="confirmDeleteBtn" type="button" class="btn btn-primary">Yes, Delete</button>
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete this item? This action cannot be undone.
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Yes, Delete</button>
+            <a id="confirmDeleteLink" href="#" class="btn btn-danger" style="display: none;">Yes, Delete</a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+    
 
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
@@ -307,16 +308,30 @@
       document.addEventListener("DOMContentLoaded", function () {
         const deleteModal = document.getElementById("deleteModal");
         const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+        const confirmDeleteLink = document.getElementById("confirmDeleteLink");
         let formToSubmit = null;
     
-        // Capture the form when the delete button is clicked
+        // Handle form-based delete buttons
         document.querySelectorAll('button[data-bs-target="#deleteModal"]').forEach((button) => {
           button.addEventListener("click", function () {
-            formToSubmit = this.closest("form"); // Find the closest form to the clicked button
+            formToSubmit = this.closest("form"); // Capture the form
+            confirmDeleteBtn.style.display = "inline-block"; // Show the form button
+            confirmDeleteLink.style.display = "none"; // Hide the link button
           });
         });
     
-        // Submit the form when the "Yes, Delete" button is clicked
+        // Handle link-based delete buttons
+        document.querySelectorAll('a[data-bs-target="#deleteModal"]').forEach((link) => {
+          link.addEventListener("click", function () {
+            const deleteUrl = this.getAttribute("data-delete-url"); // Capture the URL
+            confirmDeleteLink.setAttribute("href", deleteUrl); // Set the URL on the modal button
+            confirmDeleteBtn.style.display = "none"; // Hide the form button
+            confirmDeleteLink.style.display = "inline-block"; // Show the link button
+            formToSubmit = null; // Reset form submission
+          });
+        });
+    
+        // Submit the form when the "Yes, Delete" button is clicked for forms
         confirmDeleteBtn.addEventListener("click", function () {
           if (formToSubmit) {
             formToSubmit.submit();
@@ -324,7 +339,8 @@
         });
       });
     </script>
-
+    
+    
 
   </body>
 </html>
