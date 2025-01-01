@@ -1,11 +1,11 @@
-from django.shortcuts import render , redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import logout
-from .models import references , shoe_model , staff  , clients , orders , producement, ReferenceType, StatusType , staff_payments
+from .models import references, shoe_model, staff, clients, orders, producement, ReferenceType, StatusType, staff_payments
 from django.http.response import HttpResponse
-from .forms import shoe_model_forms , staff_forms , clients_forms , orders_forms ,producement_forms
+from .forms import shoe_model_forms, staff_forms, clients_forms, orders_forms, producement_forms, staff_payments_forms, staff_payments_read_forms
 # Create your views here.
 import json
 
@@ -144,8 +144,12 @@ def shoe_model_delete(request, pk):
 # staff
 def staff_view(request):
     staff_list = staff.objects.all()
+    producement_list = producement.objects.filter(status__value="Bajarildi")
+    payment_list = staff_payments.objects.all()
     context = {
         "staff_list":staff_list,
+        "producements":producement_list,
+        "payment_list":payment_list
     }
     return render(request , "staff/staff.html" , context=context)
 
@@ -156,7 +160,7 @@ def staff_read(request, pk):
     context = {
         "staff":staff_item,
         "payment_list":payment_list,
-        "pruducements":pruducements
+        "producements":pruducements
     }
     return render(request, "staff/staff_read.html", context=context)
 
@@ -342,3 +346,36 @@ def producement_delete(request ,pk):
     producement_item = producement.objects.get(pk=pk)
     producement_item.delete()
     return redirect('producement_view') 
+
+# staff_payments
+
+def staff_payment_create(request):
+    if request.method == "POST":
+        forms = staff_payments_forms(request.POST)
+        if forms.is_valid():
+            forms.save()
+            return redirect('staff_view')
+    else:
+        forms = staff_payments_forms()
+    
+    context = {
+        "forms":forms
+    }
+    return render(request, 'staff/staff_payment_create.html', context=context)
+
+def staff_payment_read_create(request, pk):
+    staff_item = staff.objects.get(pk=pk)
+    if request.method == "POST":
+        forms = staff_payments_read_forms(request.POST)
+        if forms.is_valid():
+            staff_p = forms.save(commit=False)
+            staff_p.staff_id = staff_item
+            staff_p.save()
+            return redirect('staff_view')
+    else:
+        forms = staff_payment_read_create()
+    
+    context = {
+        "forms":forms
+    }
+    return render(request, 'staff/staff_payment_create.html', context=context)

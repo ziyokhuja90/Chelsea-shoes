@@ -118,7 +118,17 @@ class staff_payments_forms(forms.ModelForm):
         fields = ['staff_id', 'date', 'amount']
         
         widgets = {
-            'staff_id':forms.Select(attrs={"class":"form-Select"}),    
+            'staff_id':forms.Select(attrs={"class":"form-select"}),    
             'date':forms.DateInput(attrs={"class":"form-control", "type":"date"}),
             'amount':forms.NumberInput(attrs={"class":"form-control"})    
+        }
+
+class staff_payments_read_forms(forms.ModelForm):
+    class Meta:
+        model = models.staff_payments
+        fields = ['date', 'amount']
+        
+        widgets = {
+            'date':forms.DateInput(attrs={"class":"form-control", "type":"date"}),
+            'amount':forms.NumberInput(attrs={"class":"form-control"})
         }

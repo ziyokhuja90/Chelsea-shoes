@@ -42,7 +42,10 @@ urlpatterns = [
     path('producement/create' , views.producement_create , name='producement_create'),
     path('producement/read/<int:pk>' , views.producement_read , name='producement_read'),
     path('producement/update/<int:pk>' , views.producement_update , name="producement_update"),
-    path('producement/delete/<int:pk>', views.producement_delete , name="producement_delete")
+    path('producement/delete/<int:pk>', views.producement_delete , name="producement_delete"),
+    
+    # staff_payment
+    path("staff_payment/create", views.staff_payment_create, name="staff_payment_create")
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
