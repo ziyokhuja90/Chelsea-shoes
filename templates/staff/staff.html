@@ -22,7 +22,8 @@
             <th>kasbi</th>
             <th>ishga kirgan sanasi</th>
             <th>telefon raqami</th>
-            <th>  tahrirlash</th>
+            <th>Balance</th>
+            <th>tahrirlash</th>
           </tr>
         </thead>
         <tbody class="table-border-bottom-0">
@@ -42,6 +43,9 @@
             </td>
             <td>
               {{staff.phone_number}}
+            </td>
+            <td>
+              {{staff.balance}}
             </td>
             <td>
               <a class="btn btn-sm btn-info" href="{% url "staff_read" staff.id %}"><i class="bx bx-show "></i></a>
@@ -68,8 +72,8 @@
   <div class="card shadow-sm">
       <!-- Card Header with Balance -->
       <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">{{ staff }}</h5>
-          <h5>Balance: <span class="text-success">{{ staff.balance }}</span></h5>
+          <h5 class="mb-0"></h5>
+          <h5>Balance: <span class="text-success">{{ balance }}</span></h5>
       </div>
 
       <!-- Card Body with Tabs -->

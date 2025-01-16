@@ -146,10 +146,13 @@ def staff_view(request):
     staff_list = staff.objects.all()
     producement_list = producement.objects.filter(status__value="Bajarildi")
     payment_list = staff_payments.objects.all()
+    
+    balance = sum(i.balance for i in staff_list)
     context = {
         "staff_list":staff_list,
         "producements":producement_list,
-        "payment_list":payment_list
+        "payment_list":payment_list,
+        "balance":balance
     }
     return render(request , "staff/staff.html" , context=context)
 
