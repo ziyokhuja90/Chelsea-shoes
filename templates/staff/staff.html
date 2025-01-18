@@ -82,13 +82,13 @@
           <ul class="nav nav-tabs" id="staffTabs" role="tablist">
               <li class="nav-item" role="presentation">
                   <button class="nav-link active" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab" aria-controls="payments" aria-selected="true">
-                      Staff Payments
+                    To'lovlar ro'yxati
                   </button>
               </li>
               <li class="nav-item" role="presentation">
                   <button class="nav-link" id="work-tab" data-bs-toggle="tab" data-bs-target="#work" type="button" role="tab" aria-controls="work" aria-selected="false">
-                      Staff Work
-                  </button>
+                      Xodim ishlari
+                  </button> 
               </li>
           </ul>
 
@@ -97,20 +97,20 @@
               <!-- Staff Payments Tab -->
               <div class="tab-pane fade show active" id="payments" role="tabpanel" aria-labelledby="payments-tab">
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h5>Payment List</h5>
+                      <h5>To'lovlar ro'yxati</h5>
                       <!-- Add Payment Button -->
                       <a class="btn btn-primary" href="{% url "staff_payment_create" %}">
-                          <i class="bx bx-plus"></i> Add Payment
+                           To'lov qilish
                       </a>
                   </div>
                   <table class="table table-hover">
                       <thead class="table-light">
                           <tr>
                               <th>ID</th>
-                              <th>Staff</th>
-                              <th>Amount</th>
-                              <th>Date</th>
-                              <th>Actions</th>
+                              <th>Xodim</th>
+                              <th>Summa</th>
+                              <th>Sana</th>
+                              <th>Amallar</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -124,13 +124,13 @@
                                   <a class="btn btn-sm btn-info" href="#">
                                     <i class="bx bx-show "></i>
                                   </a>
-                                  <a class="btn btn-sm btn-warning text-white" href="#">
+                                  <a class="btn btn-sm btn-warning text-white" href="{% url "staff_payment_update" payment.id %}">
                                     <i class="bx bx-edit-alt "></i>
                                 </a>
                                   <a class="btn btn-sm btn-danger"  href="#"
                                   data-bs-toggle="modal"
                                   data-bs-target="#deleteModal"
-                                  data-delete-url=""> 
+                                  data-delete-url="{% url "staff_payment_delete" payment.id %}"> 
                 
                                       <i class="bx bx-trash "></i>
                                   </a>
@@ -138,7 +138,7 @@
                           </tr>
                           {% empty %}
                           <tr>
-                              <td colspan="4" class="text-center">No payments found.</td>
+                              <td colspan="5" class="text-center">To'lovlar mavjud emas</td>
                           </tr>
                           {% endfor %}
                       </tbody>
@@ -151,6 +151,7 @@
                       <thead class="table-light">
                           <tr>
                               <th>ID</th>
+                              <th>Xodim</th>
                               <th>Madel</th>
                               <th>Narxi</th>
                               <th>Miqdori</th>
@@ -163,11 +164,12 @@
                           {% for work in producements %}
                           <tr>
                               <td>{{ work.id }}</td>
+                              <td>{{work.staff_id}}</td>
                               <td>{{ work.shoe_model_id }}</td>
                               <td>{{ work.price }}</td>
                               <td>{{ work.quantity }}</td>
                               <td>
-                                  <p>Total: {{ work.price|multiply:work.quantity }}</p>
+                                  <p>Jami: {{ work.price|multiply:work.quantity }}</p>
 
 
                               </td>
@@ -177,14 +179,24 @@
                                   </span>
                               </td>
                               <td>
-                                  <a class="btn btn-sm btn-info" href="#">View</a>
-                                  <a class="btn btn-sm btn-warning text-white" href="#">Edit</a>
-                                  <a class="btn btn-sm btn-danger" href="#">Delete</a>
+                                  <a class="btn btn-sm btn-info" href="#">
+                                    <i class="bx bx-show "></i>
+                                  </a>
+                                  <a class="btn btn-sm btn-warning text-white" href="#">
+                                    <i class="bx bx-edit-alt "></i>
+                                  </a>
+                                  <a class="btn btn-sm btn-danger"  href="#"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#deleteModal"
+                                  data-delete-url=""> 
+                
+                                      <i class="bx bx-trash "></i>
+                                  </a>
                               </td>
                           </tr>
                           {% empty %}
                           <tr>
-                              <td colspan="6" class="text-center">No work records found.</td>
+                              <td colspan="6" class="text-center">IShlar topilmadi</td>
                           </tr>
                           {% endfor %}
                       </tbody>

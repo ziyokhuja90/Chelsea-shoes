@@ -374,11 +374,32 @@ def staff_payment_read_create(request, pk):
             staff_p = forms.save(commit=False)
             staff_p.staff_id = staff_item
             staff_p.save()
-            return redirect('staff_view')
+            return redirect('staff_read', pk=pk)
     else:
-        forms = staff_payment_read_create()
+        forms = staff_payments_read_forms()
     
     context = {
         "forms":forms
     }
     return render(request, 'staff/staff_payment_create.html', context=context)
+
+def staff_payment_update(request, pk):
+    staff_payment_item = staff_payments.objects.get(pk=pk)
+    if request.method == "POST":
+        forms = staff_payments_forms(request.POST, instance=staff_payment_item)
+        if forms.is_valid():
+            forms.save()
+            return redirect('staff_view')
+    else:
+        forms = staff_payments_forms(instance=staff_payment_item)
+    
+    context = {
+        "forms":forms
+    }
+    return render(request, 'staff/staff_payment_update.html', context=context)
+
+
+def staff_payment_delete(request, pk):
+    staff_payment_item = staff_payments.objects.get(pk=pk)
+    staff_payment_item.delete()
+    return redirect('staff_view')

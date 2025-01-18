@@ -45,7 +45,10 @@ urlpatterns = [
     path('producement/delete/<int:pk>', views.producement_delete , name="producement_delete"),
     
     # staff_payment
-    path("staff_payment/create", views.staff_payment_create, name="staff_payment_create")
+    path("staff_payment/create", views.staff_payment_create, name="staff_payment_create"),
+    path("staff_payment_read/create/<int:pk>", views.staff_payment_read_create, name="staff_payment_read_create"),
+    path("staff_payment/update/<int:pk>", views.staff_payment_update, name="staff_payment_update"),
+    path("staff_payment/delete/<int:pk>", views.staff_payment_delete, name="staff_payment_delete")
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

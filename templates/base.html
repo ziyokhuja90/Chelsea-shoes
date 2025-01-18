@@ -70,15 +70,15 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+            <h5 class="modal-title" id="deleteModalLabel">O'chirib tashlashni tasdiqlash</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            Are you sure you want to delete this item? This action cannot be undone.
+            Haqiqatan ham bu elementni oʻchirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo‘lmaydi.
           </div>
           <div class="modal-footer">
-            <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Yes, Delete</button>
-            <a id="confirmDeleteLink" href="#" class="btn btn-danger" style="display: none;">Yes, Delete</a>
+            <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Ha, O'chirib tashla</button>
+            <a id="confirmDeleteLink" href="#" class="btn btn-danger" style="display: none;">Ha, O'chirib tashla</a>
           </div>
         </div>
       </div>
@@ -92,7 +92,7 @@
 
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
           <div class="app-brand demo">
-            <a href="" class="app-brand-link text-decoration-none">
+            <a href="{% url "home" %}" class="app-brand-link text-decoration-none">
               <span class="app-brand-logo demo">
                 <img src="{% static 'Chelsea-shoes.png' %}" alt="Chelsea-shoes" width="35">
               </span>
