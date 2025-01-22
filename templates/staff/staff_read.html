@@ -100,9 +100,7 @@
                                 <td>{{ work.price }}</td>
                                 <td>{{ work.quantity }}</td>
                                 <td>
-                                    <p>Total: {{ work.price|multiply:work.quantity }}</p>
-
-
+                                    <p>Jami: {{ work.price|multiply:work.quantity }}</p>
                                 </td>
                                 <td>
                                     <span class="badge bg-success">
@@ -110,14 +108,24 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a class="btn btn-sm btn-info" href="#">View</a>
-                                    <a class="btn btn-sm btn-warning text-white" href="#">Edit</a>
-                                    <a class="btn btn-sm btn-danger" href="#">Delete</a>
+                                    <a class="btn btn-sm btn-info" href="#">
+                                        <i class="bx bx-show "></i>
+                                      </a>
+                                      <a class="btn btn-sm btn-warning text-white" href="#">
+                                        <i class="bx bx-edit-alt "></i>
+                                      </a>
+                                      <a class="btn btn-sm btn-danger"  href="#"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#deleteModal"
+                                      data-delete-url=""> 
+                    
+                                          <i class="bx bx-trash "></i>
+                                      </a>
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="6" class="text-center">No work records found.</td>
+                                <td colspan="6" class="text-center">Bajarilgan ishlar mavjud emas</td>
                             </tr>
                             {% endfor %}
                         </tbody>

@@ -403,3 +403,8 @@ def staff_payment_delete(request, pk):
     staff_payment_item = staff_payments.objects.get(pk=pk)
     staff_payment_item.delete()
     return redirect('staff_view')
+
+# Sale 
+
+def Sale_view(request):
+    return render(request, 'Sale/sale.html')
