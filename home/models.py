@@ -40,7 +40,8 @@ class shoe_model(models.Model):
     code = models.CharField(max_length=255 , verbose_name="oyoq kiyim kodi" ,unique=True)
     image = models.ImageField(upload_to="media/" , verbose_name="oyoq kiyim rasmi")
     description = models.TextField(verbose_name="oyoq kiyim tavsifi")
-    
+    IsDeleted = models.BooleanField(default=False)
+
     class Meta:
         db_table = "shoe_model"
         
@@ -57,6 +58,7 @@ class clients(models.Model):
         related_name="currency_reference_client"
     )
     balance = models.DecimalField(max_digits=20 , decimal_places=2, default=0, null=True, blank=True)
+    IsDeleted = models.BooleanField(default=False)
     class Meta:
         db_table = "clients"
         
@@ -72,7 +74,8 @@ class client_payments(models.Model):
         )
     date = models.DateField(verbose_name="tulov sanasi")
     amount = models.DecimalField(verbose_name="miqdori" , max_digits=20 , decimal_places=2)
-    
+    IsDeleted = models.BooleanField(default=False)
+
     class Meta:
         db_table = "client_payments"
         
@@ -122,7 +125,8 @@ class orders(models.Model):
         related_name="status_orders",
         verbose_name="buyurtma xolati"
     )
-    
+    IsDeleted = models.BooleanField(default=False)
+
     class Meta:
         db_table = "orders"
         
@@ -147,6 +151,7 @@ class staff(models.Model):
     )
     phone_number = models.CharField(max_length=255 , verbose_name="xodim telefon raqami")
     balance = models.DecimalField(max_digits=20 , decimal_places=2, default=0, null=True, blank=True)
+    IsDeleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = "staff"
@@ -162,8 +167,9 @@ class staff_payments(models.Model):
         verbose_name="xodim"
     )
     date = models.DateField(verbose_name="tulov sanasi")
-    amount = models.DecimalField(verbose_name="miqdori" , max_digits=20 , decimal_places=2)
-    
+    amount = models.DecimalField(verbose_name="miqdori", max_digits=20 , decimal_places=2)
+    IsDeleted = models.BooleanField(default=False)
+
     class Meta:
         db_table = "staff_payments"
         
@@ -224,7 +230,8 @@ class producement(models.Model):
         related_name="status_producement",
         verbose_name="ish xolati"
     )
-    
+    IsDeleted = models.BooleanField(default=False)
+
     class Meta:
         db_table = "producement"
         
@@ -243,6 +250,7 @@ class debts(models.Model):
         related_name="debts_currency",
         verbose_name="qarz pul birligi"
     )
+    IsDeleted = models.BooleanField(default=False)
     class Meta:
         db_table = "debts"
         
@@ -265,6 +273,7 @@ class expenses(models.Model):
         related_name="debt_id_expenses",
         verbose_name="xarajat qarzi"
     )
+    IsDeleted = models.BooleanField(default=False)
     class Meta:
         db_table = "expenses"
         

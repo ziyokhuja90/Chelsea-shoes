@@ -3,7 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import logout
-from .models import references, shoe_model, staff, clients, orders, producement, ReferenceType, StatusType, staff_payments
+from .models import references, shoe_model, staff, clients, orders, producement, ReferenceType, staff_payments
 from django.http.response import HttpResponse
 from .forms import shoe_model_forms, staff_forms, clients_forms, orders_forms, producement_forms, staff_payments_forms, staff_payments_read_forms
 # Create your views here.
@@ -31,8 +31,8 @@ def login_view(request):
     return render(request, 'login.html', {'form': form})
 
 def home(request):
-    shoe_models = shoe_model.objects.all()
-    finished_producements = producement.objects.filter(status__value='Bajarildi')
+    shoe_models = shoe_model.objects.filter(IsDeleted=False)
+    finished_producements = producement.objects.filter(status__value='Bajarildi', IsDeleted=False)
     quantity_producements = dict()
     for item in finished_producements:
         if item.shoe_model_id.name not in quantity_producements:
@@ -138,14 +138,15 @@ def shoe_model_update(request, pk):
 
 def shoe_model_delete(request, pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
-    shoe_model_item.delete()
+    shoe_model_item.IsDeleted = True
+    shoe_model_item.save()
     return redirect('home')
 
 # staff
 def staff_view(request):
-    staff_list = staff.objects.all()
-    producement_list = producement.objects.filter(status__value="Bajarildi")
-    payment_list = staff_payments.objects.all()
+    staff_list = staff.objects.filter(isDeleted=False)
+    producement_list = producement.objects.filter(status__value="Bajarildi", IsDeleted=False).order_by('date')
+    payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('date')
     
     balance = sum(i.balance for i in staff_list)
     context = {
@@ -157,9 +158,9 @@ def staff_view(request):
     return render(request , "staff/staff.html" , context=context)
 
 def staff_read(request, pk):
-    staff_item = staff.objects.get(pk=pk)
-    payment_list = staff_payments.objects.all()
-    pruducements = producement.objects.filter(staff_id=staff_item, status__value="Bajarildi")
+    staff_item = staff.objects.get(pk=pk, isDeleted=False)
+    payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('date')
+    pruducements = producement.objects.filter(staff_id=staff_item, status__value="Bajarildi").order_by('date')
     context = {
         "staff":staff_item,
         "payment_list":payment_list,
@@ -175,9 +176,8 @@ def staff_create(request):
             forms.save()
             return redirect('staff_view')
         else:
-            forms = forms.errors()
-            print(forms)
-    
+            forms = forms.errors
+
     context = {
         "forms":forms
     }
@@ -201,12 +201,13 @@ def staff_update(request, pk):
 
 def staff_delete(request, pk):
     staff_item = staff.objects.get(pk=pk)
-    staff_item.delete()
+    staff_item.IsDeleted = True
+    staff_item.save()
     return redirect("staff_view")
 # clients
 
 def clients_view(request):
-    clients_list = clients.objects.all()
+    clients_list = clients.objects.filter(IsDeleted=False)
     context = {
         "clients_list":clients_list
     }
@@ -244,13 +245,15 @@ def clients_update(request, pk):
 
 def clients_delete(request, pk):
     client_item = clients.objects.get(pk=pk)
-    client_item.delete()
+    client_item.IsDeleted = True
+    client_item.save()
     return redirect('clients_view')
 
 # orders
 
 def orders_view(request):
-    orders_list = orders.objects.all()
+    orders_list = orders.objects.filter(IsDeleted=False).order_by('complete_date')
+
     context = {
         "orders_list":orders_list
     }
@@ -293,13 +296,14 @@ def orders_update(request , pk):
 
 def orders_delete(request , pk):
     order_item = orders.objects.get(pk=pk)
-    order_item.delete()    
+    order_item.IsDeleted = True
+    order_item.save()
     return redirect('orders_view')
 
 # producement
 
 def producement_view(request):
-    producement_list = producement.objects.all()
+    producement_list = producement.objects.filter(IsDeleted=False).order_by('date')
     context = {
         "producement_list":producement_list
     }
@@ -347,7 +351,8 @@ def producement_update(request , pk):
 
 def producement_delete(request ,pk):
     producement_item = producement.objects.get(pk=pk)
-    producement_item.delete()
+    producement_item.IsDeleted = True
+    producement_item.save()
     return redirect('producement_view') 
 
 # staff_payments
@@ -401,10 +406,12 @@ def staff_payment_update(request, pk):
 
 def staff_payment_delete(request, pk):
     staff_payment_item = staff_payments.objects.get(pk=pk)
-    staff_payment_item.delete()
+    staff_payment_item.IsDeleted = True
+    staff_payment_item.save()
+
     return redirect('staff_view')
 
 # Sale 
 
-def Sale_view(request):
+def sale_view(request):
     return render(request, 'Sale/sale.html')
