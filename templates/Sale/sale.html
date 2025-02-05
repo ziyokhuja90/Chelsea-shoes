@@ -1,117 +1,83 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container my-4">
-    <h1 class="text-center">Product Orders</h1>
-    
-    <!-- Date Filter Section -->
-    <div class="mb-4">
-        <label for="startDate" class="form-label">Start Date:</label>
-        <input type="date" id="startDate" class="form-control d-inline-block w-auto" onchange="filterTable()">
-        <label for="endDate" class="form-label ms-3">End Date:</label>
-        <input type="date" id="endDate" class="form-control d-inline-block w-auto" onchange="filterTable()">
+
+<div class="container mt-4">
+<div class="card">
+
+    <h1 class="text-center mb-4">Chealsea - Sotuv Sahifasi</h1>
+    <ul class="nav nav-tabs ml-3 pb-1" id="sellTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active " id="sell-tab" data-bs-toggle="tab" data-bs-target="#sell" type="button" role="tab" aria-controls="sell" aria-selected="true">Mahsulotni sotish</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link " id="sold-tab" data-bs-toggle="tab" data-bs-target="#sold" type="button" role="tab" aria-controls="sold" aria-selected="false">Sotilgan mahsulotlar</button>
+            </li>
+        </ul>
+        <div class="tab-content mt-3" id="sellTabsContent">
+            <div class="tab-pane fade show active" id="sell" role="tabpanel" aria-labelledby="sell-tab">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Mijoz</th>
+                            <th>Model</th>
+                            <th>Soni</th>
+                            <th>Narxi</th>
+                            <th>Umumiy narxi</th>
+                            <th>Sana</th>
+                            <th>Harakatlar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in order_sale_list %}
+                          
+                        <tr>
+                            <td>{{sale.client_id}}</td>
+                            <td>{{sale.model_id}}</td>
+                            <td>{{sale.quantity}}</td>
+                            <td>{{sale.price}}</td>
+                            <td>{{sale.total_amount}}</td>
+                            <td>{{sale.date|date:"Y.m.d"}}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm"><i class='bx bx-edit text-white'></i> </button>
+                                <button class="btn btn-danger btn-sm"><i class='bx bx-trash'></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="sold" role="tabpanel" aria-labelledby="sold-tab">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Mijoz</th>
+                            <th>Model</th>
+                            <th>Soni</th>
+                            <th>Narxi</th>
+                            <th>Umumiy narxi</th>
+                            <th>Sana</th>
+                            <th>Harakatlar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mijoz nomi</td>
+                            <td>Model nomi</td>
+                            <td>2</td>
+                            <td>200 000 so'm</td>
+                            <td>400 000 so'm</td>
+                            <td>2025-02-02</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm"><i class='bx bx-show'></i> Ko'rish</button>
+                            </td>
+                        </tr>
+                        <!-- Qo'shimcha qatorlar -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-
-    <!-- Products to Sell Section -->
-    <h3>Products to Sell</h3>
-    <table class="table table-bordered table-hover" id="sellTable">
-        <thead class="bg-light">
-            <tr>
-                <th>#</th>
-                <th>Product</th>
-                <th>Customer</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Product 1 -->
-            <tr data-date="2025-01-19">
-                <td>1</td>
-                <td>Sneakers</td>
-                <td>John Doe</td>
-                <td>3</td>
-                <td>$50.00</td>
-                <td><span class="badge bg-warning">Pending</span></td>
-                <td>2025-01-19</td>
-            </tr>
-
-            <!-- Product 2 -->
-            <tr data-date="2025-01-20">
-                <td>2</td>
-                <td>Boots</td>
-                <td>Jane Smith</td>
-                <td>2</td>
-                <td>$75.00</td>
-                <td><span class="badge bg-warning">Pending</span></td>
-                <td>2025-01-20</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <!-- Sold Products Section -->
-    <h3 class="mt-5">Sold Products</h3>
-    <table class="table table-bordered table-hover" id="soldTable">
-        <thead class="bg-light">
-            <tr>
-                <th>#</th>
-                <th>Product</th>
-                <th>Customer</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Sold Product 1 -->
-            <tr data-date="2025-01-18">
-                <td>1</td>
-                <td>High Heels</td>
-                <td>Mary Johnson</td>
-                <td>1</td>
-                <td>$75.00</td>
-                <td><span class="badge bg-success">Accepted (Sold)</span></td>
-                <td>2025-01-18</td>
-            </tr>
-
-            <!-- Sold Product 2 -->
-            <tr data-date="2025-01-17">
-                <td>2</td>
-                <td>Loafers</td>
-                <td>Alex Turner</td>
-                <td>2</td>
-                <td>$40.00</td>
-                <td><span class="badge bg-success">Accepted (Sold)</span></td>
-                <td>2025-01-17</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<script>
-    // Function to filter the tables based on date range
-    function filterTable() {
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-
-        filterRows('sellTable', startDate, endDate);
-        filterRows('soldTable', startDate, endDate);
-    }
-
-    // Function to filter rows based on date
-    function filterRows(tableId, startDate, endDate) {
-        const rows = document.getElementById(tableId).getElementsByTagName('tr');
-
-        for (let row of rows) {
-            const rowDate = row.getAttribute('data-date');
-            if (rowDate) {
-                const showRow = (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
-                row.style.display = showRow ? '' : 'none';
-            }
-        }
-    }
-</script>
-{% endblock %}
+</div>    
+    {% endblock %}

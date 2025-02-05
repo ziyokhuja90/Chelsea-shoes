@@ -3,7 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import logout
-from .models import references, shoe_model, staff, clients, orders, producement, ReferenceType, staff_payments
+from .models import *
 from django.http.response import HttpResponse
 from .forms import shoe_model_forms, staff_forms, clients_forms, orders_forms, producement_forms, staff_payments_forms, staff_payments_read_forms
 # Create your views here.
@@ -60,16 +60,16 @@ def reference_view(request):
         if type == "--------":
             pass
         else:
-            if references.objects.filter(type=int(type), value=value).exists() and not references.objects.filter(type=int(type), value=value ,IsDeleted=True):
+            if references.objects.filter(type=int(type), value=value).exists() and references.objects.filter(type=int(type), value=value.title() ,IsDeleted=False):
                 pass
             else:
                 if ReferenceType(int(type)) in ReferenceType:
                     print(True)
-                new_entry = references(type=int(type) , value=value)
+                new_entry = references(type=int(type) , value=value.title())
                 new_entry.save()
+
             
-            
-    reference_models = references.objects.all()
+    reference_models = references.objects.filter(IsDeleted=False)
 
     
     context = {
@@ -144,7 +144,7 @@ def shoe_model_delete(request, pk):
 
 # staff
 def staff_view(request):
-    staff_list = staff.objects.filter(isDeleted=False)
+    staff_list = staff.objects.filter(IsDeleted=False)
     producement_list = producement.objects.filter(status__value="Bajarildi", IsDeleted=False).order_by('date')
     payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('date')
     
@@ -158,7 +158,7 @@ def staff_view(request):
     return render(request , "staff/staff.html" , context=context)
 
 def staff_read(request, pk):
-    staff_item = staff.objects.get(pk=pk, isDeleted=False)
+    staff_item = staff.objects.get(pk=pk, IsDeleted=False)
     payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('date')
     pruducements = producement.objects.filter(staff_id=staff_item, status__value="Bajarildi").order_by('date')
     context = {
@@ -329,25 +329,30 @@ def producement_read(request, pk):
     }
     return render(request , 'producement/producement_read.html' , context=context)
 
-def producement_update(request , pk):
+
+def producement_update(request, pk):
     producement_item = producement.objects.get(pk=pk)
     if request.method == "POST":
         form = producement_forms(request.POST, instance=producement_item)
         if form.is_valid():
             form.save()
             next_page = request.GET.get("next")
+
             if next_page == "shoe_model_read":
                 return redirect("shoe_model_read", pk=producement_item.shoe_model_id.id)
+            elif next_page == "work":
+                return redirect("staff_view")  # Update "work_view" and pk logic if necessary
             else:
                 return redirect("producement_view")
     else:
         form = producement_forms(instance=producement_item)
-    
+
     context = {
         "forms": form,
         "producement": producement_item,
     }
-    return render(request , "producement/producement_update.html" , context=context)
+    return render(request, "producement/producement_update.html", context=context)
+
 
 def producement_delete(request ,pk):
     producement_item = producement.objects.get(pk=pk)
@@ -414,4 +419,12 @@ def staff_payment_delete(request, pk):
 # Sale 
 
 def sale_view(request):
-    return render(request, 'Sale/sale.html')
+    order_sale_list = orders.objects.filter(status__value='Bajarildi', IsDeleted=False)
+    order_sold_list = orders.objects.filter(status__value='Qabul qilindi', IsDeleted=False)
+
+    context = {
+        "order_sale_list":order_sale_list,
+        "order_sold_list":order_sold_list,
+    }
+
+    return render(request, 'Sale/sale.html', context=context)

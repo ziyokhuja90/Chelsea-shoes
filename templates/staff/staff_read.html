@@ -54,9 +54,7 @@
                                 <td>{{ payment.amount }}</td>
                                 <td>{{ payment.date|date:"Y.m.d" }}</td>
                                 <td>
-                                    <a class="btn btn-sm btn-info" href="#">
-                                        <i class="bx bx-show "></i>
-                                      </a>
+
                                       <a class="btn btn-sm btn-warning text-white" href="{% url "staff_payment_update" payment.id %}">
                                         <i class="bx bx-edit-alt "></i>
                                     </a>
@@ -108,9 +106,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a class="btn btn-sm btn-info" href="#">
-                                        <i class="bx bx-show "></i>
-                                      </a>
+
                                       <a class="btn btn-sm btn-warning text-white" href="#">
                                         <i class="bx bx-edit-alt "></i>
                                       </a>

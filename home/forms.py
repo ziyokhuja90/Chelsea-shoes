@@ -30,12 +30,22 @@ class staff_forms(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
         # Filter gender options
         self.fields['gender'].queryset = models.references.objects.filter(type=models.ReferenceType.GENDER.value)
         
         # Filter profession options
-        self.fields['profession'].queryset = models.references.objects.filter(type=models.ReferenceType.PROFESSION.value, IsDeleted=False)
+        self.fields['profession'].queryset = models.references.objects.filter(
+            type=models.ReferenceType.PROFESSION.value,
+            IsDeleted=False
+        )
+
+        # Ensure the form is updating an instance and the instance has a profession
+        if self.instance and self.instance.pk and self.instance.profession:
+            self.fields['profession'].queryset = (
+                    self.fields['profession'].queryset | models.references.objects.filter(
+                pk=self.instance.profession.pk)
+            ).distinct()
 
 class clients_forms(forms.ModelForm):
     class Meta:
@@ -74,11 +84,25 @@ class orders_forms(forms.ModelForm):
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
+        self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
         self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
         self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
         self.fields['leather_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
-        self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
+
+
+
+        if self.instance and self.instance.pk and self.instance.color_id:
+            self.fields['color_id'].queryset = (
+                    self.fields['color_id'].queryset | models.references.objects.filter(
+                pk=self.instance.color_id.pk)
+            ).distinct()
+
+        if self.instance and self.instance.pk and self.instance.leather_id:
+            self.fields['leather_id'].queryset = (
+                    self.fields['leather_id'].queryset | models.references.objects.filter(
+                pk=self.instance.leather_id.pk)
+            ).distinct()
         
 class producement_forms(forms.ModelForm):
     class Meta:
@@ -111,6 +135,26 @@ class producement_forms(forms.ModelForm):
         self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
         self.fields['solo_type'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
+
+
+
+        if self.instance and self.instance.pk and self.instance.color_id:
+            self.fields['color_id'].queryset = (
+                    self.fields['color_id'].queryset | models.references.objects.filter(
+                pk=self.instance.color_id.pk)
+            ).distinct()
+
+        if self.instance and self.instance.pk and self.instance.leather_id:
+            self.fields['leather_id'].queryset = (
+                    self.fields['leather_id'].queryset | models.references.objects.filter(
+                pk=self.instance.leather_id.pk)
+            ).distinct()
+
+        if self.instance and self.instance.pk and self.instance.solo_type:
+            self.fields['solo_type'].queryset = (
+                    self.fields['solo_type'].queryset | models.references.objects.filter(
+                pk=self.instance.solo_type.pk)
+            ).distinct()
 
 class staff_payments_forms(forms.ModelForm):
     class Meta:
