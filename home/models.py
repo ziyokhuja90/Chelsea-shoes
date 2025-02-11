@@ -90,6 +90,30 @@ class orders(models.Model):
         verbose_name="xaridor"
     )
     date = models.DateField(verbose_name="Buyurtma sanasi")
+
+    total_amount = models.DecimalField(verbose_name="buyurtma jami narxi" , max_digits=20 , decimal_places=2)
+    complete_date = models.DateField(verbose_name="buyurtma topshirish sanasi")
+    status = models.ForeignKey(
+        references,
+        models.CASCADE,
+        related_name="status_orders",
+        verbose_name="buyurtma xolati"
+    )
+    IsDeleted = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "orders"
+        
+    def __str__(self):
+        return f"{self.model_id}"
+
+class Order_details(models.Model):
+    order_id = models.ForeignKey(
+        orders,
+        models.CASCADE,
+        related_name="ordeer_id_orders",
+        verbose_name="Buyurtma"                                           
+    )
     model_id = models.ForeignKey(
         to=shoe_model,
         on_delete=models.CASCADE,
@@ -117,21 +141,21 @@ class orders(models.Model):
         related_name="leather_id_reference",
         verbose_name="terisi"    
     )
-    
-    complete_date = models.DateField(verbose_name="buyurtma topshirish sanasi")
-    status = models.ForeignKey(
-        references,
-        models.CASCADE,
-        related_name="status_orders",
-        verbose_name="buyurtma xolati"
+    leather_type = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name="leather_type_Orders",
+        verbose_name="terisi"    
     )
+
     IsDeleted = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "orders"
+        db_table = "Order_details"
         
     def __str__(self):
         return f"{self.model_id}"
+
 
 class staff(models.Model):
     full_name = models.CharField(max_length=255 , verbose_name="xodim ismi")
@@ -229,6 +253,12 @@ class producement(models.Model):
         models.CASCADE,
         related_name="status_producement",
         verbose_name="ish xolati"
+    )
+    order_detail_id = models.ForeignKey(
+        Order_details,
+        models.CASCADE,
+        related_name="order_detail_id_producement",
+        verbose_name="Buyurma malumotlari"
     )
     IsDeleted = models.BooleanField(default=False)
 

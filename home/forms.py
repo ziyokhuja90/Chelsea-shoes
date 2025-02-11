@@ -67,17 +67,11 @@ class clients_forms(forms.ModelForm):
 class orders_forms(forms.ModelForm):
     class Meta:
         model = models.orders
-        fields = ['client_id' , 'date' , 'model_id' , 'quantity' , 'quantity_type_id' , 'price' , 'color_id' , 'leather_id' , 'complete_date' , 'status']
+        fields = ['client_id' , 'date' , 'complete_date' , 'status']
         
         widgets = {
             'client_id':forms.Select(attrs={'class':'form-control'}),
             'date':forms.DateInput(attrs={'class':'form-control' , "type":"date"}),
-            'model_id':forms.Select(attrs={'class':'form-control'}),
-            'quantity':forms.NumberInput(attrs={'class':'form-control'}),
-            'quantity_type_id':forms.Select(attrs={'class':'form-control'}),
-            'price':forms.NumberInput(attrs={'class':'form-control'}),
-            'color_id':forms.Select(attrs={'class':'form-control'}),
-            'leather_id':forms.Select(attrs={'class':'form-control'}),
             'complete_date':forms.DateInput(attrs={'class':'form-control' , "type":"date"}),
             'status':forms.Select(attrs={'class':'form-control'}),
             

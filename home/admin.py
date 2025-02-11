@@ -7,3 +7,4 @@ from .models import *
 admin.site.register(references)
 admin.site.register(clients)
 admin.site.register(staff)
+admin.site.register(producement)

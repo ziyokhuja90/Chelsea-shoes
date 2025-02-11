@@ -4,6 +4,57 @@
 
 {% block content %}
 <div class="container">
+  <div class="card p-3 mt-3">
+    <h1 class="text-center mb-4">Filterlash</h1>
+
+        <!-- Filtering Form -->
+        <form id="filterForm" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="name" class="form-label">Ismi</label>
+                    <input type="text" id="name" class="form-control" placeholder="Ismi">
+                </div>
+                <div class="col-md-3">
+                    <label for="dob" class="form-label">Tug'ilgan sanasi</label>
+                    <input type="date" id="dob" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label for="gender" class="form-label">Jinsi</label>
+                    <select id="gender" class="form-select">
+                        <option value="">Tanlang...</option>
+                        <option value="male">Erkak</option>
+                        <option value="female">Ayol</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="job" class="form-label">Kasbi</label>
+                    <select id="job" class="form-select">
+                        <option value="">Tanlang...</option>
+                        <option value="developer">Dasturchi</option>
+                        <option value="teacher">O'qituvchi</option>
+                        <option value="designer">Dizayner</option>
+                        <option value="manager">Menejer</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="hireDate" class="form-label">Ishga kirgan sanasi</label>
+                    <input type="date" id="hireDate" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label for="phone" class="form-label">Telefon raqami</label>
+                    <input type="text" id="phone" class="form-control" placeholder="Telefon raqami">
+                </div>
+                <div class="col-md-3">
+                    <label for="balance" class="form-label">Balance</label>
+                    <input type="number" id="balance" class="form-control" placeholder="Balance">
+                </div>
+            </div>
+            <div class="mt-3 text-end">
+                <button type="button" class="btn btn-primary">Filterlash</button>
+                <button type="reset" class="btn btn-secondary">Tozalash</button>
+            </div>
+        </form>
+  </div>
 
 <div class="card mt-3">
   <div class="d-flex justify-content-between align-items-center p-3">

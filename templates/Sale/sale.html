@@ -25,7 +25,7 @@
                             <th>Narxi</th>
                             <th>Umumiy narxi</th>
                             <th>Sana</th>
-                            <th>Harakatlar</th>
+                            <th>Amallar</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -58,22 +58,24 @@
                             <th>Narxi</th>
                             <th>Umumiy narxi</th>
                             <th>Sana</th>
-                            <th>Harakatlar</th>
+                            <th>Amallar</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {% for sold in order_sold_list %}
                         <tr>
-                            <td>Mijoz nomi</td>
-                            <td>Model nomi</td>
-                            <td>2</td>
-                            <td>200 000 so'm</td>
-                            <td>400 000 so'm</td>
-                            <td>2025-02-02</td>
+                            <td>{{sold.client_id}}</td>
+                            <td>{{sold.model_id}}</td>
+                            <td>{{sold.quantity}}</td>
+                            <td>{{sold.price}}</td>
+                            <td>{{sold.total_amount}}</td>
+                            <td>{{sold.date|date:"Y.m.d"}}</td>
                             <td>
-                                <button class="btn btn-primary btn-sm"><i class='bx bx-show'></i> Ko'rish</button>
+                                <button class="btn btn-warning btn-sm"><i class='bx bx-edit text-white'></i> </button>
+                                <button class="btn btn-danger btn-sm"><i class='bx bx-trash'></i></button>
                             </td>
                         </tr>
-                        <!-- Qo'shimcha qatorlar -->
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
