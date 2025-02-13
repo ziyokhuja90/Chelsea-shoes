@@ -135,12 +135,7 @@ class Order_details(models.Model):
         related_name="color_id_orders",
         verbose_name="buyurtma rangi"
     )
-    leather_id = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="leather_id_reference",
-        verbose_name="terisi"    
-    )
+
     leather_type = models.ForeignKey(
         to=references,
         on_delete=models.CASCADE,
@@ -258,7 +253,9 @@ class producement(models.Model):
         Order_details,
         models.CASCADE,
         related_name="order_detail_id_producement",
-        verbose_name="Buyurma malumotlari"
+        verbose_name="Buyurma malumotlari",
+        null=True,
+        blank=True
     )
     IsDeleted = models.BooleanField(default=False)
 

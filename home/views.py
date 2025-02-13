@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from .models import *
 from django.http.response import HttpResponse
-from .forms import shoe_model_forms, staff_forms, clients_forms, orders_forms, producement_forms, staff_payments_forms, staff_payments_read_forms
+from .forms import *
+from django.forms import modelformset_factory
 # Create your views here.
 import json
 
@@ -60,12 +61,12 @@ def reference_view(request):
         if type == "--------":
             pass
         else:
-            if references.objects.filter(type=int(type), value=value).exists() and references.objects.filter(type=int(type), value=value.title() ,IsDeleted=False):
+            if references.objects.filter(type=int(type), value=value).exists() and references.objects.filter(type=int(type), value=value.upper() ,IsDeleted=False):
                 pass
             else:
                 if ReferenceType(int(type)) in ReferenceType:
                     print(True)
-                new_entry = references(type=int(type) , value=value.title())
+                new_entry = references(type=int(type) , value=value.upper())
                 new_entry.save()
 
             
@@ -147,13 +148,24 @@ def staff_view(request):
     staff_list = staff.objects.filter(IsDeleted=False)
     producement_list = producement.objects.filter(status__value="Bajarildi", IsDeleted=False).order_by('date')
     payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('date')
-    
+
+    genders = references.objects.filter(type=ReferenceType.GENDER.value, IsDeleted=False)
+    professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False)
+
+    full_name, gender, profession, phone = request.GET.get("full_name",None),request.GET.get("gender",None),request.GET.get("profession",None),request.GET.get("phone",None)
+
+    if full_name or gender or profession or phone:
+        staff_list = staff_list.filter(full_name__icontains=full_name, gender__value__icontains=gender, profession__value__icontains=profession, phone_number__icontains=phone, IsDeleted=False)
+
+
     balance = sum(i.balance for i in staff_list)
     context = {
         "staff_list":staff_list,
         "producements":producement_list,
         "payment_list":payment_list,
-        "balance":balance
+        "balance":balance,
+        "genders":genders,
+        "professions":professions
     }
     return render(request , "staff/staff.html" , context=context)
 
@@ -260,17 +272,37 @@ def orders_view(request):
     return render(request , "orders/orders.html" , context=context)
 
 def orders_create(request):
-    if request.method == "POST":
-        form = orders_forms(request.POST)
-        if form.is_valid():
-            order = form.save(commit=False)
-            
-            order.total_amount = order.quantity * order.price
-            order.save()
-            return redirect('orders_view')  
+    OrderDetailsFormSet = modelformset_factory(Order_details, form=orderDetails_forms, extra=1, can_delete=True)
     
-    form = orders_forms()
-    return render(request, 'orders/orders_create.html', {'forms': form})
+    if request.method == 'POST':
+        order_form = orders_forms(request.POST)
+        formset = OrderDetailsFormSet(request.POST, queryset=Order_details.objects.none())
+        
+        if order_form.is_valid() and formset.is_valid():
+            # Save the order
+            order = order_form.save(commit=False)
+            order.total_amount = 0
+            order.save()
+            
+            # Save the related order details
+            for form in formset:
+                if form.cleaned_data and not form.cleaned_data.get('DELETE'):
+                    order_detail = form.save(commit=False)
+                    order_detail.order_id = order
+                    order_detail.save()
+            
+            return redirect('orders_view')  # Redirect to a success page
+            
+    else:
+        order_form = orders_forms()
+        formset = OrderDetailsFormSet(queryset=Order_details.objects.none())
+    
+    context = {
+        'order_form': order_form,
+        'formset': formset,
+    }
+
+    return render(request, 'orders/orders_create.html',context=context )
 
 def order_read(request , pk):
     order_item = orders.objects.get(pk=pk)
@@ -312,6 +344,7 @@ def producement_view(request):
 def producement_create(request):
     if request.method == "POST":
         forms = producement_forms(request.POST)
+        print("-------------------",request.POST)
         if forms.is_valid():
             forms.save()
             return redirect('producement_view')
@@ -328,7 +361,6 @@ def producement_read(request, pk):
         "producement":producement_item
     }
     return render(request , 'producement/producement_read.html' , context=context)
-
 
 def producement_update(request, pk):
     producement_item = producement.objects.get(pk=pk)
@@ -352,7 +384,6 @@ def producement_update(request, pk):
         "producement": producement_item,
     }
     return render(request, "producement/producement_update.html", context=context)
-
 
 def producement_delete(request ,pk):
     producement_item = producement.objects.get(pk=pk)
