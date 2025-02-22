@@ -142,9 +142,19 @@ class Order_details(models.Model):
         related_name="leather_type_Orders",
         verbose_name="terisi"    
     )
+    sole_type_id = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name='sole_type_orders'                
+    )
+    lining_type_id = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name="lining_type_orders"
 
+    )
     IsDeleted = models.BooleanField(default=False)
-
+    
     class Meta:
         db_table = "Order_details"
         
@@ -256,6 +266,13 @@ class producement(models.Model):
         verbose_name="Buyurma malumotlari",
         null=True,
         blank=True
+    )
+    
+    lining_type_id = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name="lining_type_producement"
+
     )
     IsDeleted = models.BooleanField(default=False)
 

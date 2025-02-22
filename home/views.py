@@ -272,24 +272,35 @@ def orders_view(request):
     return render(request , "orders/orders.html" , context=context)
 
 def orders_create(request):
-    OrderDetailsFormSet = modelformset_factory(Order_details, form=orderDetails_forms, extra=1, can_delete=True)
+    OrderDetailsFormSet = modelformset_factory(Order_details, form=orderDetails_forms, extra=1, can_delete=False)
     
     if request.method == 'POST':
         order_form = orders_forms(request.POST)
         formset = OrderDetailsFormSet(request.POST, queryset=Order_details.objects.none())
         
         if order_form.is_valid() and formset.is_valid():
-            # Save the order
+            # Save the order without committing, calculate `total_amount` later
             order = order_form.save(commit=False)
-            order.total_amount = 0
+            order.total_amount = 0  # Initial amount is 0
             order.save()
+            
+            total_order_amount = 0  # To calculate the order's total amount
             
             # Save the related order details
             for form in formset:
                 if form.cleaned_data and not form.cleaned_data.get('DELETE'):
                     order_detail = form.save(commit=False)
                     order_detail.order_id = order
+                    
+                    # Calculate `total_amount` for the current order detail
+                    order_detail.total_amount = order_detail.quantity * order_detail.price
+                    total_order_amount += order_detail.total_amount
+                    
                     order_detail.save()
+            
+            # Update the order's `total_amount` based on details
+            order.total_amount = total_order_amount
+            order.save()
             
             return redirect('orders_view')  # Redirect to a success page
             
@@ -297,12 +308,14 @@ def orders_create(request):
         order_form = orders_forms()
         formset = OrderDetailsFormSet(queryset=Order_details.objects.none())
     
+    print(formset)
     context = {
         'order_form': order_form,
         'formset': formset,
     }
 
-    return render(request, 'orders/orders_create.html',context=context )
+    return render(request, 'orders/orders_create.html', context=context)
+
 
 def order_read(request , pk):
     order_item = orders.objects.get(pk=pk)

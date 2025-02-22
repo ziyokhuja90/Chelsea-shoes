@@ -19,13 +19,17 @@
         <!-- Order Details Formset -->
         <div class="card mb-4">
             <div class="card-header bg-secondary text-white">Order Details</div>
-            <div class="card-body">
+            <div class="card-body mt-3">
                 {{ formset.management_form }}
                 <div id="order-details-container">
                     {% for form in formset %}
                         <div class="border p-3 mb-3">
                             {{ form.as_p }}
-                            <button type="button" class="btn btn-danger remove-form">Remove</button>
+                            
+                            {% if form.DELETE %}
+                            <div class="hidden">{{ form.DELETE }}</div>
+                        {% endif %}
+                            <button type="button" class="btn btn-danger remove-form ">Remove</button>
                         </div>
                     {% endfor %}
                 </div>
