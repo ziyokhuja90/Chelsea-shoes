@@ -2,76 +2,36 @@
 
 {% block content %}
 
-<div class="container mt-5">
-    <h1 class="text-center">Create Order</h1>
-
-    <form method="POST">
-        {% csrf_token %}
-
-        <!-- Order Form -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">Order Information</div>
-            <div class="card-body">
-                {{ order_form.as_p }}
-            </div>
+<div class="container mt-3">
+    <div class="card shadow-sm">
+        <div class="card-header bg-info ">
+            <h3 class="mb-0 text-white">Yangi Buyurtma Qo'shish</h3>
         </div>
-
-        <!-- Order Details Formset -->
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">Order Details</div>
-            <div class="card-body mt-3">
-                {{ formset.management_form }}
-                <div id="order-details-container">
-                    {% for form in formset %}
-                        <div class="border p-3 mb-3">
-                            {{ form.as_p }}
-                            
-                            {% if form.DELETE %}
-                            <div class="hidden">{{ form.DELETE }}</div>
-                        {% endif %}
-                            <button type="button" class="btn btn-danger remove-form ">Remove</button>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row g-3">
+                    {% for field in forms %}
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors }}</div>
+                            {% endif %}
                         </div>
+                    </div>
                     {% endfor %}
                 </div>
-                <button type="button" class="btn btn-primary" id="add-detail">Add Detail</button>
-            </div>
+                
+                <div class="d-flex gap-3 align-items-center justify-content-end mt-4">
+                    <a href="{% url 'orders_view' %}" class="btn btn-secondary">Bekor qilish</a>
+                    <button type="submit" class="btn btn-primary">Saqlash</button>
+                </div>
+            </form>
         </div>
-
-        <!-- Submit Button -->
-        <div class="text-center">
-            <button type="submit" class="btn btn-success">Submit Order</button>
-        </div>
-    </form>
+    </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const container = document.getElementById('order-details-container');
-        const addDetailButton = document.getElementById('add-detail');
-
-        // Add new detail form
-        addDetailButton.addEventListener('click', () => {
-            const newForm = document.createElement('div');
-            newForm.classList.add('border', 'p-3', 'mb-3');
-            newForm.innerHTML = `
-                {{ formset.empty_form.as_p|escapejs }}
-                <button type="button" class="btn btn-danger remove-form">Remove</button>
-            `;
-            container.appendChild(newForm);
-
-            // Add remove functionality
-            newForm.querySelector('.remove-form').addEventListener('click', () => {
-                container.removeChild(newForm);
-            });
-        });
-
-        // Add remove functionality to initial forms
-        container.querySelectorAll('.remove-form').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.target.closest('.border').remove();
-            });
-        });
-    });
-</script>
 
 {% endblock content %}

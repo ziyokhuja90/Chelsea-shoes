@@ -1,5 +1,6 @@
 from django.db import models
 from enum import Enum
+from django.utils.timezone import now
 
 class ReferenceType(Enum):
     STATUS = 1 # System
@@ -89,8 +90,7 @@ class orders(models.Model):
         related_name="client_orders",
         verbose_name="xaridor"
     )
-    date = models.DateField(verbose_name="Buyurtma sanasi")
-
+    date = models.DateField(verbose_name="Buyurtma sanasi", default=now)
     total_amount = models.DecimalField(verbose_name="buyurtma jami narxi" , max_digits=20 , decimal_places=2)
     complete_date = models.DateField(verbose_name="buyurtma topshirish sanasi")
     status = models.ForeignKey(
@@ -105,7 +105,7 @@ class orders(models.Model):
         db_table = "orders"
         
     def __str__(self):
-        return f"{self.model_id}"
+        return f"{self.client_id}"
 
 class Order_details(models.Model):
     order_id = models.ForeignKey(

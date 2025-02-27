@@ -1,6 +1,6 @@
 from django import forms
 from . import models
-
+from django.utils.timezone import now
 
 class shoe_model_forms(forms.ModelForm):
     class Meta:
@@ -101,7 +101,7 @@ class orders_forms(forms.ModelForm):
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.fields['date'].initial = now()
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
 
 
