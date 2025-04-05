@@ -51,7 +51,11 @@ urlpatterns = [
     path("staff_payment/delete/<int:pk>", views.staff_payment_delete, name="staff_payment_delete"),
 
     # Sale
-    path('Sale/', views.sale_view, name="sale")
+    path('Sale/', views.sale_view, name="sale"),
+
+    # order_details
+    path("order/detail/create/<int:pk>", views.order_detail_create, name="order_detail_create"),
+    path("order/detail/update/<int:pk>", views.order_detail_update, name="order_detail_update")
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

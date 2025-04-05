@@ -11,6 +11,7 @@ class ReferenceType(Enum):
     QUANTITY_TYPE = 6 # System
     CURRENCY = 7 # System
     SOLO_TYPE = 8
+    LINING_TYPE = 9
     
 class StatusType(Enum):
     Created = 0

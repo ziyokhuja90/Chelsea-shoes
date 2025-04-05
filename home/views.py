@@ -8,6 +8,7 @@ from django.http.response import HttpResponse
 from .forms import *
 from django.forms import modelformset_factory
 from django.core.paginator import Paginator
+from django.db.models import Case, When
 # Create your views here.
 import json
 
@@ -147,7 +148,7 @@ def shoe_model_delete(request, pk):
 # staff
 def staff_view(request):
     staff_list = staff.objects.filter(IsDeleted=False)
-    producement_list = producement.objects.filter(status__value="Bajarildi", IsDeleted=False).order_by('date')
+    producement_list = producement.objects.filter(status__value="BAJARILDI", IsDeleted=False).order_by('date')
     payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('date')
 
     genders = references.objects.filter(type=ReferenceType.GENDER.value, IsDeleted=False)
@@ -263,17 +264,28 @@ def clients_delete(request, pk):
     return redirect('clients_view')
 
 # orders
-
 def orders_view(request):
-    orders_list = orders.objects.filter(IsDeleted=False).order_by('complete_date')
-    paginator = Paginator(orders_list,10)
+    # Define the statuses that are "active" or need attention
+    active_statuses = ["Jarayonda", "YARATILDI"]
+    completed_statuses = ["BAJARILDI", "Bekor qilindi","Qabul qilindi"]
+
+    # Annotate orders with a custom sorting field: '0' for active, '1' for completed
+    orders_list = orders.objects.filter(IsDeleted=False).annotate(
+        status__value=Case(
+            When(status__value__in=active_statuses, then=0),  # Active statuses come first
+            When(status__value__in=completed_statuses, then=1),  # Completed statuses come last
+            default=1  # Any other status defaults to completed
+        )
+        ).order_by('status__value', '-complete_date')  # Sort by status first, then deadline
+
+    paginator = Paginator(orders_list, 10)  # Paginate by 10 items per page
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
-        "orders_list":page_obj
+        "orders_list": page_obj
     }
-    return render(request , "orders/orders.html" , context=context)
+    return render(request, "orders/orders.html", context=context)
 
 def orders_create(request):
     if request.method == "POST":
@@ -436,6 +448,7 @@ def staff_payment_delete(request, pk):
 # Sale 
 
 def sale_view(request):
+
     order_sale_list = orders.objects.filter(status__value='Bajarildi', IsDeleted=False)
     order_sold_list = orders.objects.filter(status__value='Qabul qilindi', IsDeleted=False)
 
@@ -445,3 +458,41 @@ def sale_view(request):
     }
 
     return render(request, 'Sale/sale.html', context=context)
+
+
+# order_details
+
+def order_detail_create(request, pk):
+    order = orders.objects.get(pk=pk)
+    if request.method == "POST":
+        forms = orderDetails_forms(request.POST)
+        if forms.is_valid():
+            new_order_detail = forms.save(commit=False)
+            new_order_detail.order_id = order
+            new_order_detail.total_amount = new_order_detail.price * new_order_detail.quantity
+            new_order_detail.save()
+            return redirect('order_read', pk=pk)
+    else:
+        forms = orderDetails_forms()
+    
+    context = {
+        "forms":forms,
+        "pk":pk
+    }
+    return render(request, "orderDetails/detail_create.html", context=context)
+
+
+def order_detail_update(request, pk):
+    detail = Order_details.objects.get(pk=pk)
+    if request.method == "POST":
+        forms = orderDetails_forms(request.POST, instance=detail)
+        if forms.is_valid():
+            forms.save()
+            return redirect('order_read', pk=detail.order_id.pk)
+    else:
+        forms = orderDetails_forms(instance=detail)
+
+    context = {
+        "forms":forms
+    }
+    return render(request, 'orderDetails/detail_update.html', context=context)

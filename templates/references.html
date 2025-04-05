@@ -34,6 +34,7 @@
                 <option value="4">Teri</option>
                 <option value="5">Kasb</option>
                 <option value="8">Taglik</option>
+                <option value="9">Astar</option>
                 
               </select>
             </div>
@@ -441,6 +442,69 @@
       <div class="accordion-body">
         {% for value_item in reference %}
         {% if value_item.type == 8 and not value_item.IsDeleted %}
+        <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
+          <h5>{{ value_item.value }}</h5>
+          <!-- Edit Button -->
+          <div>
+            <button
+            type="button"
+            class="btn btn-warning btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#modalCenter"
+            data-action="edit"
+            data-value="{{ value_item.value }}"
+            data-type="{{ value_item }}"
+            data-id="{{ value_item.id }}"
+            >
+          <i class="bx bx-edit text-white"></i>
+        </button>
+        <!-- Delete Button -->
+        <form
+        action="{% url "delete_reference" value_item.id %}"
+        method="POST"
+        style="display: inline"
+        
+        >
+        {% csrf_token %}
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+          <i class="bx bx-trash"></i>
+        </button>
+      </form>
+    </div>
+    
+  </div>
+  {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% comment %} LINING_TYPE {% endcomment %}
+
+<div class="accordion mt-3" id="accordionExample">
+  <div class="card accordion-item">
+    <h2 class="accordion-header" id="headingNine">
+      <button
+        type="button"
+        class="accordion-button collapsed"
+        data-bs-toggle="collapse"
+        data-bs-target="#accordionNine"
+        aria-expanded="false"
+        aria-controls="accordionNine"
+      >
+       Astar
+      </button>
+    </h2>
+
+    <div
+      id="accordionNine"
+      class="accordion-collapse collapse"
+      data-bs-parent="#accordionExample"
+    >
+      <div class="accordion-body">
+        {% for value_item in reference %}
+        {% if value_item.type == 9 and not value_item.IsDeleted %}
         <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
           <h5>{{ value_item.value }}</h5>
           <!-- Edit Button -->

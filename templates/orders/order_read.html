@@ -7,12 +7,12 @@
     <div class="card shadow-lg">
         <!-- Order Summary -->
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Buyurtma ID: {{ order.id }}</h5>
+            <h5 class="mb-0  text-white">Buyurtma ID: {{ order.id }}</h5>
         </div>
         <div class="card-body">
             <div class="row">
                 <!-- Order Summary Details -->
-                <div class="col-md-6">
+                <div class="">
                     <h6 class="text-muted">Asosiy Tafsilotlar</h6>
                     <ul class="list-group mb-4">
                         <li class="list-group-item">
@@ -27,7 +27,7 @@
                         <li class="list-group-item">
                             <strong>Holati:</strong> {{ order.status }}
                         </li>
-                        <li class="list-group-item">
+                        <li class="list-group-item">    
                             <strong>Jami Narxi:</strong> {{ order.total_amount }}
                         </li>
                     </ul>
@@ -35,7 +35,11 @@
             </div>
 
             <!-- Order Details Table -->
-            <h6 class="text-muted mt-4">Buyurtma Tafsilotlari</h6>
+             <div class="d-flex align-items-center justify-content-between">
+
+                 <h6 class="text-muted">Buyurtma Tafsilotlari</h6>
+                 <a href="{% url 'order_detail_create' order.pk %}" class="btn btn-primary">Tafsilot qo'shish</a>
+                </div>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover">
                     <thead class="table-light">
@@ -49,6 +53,7 @@
                             <th>Teri</th>
                             <th>Taglik</th>
                             <th>Ichki Qoplama</th>
+                            <th>Amallar</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,6 +68,16 @@
                             <td>{{ detail.leather_type }}</td>
                             <td>{{ detail.sole_type_id }}</td>
                             <td>{{ detail.lining_type_id }}</td>
+                            
+                            <td>
+                                <a class="btn btn-sm btn-warning" href="{% url 'order_detail_update' detail.pk %}"> <i class="bx bx-edit-alt text-white"></i></a>
+                                <a class="btn btn-sm btn-danger"
+                                href="#"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal" 
+                                data-delete-url=""> 
+                                <i class="bx bx-trash"></i></a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

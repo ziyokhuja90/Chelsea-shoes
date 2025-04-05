@@ -121,7 +121,12 @@ class orders_forms(forms.ModelForm):
 class orderDetails_forms(forms.ModelForm):
     class Meta:
         model = models.Order_details
-        fields = [ 'model_id', 'quantity', 'quantity_type_id', 'price',  'color_id', 'leather_type']
+        fields = [ 
+            'model_id', 'quantity', 'quantity_type_id',
+            'price',  'color_id', 'leather_type', 
+            'lining_type_id','sole_type_id'
+            ]
+
 
         widgets = {
             'model_id':forms.Select(attrs={"class":"form-control"}),
@@ -130,6 +135,8 @@ class orderDetails_forms(forms.ModelForm):
             'price':forms.NumberInput(attrs={"class":"form-control"}),
             'color_id':forms.Select(attrs={"class":"form-control"}),
             'leather_type':forms.Select(attrs={"class":"form-control"}),
+            'sole_type_id':forms.Select(attrs={"class":"form-control"}),
+            'lining_type_id':forms.Select(attrs={"class":"form-control"}),
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -138,6 +145,8 @@ class orderDetails_forms(forms.ModelForm):
         self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
         self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
         self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
+        self.fields['lining_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LINING_TYPE.value, IsDeleted=False)
+        self.fields['sole_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
 
         if 'IsDeleted' in self.fields:
             del self.fields['IsDeleted']
@@ -149,10 +158,10 @@ class orderDetails_forms(forms.ModelForm):
                 pk=self.instance.color_id.pk)
             ).distinct()
 
-        if self.instance and self.instance.pk and self.instance.leather_id:
-            self.fields['leather_id'].queryset = (
-                    self.fields['leather_id'].queryset | models.references.objects.filter(
-                pk=self.instance.leather_id.pk)
+        if self.instance and self.instance.pk and self.instance.leather_type:
+            self.fields['leather_type'].queryset = (
+                    self.fields['leather_type'].queryset | models.references.objects.filter(
+                pk=self.instance.leather_type.pk)
             ).distinct()
 
 
@@ -165,7 +174,7 @@ class producement_forms(forms.ModelForm):
             'staff_id', 'shoe_model_id', 'date',
             'color_id', 'leather_type', 'solo_type',
             'quantity', 'quantity_type_id', 'price',
-            'order_id', 'status'
+            'order_id', 'status', 'lining_type_id'
         ]
         widgets = {
             "staff_id": forms.Select(attrs={'class': 'form-control'}),
