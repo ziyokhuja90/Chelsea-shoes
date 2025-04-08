@@ -62,6 +62,13 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{% static '/assets/js/config.js' %}"></script>
+
+
+    <!-- flatpicker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/uz.js"></script>
+
   </head>
 
   <body>
@@ -490,5 +497,34 @@ inputs.forEach(input => {
         return sNewStr;
       }
     </script>
+
+<script>
+  flatpickr.localize({
+    weekdays: {
+      shorthand: ['Yak', 'Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan'],
+      longhand: ['Yakshanba', 'Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba'],
+    },
+    months: {
+      shorthand: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyn', 'Iyl', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'],
+      longhand: ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'],
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " dan ",
+    weekAbbreviation: "Hafta",
+    scrollTitle: "O‘zgartirish uchun aylantiring",
+    toggleTitle: "Ochish/Yopish",
+    time_24hr: true,
+  });
+
+  flatpickr(".datepicker", {
+    dateFormat: "d m Y",
+    locale: flatpickr.l10ns.default,  // apply our custom localization
+    allowInput: true
+  });
+</script>
+
+
+<script src="https://unpkg.com/htmx.org@1.9.2"></script>
+
   </body>
 </html>

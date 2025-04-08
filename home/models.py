@@ -160,7 +160,7 @@ class Order_details(models.Model):
         db_table = "Order_details"
         
     def __str__(self):
-        return f"{self.model_id}"
+        return f"{self.model_id} -- {self.IsDeleted}"
 
 
 class staff(models.Model):

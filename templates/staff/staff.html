@@ -10,41 +10,72 @@
         <!-- Filtering Form -->
         <form id="filterForm" class="mb-4" method="get">
             <div class="row g-3">
+                <!-- Full Name -->
                 <div class="col-md-3">
                     <label for="name" class="form-label">Ismi</label>
-                    <input type="text" name="full_name" id="name" class="form-control uppercase-input" placeholder="Ismi">
+                    <input 
+                        type="text" 
+                        name="full_name" 
+                        id="name" 
+                        class="form-control uppercase-input" 
+                        placeholder="Ismi" 
+                        value="{{ request.GET.full_name }}"
+                    >
                 </div>
+        
+                <!-- Gender -->
                 <div class="col-md-2">
                     <label for="gender" class="form-label">Jinsi</label>
                     <select id="gender" class="form-select" name="gender">
                         <option value="">Tanlang...</option>
-                        {% for gender in genders  %}
-                          
-                        <option value="{{gender.value}}">{{gender.value}}</option>
+                        {% for gender in genders %}
+                            <option 
+                                value="{{ gender.value }}" 
+                                {% if request.GET.gender == gender.value %}selected{% endif %}
+                            >
+                                {{ gender.value }}
+                            </option>
                         {% endfor %}
                     </select>
                 </div>
+        
+                <!-- Profession -->
                 <div class="col-md-2">
                     <label for="job" class="form-label">Kasbi</label>
                     <select id="job" class="form-select" name="profession">
                         <option value="">Tanlang...</option>
                         {% for profession in professions %}
-                          <option value="{{profession.value}}">{{profession.value}}</option>
+                            <option 
+                                value="{{ profession.value }}" 
+                                {% if request.GET.profession == profession.value %}selected{% endif %}
+                            >
+                                {{ profession.value }}
+                            </option>
                         {% endfor %}
                     </select>
                 </div>
-               
+        
+                <!-- Phone -->
                 <div class="col-md-3">
                     <label for="phone" class="form-label">Telefon raqami</label>
-                    <input type="text" id="phone" name="phone" class="form-control" placeholder="Telefon raqami">
+                    <input 
+                        type="text" 
+                        id="phone" 
+                        name="phone" 
+                        class="form-control" 
+                        placeholder="Telefon raqami" 
+                        value="{{ request.GET.phone }}"
+                    >
                 </div>
-
             </div>
+        
+            <!-- Buttons -->
             <div class="mt-3 text-end">
                 <button type="submit" class="btn btn-primary">Filterlash</button>
-                <button type="reset" class="btn btn-secondary">Tozalash</button>
+                <a href="{% url 'staff_view' %}" class="btn btn-secondary">Tozalash</a>
             </div>
         </form>
+        
   </div>
 
 <div class="card mt-3">
@@ -84,11 +115,18 @@
               {{staff.entered_date|date:"Y-m-d"}}
             </td>
             <td>
-              {{staff.phone_number}}
+                {{ staff.phone_number|format_phone }}
             </td>
-            <td>
-              {{staff.balance}}
+            {% if staff.balance >= 0 %}
+            <td class="text-success">
+                {{staff.balance}}
             </td>
+            {% else %}
+            <td class="text-danger">
+                {{staff.balance}}
+            </td>
+            {% endif %}
+            
             <td>
               <a class="btn btn-sm btn-info" href="{% url "staff_read" staff.id %}"><i class="bx bx-show "></i></a>
                   <a class="btn btn-sm btn-warning" href="{% url "staff_update" staff.id %}"><i class="bx bx-edit-alt text-white"></i></a>
@@ -115,7 +153,13 @@
       <!-- Card Header with Balance -->
       <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0"></h5>
-          <h5>Balance: <span class="text-success">{{ balance }}</span></h5>
+          <h5>Balance: 
+            {% if balance >= 0 %}
+            <span class="text-success">{{ balance }}</span>
+            {% else %}
+            <span class="text-danger">{{ balance }}</span>
+            {% endif %}
+        </h5>
       </div>
 
       <!-- Card Body with Tabs -->

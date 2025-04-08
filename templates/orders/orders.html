@@ -24,7 +24,7 @@
           <tr>
             <td><strong>{{ forloop.counter }}</strong></td>
             <td>{{ order.client_id }}</td>
-            <td>{{ order.total_amount }}</td>
+            <td>{{ order.total_amount }} {{order.client_id.currency}}</td>
             <td>{{ order.complete_date|date:"d.m.Y" }}</td>
             <td>{{ order.status }}</td>
             <td>

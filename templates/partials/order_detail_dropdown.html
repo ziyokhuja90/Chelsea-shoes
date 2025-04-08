@@ -1,0 +1,14 @@
+<label for="" class="form-label">Buyurtma detali</label>
+<select name="order_detail_id" id="id_order_detail_id" class="form-control"
+        hx-get="{% url 'get_order_detail_info' %}"
+        hx-trigger="change"
+        hx-target="#auto-fill-fields"
+        hx-include="[name=order_detail_id]"
+        hx-swap="innerHTML">
+    <option value="">Tanlang</option>
+    {% for detail in order_details %}
+        <option value="{{ detail.id }}">
+            {{ detail.model_id }} - {{ detail.color_id }}
+        </option>
+    {% endfor %}
+</select>

@@ -31,38 +31,48 @@ class staff_forms(forms.ModelForm):
 
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control uppercase-input"}),
-            "birth_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "birth_date": forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
+                format='%d %m %Y'
+            ),
             "gender": forms.Select(attrs={"class": "form-control"}),
-            "entered_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "entered_date": forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
+                format='%d %m %Y'
+            ),
             "profession": forms.Select(attrs={"class": "form-control"}),
             "phone_number": forms.TextInput(attrs={
                 "class": "form-control",
-                "id":"member_phone",
-                "onkeyup":"backspacerUP(this, event)",
-                "onkeydown":"backspacerDOWN(this, event)",
-                "maxlength":"14",
-                "placeholder":"(XX) XXX-XX-XX"
-                }),
+                "id": "member_phone",
+                "onkeyup": "backspacerUP(this, event)",
+                "onkeydown": "backspacerDOWN(this, event)",
+                "maxlength": "14",
+                "placeholder": "(XX) XXX-XX-XX"
+            }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['birth_date'].input_formats = ['%d %m %Y']
+        self.fields['entered_date'].input_formats = ['%d %m %Y']
+        self.fields['entered_date'].initial = now()
 
-        # Filter gender options
-        self.fields['gender'].queryset = models.references.objects.filter(type=models.ReferenceType.GENDER.value)
-        
-        # Filter profession options
+
+        self.fields['gender'].queryset = models.references.objects.filter(
+            type=models.ReferenceType.GENDER.value
+        )
         self.fields['profession'].queryset = models.references.objects.filter(
             type=models.ReferenceType.PROFESSION.value,
             IsDeleted=False
         )
+        self.fields['entered_date'].initial = now()
 
-        # Ensure the form is updating an instance and the instance has a profession
         if self.instance and self.instance.pk and self.instance.profession:
             self.fields['profession'].queryset = (
-                    self.fields['profession'].queryset | models.references.objects.filter(
-                pk=self.instance.profession.pk)
+                self.fields['profession'].queryset |
+                models.references.objects.filter(pk=self.instance.profession.pk)
             ).distinct()
+
 
 class clients_forms(forms.ModelForm):
     class Meta:
@@ -94,29 +104,21 @@ class orders_forms(forms.ModelForm):
         
         widgets = {
             'client_id':forms.Select(attrs={'class':'form-control'}),
-            'date':forms.DateInput(attrs={'class':'form-control' , "type":"date"}),
-            'complete_date':forms.DateInput(attrs={'class':'form-control' , "type":"date"}),
+            'date':forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
+                format='%d %m %Y'),
+            'complete_date':forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
+                format='%d %m %Y'),
             'status':forms.Select(attrs={'class':'form-control'}),
-            
         }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = now()
+        self.fields['status'].initial = models.references.objects.get(value="YARATILDI")
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
 
-
-
-        if self.instance and self.instance.pk and self.instance.color_id:
-            self.fields['color_id'].queryset = (
-                    self.fields['color_id'].queryset | models.references.objects.filter(
-                pk=self.instance.color_id.pk)
-            ).distinct()
-
-        if self.instance and self.instance.pk and self.instance.leather_id:
-            self.fields['leather_id'].queryset = (
-                    self.fields['leather_id'].queryset | models.references.objects.filter(
-                pk=self.instance.leather_id.pk)
-            ).distinct()
 
 class orderDetails_forms(forms.ModelForm):
     class Meta:
@@ -174,7 +176,8 @@ class producement_forms(forms.ModelForm):
             'staff_id', 'shoe_model_id', 'date',
             'color_id', 'leather_type', 'solo_type',
             'quantity', 'quantity_type_id', 'price',
-            'order_id', 'status', 'lining_type_id'
+            'order_id','order_detail_id', 'status', 
+            'lining_type_id'
         ]
         widgets = {
             "staff_id": forms.Select(attrs={'class': 'form-control'}),
@@ -187,7 +190,9 @@ class producement_forms(forms.ModelForm):
             "quantity_type_id": forms.Select(attrs={"class": "form-control"}),
             "price": forms.NumberInput(attrs={"class": "form-control"}),
             "order_id": forms.Select(attrs={"class": "form-control"}),
+            "order_detail_id": forms.Select(attrs={"class": "form-control"}),
             "status": forms.Select(attrs={"class": "form-control"}),
+            "lining_type_id": forms.Select(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -199,6 +204,8 @@ class producement_forms(forms.ModelForm):
         self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
         self.fields['solo_type'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
+        self.fields['lining_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LINING_TYPE.value)
+        self.fields['order_id'].queryset = models.orders.objects.filter(IsDeleted=False)
 
 
 
@@ -218,6 +225,12 @@ class producement_forms(forms.ModelForm):
             self.fields['solo_type'].queryset = (
                     self.fields['solo_type'].queryset | models.references.objects.filter(
                 pk=self.instance.solo_type.pk)
+            ).distinct()
+
+        if self.instance and self.instance.pk and self.instance.lining_type_id:
+            self.fields['lining_type_id'].queryset = (
+                    self.fields['lining_type_id'].queryset | models.references.objects.filter(
+                pk=self.instance.lining_type_id.pk)
             ).distinct()
 
 class staff_payments_forms(forms.ModelForm):

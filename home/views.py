@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
 from django.contrib import messages
@@ -11,6 +11,44 @@ from django.core.paginator import Paginator
 from django.db.models import Case, When
 # Create your views here.
 import json
+
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from .models import Order_details
+from .forms import producement_forms
+
+
+def get_order_detail_info(request):
+    order_detail_id = request.GET.get("order_detail_id")
+    order_detail = get_object_or_404(Order_details, pk=order_detail_id)
+
+    context = {
+        "order_detail": order_detail,
+    }
+
+    html = render_to_string("partials/autofill_fields.html", context)
+    return HttpResponse(html)
+
+def get_order_details(request):
+    order_id = request.GET.get("order_id")
+    if order_id:
+        order_details = Order_details.objects.filter(order_id=order_id, IsDeleted=False)
+    else:
+        order_details = Order_details.objects.none()
+
+    return HttpResponse(render_to_string("partials/order_detail_dropdown.html", {
+        "order_details": order_details
+    }))
+
+
+
+
+
+def phone_to_int(phone_str):
+    # Remove all non-digit characters
+    digits = ''.join(filter(str.isdigit, phone_str))
+    return digits
+
 
 def logout_view(request):
     logout(request)
@@ -34,7 +72,7 @@ def login_view(request):
     return render(request, 'login.html', {'form': form})
 
 def home(request):
-    shoe_models = shoe_model.objects.filter(IsDeleted=False)
+    shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
     finished_producements = producement.objects.filter(status__value='Bajarildi', IsDeleted=False)
     quantity_producements = dict()
     for item in finished_producements:
@@ -147,7 +185,8 @@ def shoe_model_delete(request, pk):
 
 # staff
 def staff_view(request):
-    staff_list = staff.objects.filter(IsDeleted=False)
+    staff_list = staff.objects.filter(IsDeleted=False).order_by('id')
+    
     producement_list = producement.objects.filter(status__value="BAJARILDI", IsDeleted=False).order_by('date')
     payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('date')
 
@@ -187,7 +226,11 @@ def staff_create(request):
     if request.method == "POST":
         forms = staff_forms(request.POST)
         if forms.is_valid():
-            forms.save()
+            new_staff = forms.save(commit=False)
+            phone = phone_to_int(new_staff.phone_number)
+            new_staff.phone_number = phone
+            new_staff.save()
+
             return redirect('staff_view')
         else:
             forms = forms.errors
@@ -221,7 +264,7 @@ def staff_delete(request, pk):
 # clients
 
 def clients_view(request):
-    clients_list = clients.objects.filter(IsDeleted=False)
+    clients_list = clients.objects.filter(IsDeleted=False).order_by('id')
     context = {
         "clients_list":clients_list
     }
@@ -276,7 +319,7 @@ def orders_view(request):
             When(status__value__in=completed_statuses, then=1),  # Completed statuses come last
             default=1  # Any other status defaults to completed
         )
-        ).order_by('status__value', '-complete_date')  # Sort by status first, then deadline
+        ).order_by('status__value', 'complete_date')  # Sort by status first, then deadline
 
     paginator = Paginator(orders_list, 10)  # Paginate by 10 items per page
     page_number = request.GET.get('page', 1)
@@ -304,8 +347,11 @@ def orders_create(request):
 
 def order_read(request , pk):
     order_item = orders.objects.get(pk=pk)
+    details = Order_details.objects.filter(order_id=order_item.pk, IsDeleted=False)
+
     context ={
-        "order":order_item
+        "order":order_item,
+        "details":details
     }
     return render(request , "orders/order_read.html" , context=context)
 
@@ -315,10 +361,7 @@ def orders_update(request , pk):
     if request.method == "POST":
         form = orders_forms(request.POST , instance=order_item)
         if form.is_valid():
-            order = form.save(commit=False)
-            
-            order.total_amount = order.quantity * order.price
-            order.save()
+            form.save()
             return redirect('orders_view')  
     
     form = orders_forms(instance=order_item)
@@ -333,7 +376,7 @@ def orders_delete(request , pk):
 # producement
 
 def producement_view(request):
-    producement_list = producement.objects.filter(IsDeleted=False).order_by('date')
+    producement_list = producement.objects.filter(IsDeleted=False).order_by('id')
     context = {
         "producement_list":producement_list
     }
@@ -481,13 +524,14 @@ def order_detail_create(request, pk):
     }
     return render(request, "orderDetails/detail_create.html", context=context)
 
-
 def order_detail_update(request, pk):
     detail = Order_details.objects.get(pk=pk)
     if request.method == "POST":
         forms = orderDetails_forms(request.POST, instance=detail)
         if forms.is_valid():
-            forms.save()
+            new_order_detail = forms.save(commit=False)
+            new_order_detail.total_amount = new_order_detail.price * new_order_detail.quantity
+            new_order_detail.save()
             return redirect('order_read', pk=detail.order_id.pk)
     else:
         forms = orderDetails_forms(instance=detail)
@@ -496,3 +540,13 @@ def order_detail_update(request, pk):
         "forms":forms
     }
     return render(request, 'orderDetails/detail_update.html', context=context)
+
+def order_detail_delete(request, pk):
+    detail = Order_details.objects.get(pk=pk)
+    detail.IsDeleted = True
+    detail.save()
+    return redirect('order_read', pk=detail.order_id.pk)
+
+
+
+

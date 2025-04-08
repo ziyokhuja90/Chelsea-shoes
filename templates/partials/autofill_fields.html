@@ -1,0 +1,20 @@
+
+
+
+<script>
+    document.getElementById("id_color_id").value = "{{ order_detail.color_id.id }}";
+    document.getElementById("id_leather_type").value = "{{ order_detail.leather_type.id }}";
+    document.getElementById("id_solo_type").value = "{{ order_detail.sole_type_id.id }}";
+    document.getElementById("id_lining_type_id").value = "{{ order_detail.lining_type_id.id }}";
+    document.getElementById("id_shoe_model_id").value = "{{ order_detail.model_id.id }}";
+</script>
+<script>
+    let selectFields = ["id_color_id", "id_leather_type", "id_solo_type", "id_lining_type_id", "id_shoe_model_id"];
+    selectFields.forEach(id => {
+        const select = document.getElementById(id);
+        if (select) {
+            select.disabled = true;
+            select.style.backgroundColor = "#e9ecef";
+        }
+    });
+</script>
