@@ -129,7 +129,6 @@ class orderDetails_forms(forms.ModelForm):
             'lining_type_id','sole_type_id'
             ]
 
-
         widgets = {
             'model_id':forms.Select(attrs={"class":"form-control"}),
             'quantity':forms.NumberInput(attrs={"class":"form-control"}),
@@ -182,7 +181,10 @@ class producement_forms(forms.ModelForm):
         widgets = {
             "staff_id": forms.Select(attrs={'class': 'form-control'}),
             "shoe_model_id": forms.Select(attrs={"class": "form-control"}),
-            "date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "date": forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
+                format='%d %m %Y'
+            ),
             "color_id": forms.Select(attrs={"class": "form-control"}),
             "leather_type": forms.Select(attrs={"class": "form-control"}),
             "solo_type": forms.Select(attrs={"class": "form-control"}),
@@ -197,7 +199,10 @@ class producement_forms(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
+        self.fields['status'].initial = models.references.objects.get(value="YARATILDI")
+        self.fields['date'].initial = now()
+
         self.fields['shoe_model_id'].queryset = models.shoe_model.objects.filter(IsDeleted=False)
         self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
         self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
@@ -240,9 +245,19 @@ class staff_payments_forms(forms.ModelForm):
         
         widgets = {
             'staff_id':forms.Select(attrs={"class":"form-select"}),    
-            'date':forms.DateInput(attrs={"class":"form-control", "type":"date"}),
+            'date': forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
+                format='%d %m %Y'
+            ),
             'amount':forms.NumberInput(attrs={"class":"form-control"})    
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['date'].initial = now()
+
+
 
 class staff_payments_read_forms(forms.ModelForm):
     class Meta:
@@ -250,6 +265,14 @@ class staff_payments_read_forms(forms.ModelForm):
         fields = ['date', 'amount']
         
         widgets = {
-            'date':forms.DateInput(attrs={"class":"form-control", "type":"date"}),
+            'date': forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
+                format='%d %m %Y'
+            ),
             'amount':forms.NumberInput(attrs={"class":"form-control"})
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['date'].initial = now()

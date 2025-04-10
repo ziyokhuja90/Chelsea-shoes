@@ -27,26 +27,26 @@
                     <tr>
                         <td><strong>{{ producement.id }}</strong></td>
                         <td>{{ producement.staff_id }}</td>
-                        <td>{{ producement.shoe_model_id }}</td>
+                        <td>
+                            <strong>Nomi:</strong> {{ producement.shoe_model_id }} <br> 
+                            <strong>Rangi: </strong> {{producement.color_id}} <br>
+                            <strong>Tagliki: </strong> {{producement.solo_type }} <br>
+                            <strong>Astari: </strong> {{producement.lining_type_id}} 
+                        </td>
                         <td>
                             <strong>Xaridor:</strong> {{ producement.order_id.client_id }}<br>
-                            <strong>Madel:</strong> {{ producement.order_id.model_id }}<br>
-                            <strong>Miqdor:</strong> {{ producement.order_id.quantity }}<br>
+                            <strong>Yakunlanish sana:</strong> {{ producement.order_id.complete_date|date:"d.m.Y" }}<br>
                             <strong>Sana:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
                             
                         </td>
                         <td>{{ producement.quantity }}</td>
                         <td>{{ producement.price }}</td>
                         <td>
-                            <span class="badge 
-                                {% if producement.status.value == 'Bajarildi' %} bg-success
-                                {% elif producement.status.value == 'Faol' %} bg-warning
-                                {% else %} bg-secondary
-                                {% endif %}">   
+                            <span class="badge">
                                 {{ producement.status }}
                             </span>
                         </td>
-                        <td>
+                        <td class="d-flex flex-column gap-1 align-items-center">
 
                                 <a class="btn btn-sm btn-info" href="{% url "producement_read" producement.id %}">
                                     <i class="bx bx-show "></i>
