@@ -16,6 +16,7 @@ from django.template.loader import render_to_string
 from django.http import HttpResponse
 from .models import Order_details
 from .forms import producement_forms
+from datetime import datetime
 
 
 def get_order_detail_info(request):
@@ -386,11 +387,12 @@ def producement_create(request):
     if request.method == "POST":
         forms = producement_forms(request.POST)
         print("-------------------",request.POST)
+        print(forms)
         if forms.is_valid():
             forms.save()
             return redirect('producement_view')
-    
-    forms = producement_forms()
+    else:
+        forms = producement_forms()
     context = {
         "forms":forms
     }    
@@ -452,11 +454,15 @@ def staff_payment_read_create(request, pk):
     staff_item = staff.objects.get(pk=pk)
     if request.method == "POST":
         forms = staff_payments_read_forms(request.POST)
+
+        print("-----------------------00---------------------")
         if forms.is_valid():
             staff_p = forms.save(commit=False)
             staff_p.staff_id = staff_item
             staff_p.save()
             return redirect('staff_read', pk=pk)
+        else:
+            print("form errors: ", forms.errors)
     else:
         forms = staff_payments_read_forms()
     

@@ -2,6 +2,7 @@ from django.db import models
 from enum import Enum
 from django.utils.timezone import now
 
+
 class ReferenceType(Enum):
     STATUS = 1 # System
     GENDER = 2 # System

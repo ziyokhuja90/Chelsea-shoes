@@ -1,6 +1,15 @@
 from django import forms
 from . import models
 from django.utils.timezone import now
+from datetime import datetime
+
+from django.forms.widgets import DateInput
+
+class CustomDateInput(DateInput):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("format", "%d %m %Y")
+        super().__init__(*args, **kwargs)
+
 
 class shoe_model_forms(forms.ModelForm):
     class Meta:
@@ -53,6 +62,7 @@ class staff_forms(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.fields['birth_date'].input_formats = ['%d %m %Y']
         self.fields['entered_date'].input_formats = ['%d %m %Y']
         self.fields['entered_date'].initial = now()
@@ -115,7 +125,10 @@ class orders_forms(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.fields['date'].initial = now()
+        self.fields['date'].input_formats = ['%d %m %Y']
+
         self.fields['status'].initial = models.references.objects.get(value="YARATILDI")
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
 
@@ -202,6 +215,8 @@ class producement_forms(forms.ModelForm):
 
         self.fields['status'].initial = models.references.objects.get(value="YARATILDI")
         self.fields['date'].initial = now()
+        self.fields['date'].input_formats = ['%d %m %Y']
+
 
         self.fields['shoe_model_id'].queryset = models.shoe_model.objects.filter(IsDeleted=False)
         self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
@@ -256,6 +271,7 @@ class staff_payments_forms(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['date'].initial = now()
+        self.fields['date'].input_formats = ['%d %m %Y']
 
 
 
@@ -274,5 +290,8 @@ class staff_payments_read_forms(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Set the initial date value in the proper display format
+        print("--------------------------------------------------")
 
-        self.fields['date'].initial = now()
+        self.fields['date'].initial = now().strftime('%d %m %Y')
+        self.fields['date'].input_formats = ['%d %m %Y']
