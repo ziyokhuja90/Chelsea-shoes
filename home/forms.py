@@ -5,12 +5,6 @@ from datetime import datetime
 
 from django.forms.widgets import DateInput
 
-class CustomDateInput(DateInput):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("format", "%d %m %Y")
-        super().__init__(*args, **kwargs)
-
-
 class shoe_model_forms(forms.ModelForm):
     class Meta:
         model = models.shoe_model
@@ -128,6 +122,7 @@ class orders_forms(forms.ModelForm):
 
         self.fields['date'].initial = now()
         self.fields['date'].input_formats = ['%d %m %Y']
+        self.fields['complete_date'].input_formats = ['%d %m %Y']
 
         self.fields['status'].initial = models.references.objects.get(value="YARATILDI")
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
@@ -185,10 +180,10 @@ class producement_forms(forms.ModelForm):
     class Meta:
         model = models.producement
         fields = [
-            'staff_id', 'shoe_model_id', 'date',
-            'color_id', 'leather_type', 'solo_type',
-            'quantity', 'quantity_type_id', 'price',
-            'order_id','order_detail_id', 'status', 
+            'order_id','order_detail_id', 'shoe_model_id', 
+            'date','color_id', 'leather_type', 
+            'solo_type','quantity', 'quantity_type_id', 
+            'price','staff_id', 'status', 
             'lining_type_id'
         ]
         widgets = {

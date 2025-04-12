@@ -12,3 +12,45 @@
         </option>
     {% endfor %}
 </select>
+<span style="display: none;" id="{{is_sklat}}"></span>
+<script>
+    
+    const is_sklat = document.getElementById('True')
+    const detail = document.getElementById("id_order_detail_id");
+    if (is_sklat) {
+        if (detail) {
+            detail.disabled = true; // Corrected `disable` to `disabled`
+            console.log(detail);
+        } else {
+            console.error("Element with id 'id_order_detail_id' not found.");
+        }
+        let selectFields = ["id_color_id", "id_leather_type", "id_solo_type", "id_lining_type_id", "id_shoe_model_id"];
+        selectFields.forEach(id => {
+        const select = document.getElementById(id);
+        if (select) {
+            console.log(select)
+        // Restore default styles and re-enable interaction
+            select.style.backgroundColor = "";  // Clear background color to revert to default
+            select.style.pointerEvents = "";  // Re-enable pointer events
+
+        // Remove the 'selected' attribute from all options
+            Array.from(select.options).forEach(option => {
+                option.selected = false;
+            });
+
+        // Restore selection based on the current value
+            const value = select.value;
+            Array.from(select.options).forEach(option => {
+                if (option.value === value) {
+                    option.selected = true; // Ensure the correct option remains selected
+                }
+        });
+    }
+});
+
+    }
+    else{
+        detail.disabled = false; // Corrected `disable` to `disabled`
+    }
+
+</script>

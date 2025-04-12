@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib import messages
-from django.contrib.auth import logout
 from .models import *
 from django.http.response import HttpResponse
 from .forms import *
@@ -14,8 +13,6 @@ import json
 
 from django.template.loader import render_to_string
 from django.http import HttpResponse
-from .models import Order_details
-from .forms import producement_forms
 from datetime import datetime
 
 
@@ -32,13 +29,22 @@ def get_order_detail_info(request):
 
 def get_order_details(request):
     order_id = request.GET.get("order_id")
+    is_sklat = 'False'
+    try:
+        sklat = orders.objects.get(id=order_id,  client_id__name="SKLAT")
+        if sklat:
+            is_sklat = 'True'
+    except:
+        pass
     if order_id:
         order_details = Order_details.objects.filter(order_id=order_id, IsDeleted=False)
     else:
         order_details = Order_details.objects.none()
 
+
     return HttpResponse(render_to_string("partials/order_detail_dropdown.html", {
-        "order_details": order_details
+        "order_details": order_details,
+        "is_sklat":is_sklat
     }))
 
 
@@ -384,6 +390,22 @@ def producement_view(request):
     return render(request,'producement/producement.html' ,context=context)
 
 def producement_create(request):
+    details = Order_details.objects.filter(IsDeleted=False).values(
+        'id', 'order_id', 'model_id', 'model_id__name',
+        'quantity', 'price', 'quantity_type_id',
+        'color_id','leather_type','sole_type_id',
+        "lining_type_id"
+
+    )
+
+    # Convert QuerySet to a list and handle Decimal fields
+    details_list = []
+    for detail in details:
+        detail['price'] = float(detail['price'])  # Convert Decimal to float
+        details_list.append(detail)
+
+
+    details_json = json.dumps(details_list)
     if request.method == "POST":
         forms = producement_forms(request.POST)
         print("-------------------",request.POST)
@@ -394,7 +416,8 @@ def producement_create(request):
     else:
         forms = producement_forms()
     context = {
-        "forms":forms
+        "forms":forms,
+        "details":details_json,
     }    
     return render(request, "producement/producement_create.html", context=context)
 
