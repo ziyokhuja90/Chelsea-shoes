@@ -7,46 +7,14 @@ from django.http.response import HttpResponse
 from .forms import *
 from django.forms import modelformset_factory
 from django.core.paginator import Paginator
-from django.db.models import Case, When
+from django.db.models import Case, When, Q
+
 # Create your views here.
 import json
 
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from datetime import datetime
-
-
-def get_order_detail_info(request):
-    order_detail_id = request.GET.get("order_detail_id")
-    order_detail = get_object_or_404(Order_details, pk=order_detail_id)
-
-    context = {
-        "order_detail": order_detail,
-    }
-
-    html = render_to_string("partials/autofill_fields.html", context)
-    return HttpResponse(html)
-
-def get_order_details(request):
-    order_id = request.GET.get("order_id")
-    is_sklat = 'False'
-    try:
-        sklat = orders.objects.get(id=order_id,  client_id__name="SKLAT")
-        if sklat:
-            is_sklat = 'True'
-    except:
-        pass
-    if order_id:
-        order_details = Order_details.objects.filter(order_id=order_id, IsDeleted=False)
-    else:
-        order_details = Order_details.objects.none()
-
-
-    return HttpResponse(render_to_string("partials/order_detail_dropdown.html", {
-        "order_details": order_details,
-        "is_sklat":is_sklat
-    }))
-
 
 
 
@@ -80,7 +48,7 @@ def login_view(request):
 
 def home(request):
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
-    finished_producements = producement.objects.filter(status__value='Bajarildi', IsDeleted=False)
+    finished_producements = producement.objects.filter(status__value='BAJARILDI', IsDeleted=False)
     quantity_producements = dict()
     for item in finished_producements:
         if item.shoe_model_id.name not in quantity_producements:
@@ -194,16 +162,17 @@ def shoe_model_delete(request, pk):
 def staff_view(request):
     staff_list = staff.objects.filter(IsDeleted=False).order_by('id')
     
-    producement_list = producement.objects.filter(status__value="BAJARILDI", IsDeleted=False).order_by('date')
-    payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('date')
+    producement_list = producement.objects.filter(status__value="BAJARILDI", IsDeleted=False).order_by('id')
+    payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('id')
 
-    genders = references.objects.filter(type=ReferenceType.GENDER.value, IsDeleted=False)
-    professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False)
+    genders = references.objects.filter(type=ReferenceType.GENDER.value, IsDeleted=False).order_by("id")
+    professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False).order_by('id')
 
     full_name, gender, profession, phone = request.GET.get("full_name",None),request.GET.get("gender",None),request.GET.get("profession",None),request.GET.get("phone",None)
 
     if full_name or gender or profession or phone:
-        staff_list = staff_list.filter(full_name__icontains=full_name, gender__value__icontains=gender, profession__value__icontains=profession, phone_number__icontains=phone, IsDeleted=False)
+        staff_list = staff_list.filter(full_name__icontains=full_name, gender__value__icontains=gender, profession__value__icontains=profession, phone_number__icontains=phone, IsDeleted=False).order_by('id')
+
 
 
     balance = sum(i.balance for i in staff_list)
@@ -268,12 +237,22 @@ def staff_delete(request, pk):
     staff_item.IsDeleted = True
     staff_item.save()
     return redirect("staff_view")
-# clients
 
+# clients
 def clients_view(request):
     clients_list = clients.objects.filter(IsDeleted=False).order_by('id')
+    currencys = references.objects.filter(type=ReferenceType.CURRENCY.value, IsDeleted=False).order_by("id")
+
+    full_name, gender, profession, phone = request.GET.get("full_name",None),request.GET.get("currency",None),request.GET.get("address",None),request.GET.get("phone",None)
+
+    if full_name or gender or profession or phone:
+        clients_list = clients_list.filter(name__icontains=full_name, currency__value__icontains=gender, address__icontains=profession, phone_number__icontains=phone, IsDeleted=False).order_by('id')
+
+
+
     context = {
-        "clients_list":clients_list
+        "clients_list":clients_list,
+        "currencys":currencys
     }
     return render(request , "clients/clients.html" , context=context)
 
@@ -281,7 +260,11 @@ def clients_create(request):
     if request.method == "POST":
         forms = clients_forms(request.POST)
         if forms.is_valid():
-            forms.save()
+            new_client = forms.save(commit=False)
+            phone_number = phone_to_int(new_client.phone_number)
+            new_client.phone_number = phone_number
+            new_client.save()
+
             return redirect('clients_view')
     
     forms = clients_forms()
@@ -383,9 +366,23 @@ def orders_delete(request , pk):
 # producement
 
 def producement_view(request):
-    producement_list = producement.objects.filter(IsDeleted=False).order_by('id')
+    producement_list = producement.objects.filter(~Q(order_id__client_id__name="SKLAT") , IsDeleted=False).order_by('id')
+    producement_sklat_list = producement.objects.filter(order_id__client_id__name="SKLAT", IsDeleted=False).order_by('id')
+
+    paginator = Paginator(producement_list, 10)  # Paginate by 10 items per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    paginator_sklat = Paginator(producement_sklat_list, 10)  # Paginate by 10 items per page
+    page_number_sklat = request.GET.get('page_sklat', 1)
+    page_obj_sklat = paginator_sklat.get_page(page_number_sklat)
+
+
+
     context = {
-        "producement_list":producement_list
+        "producement_list":page_obj,
+        "producement_sklat_list":page_obj_sklat,
+
     }
     return render(request,'producement/producement.html' ,context=context)
 
@@ -509,7 +506,6 @@ def staff_payment_update(request, pk):
     }
     return render(request, 'staff/staff_payment_update.html', context=context)
 
-
 def staff_payment_delete(request, pk):
     staff_payment_item = staff_payments.objects.get(pk=pk)
     staff_payment_item.IsDeleted = True
@@ -518,7 +514,6 @@ def staff_payment_delete(request, pk):
     return redirect('staff_view')
 
 # Sale 
-
 def sale_view(request):
 
     order_sale_list = orders.objects.filter(status__value='Bajarildi', IsDeleted=False)
@@ -531,9 +526,7 @@ def sale_view(request):
 
     return render(request, 'Sale/sale.html', context=context)
 
-
 # order_details
-
 def order_detail_create(request, pk):
     order = orders.objects.get(pk=pk)
     if request.method == "POST":
@@ -575,7 +568,4 @@ def order_detail_delete(request, pk):
     detail.IsDeleted = True
     detail.save()
     return redirect('order_read', pk=detail.order_id.pk)
-
-
-
 

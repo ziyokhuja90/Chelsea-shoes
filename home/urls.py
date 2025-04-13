@@ -58,9 +58,6 @@ urlpatterns = [
     path("order/detail/update/<int:pk>", views.order_detail_update, name="order_detail_update"),
     path("order/detail/delete/<int:pk>", views.order_detail_delete, name="order_detail_delete"),
 
-    # peoducement connecting with order  
-    path('get-order-details/', views.get_order_details, name='get_order_details'),
-    path('get-order-detail-info/', views.get_order_detail_info, name='get_order_detail_info'),
 
 
 ]

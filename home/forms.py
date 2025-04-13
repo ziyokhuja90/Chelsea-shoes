@@ -213,6 +213,7 @@ class producement_forms(forms.ModelForm):
         self.fields['date'].input_formats = ['%d %m %Y']
 
 
+
         self.fields['shoe_model_id'].queryset = models.shoe_model.objects.filter(IsDeleted=False)
         self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
         self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
@@ -221,6 +222,7 @@ class producement_forms(forms.ModelForm):
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
         self.fields['lining_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LINING_TYPE.value)
         self.fields['order_id'].queryset = models.orders.objects.filter(IsDeleted=False)
+        self.fields['staff_id'].queryset = models.staff.objects.filter(IsDeleted=False)
 
 
 
@@ -230,10 +232,10 @@ class producement_forms(forms.ModelForm):
                 pk=self.instance.color_id.pk)
             ).distinct()
 
-        if self.instance and self.instance.pk and self.instance.leather_id:
-            self.fields['leather_id'].queryset = (
-                    self.fields['leather_id'].queryset | models.references.objects.filter(
-                pk=self.instance.leather_id.pk)
+        if self.instance and self.instance.pk and self.instance.leather_type:
+            self.fields['leather_type'].queryset = (
+                    self.fields['leather_type'].queryset | models.references.objects.filter(
+                pk=self.instance.leather_type.pk)
             ).distinct()
 
         if self.instance and self.instance.pk and self.instance.solo_type:
