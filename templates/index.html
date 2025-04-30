@@ -2,8 +2,8 @@
 <div class="container">
   <div class="card rounded-1  p-2 mt-3">
     <div class="card-header rounded-2 shadow-sm d-flex align-items-center justify-content-between">
-      <h3>Oyoq kiyim modellari</h3>
-      <a class="btn btn-primary text-white" href="{% url "shoe_model_create" %}">Qo'shish</a>
+      <h3>{{SHOE_MODELS}}</h3>
+      <a class="btn btn-primary text-white" href="{% url "shoe_model_create" %}">{{CREATE_BUTTON}}</a>
     </div>
     <div class="row row-cols-1 row-cols-md-3 g-4">
       {% for shoe_model in shoe_models %}
@@ -17,9 +17,9 @@
                               <i class="bx bx-dots-vertical-rounded"></i>
                           </button>
                           <div class="dropdown-menu">
-                              <a class="dropdown-item" href="{% url 'shoe_model_read' shoe_model.id %}"><i class="bx bx-show me-1"></i> Ochish</a>
-                              <a class="dropdown-item" href="{% url 'shoe_model_update' shoe_model.id %}"><i class="bx bx-edit-alt me-1"></i> Yangilash</a>
-                              <a class="dropdown-item" href="{% url 'shoe_model_delete' shoe_model.id %}"><i class="bx bx-trash me-1"></i> O'chirish</a>
+                              <a class="dropdown-item" href="{% url 'shoe_model_read' shoe_model.id %}"><i class="bx bx-show me-1"></i> {{READ}}</a>
+                              <a class="dropdown-item" href="{% url 'shoe_model_update' shoe_model.id %}"><i class="bx bx-edit-alt me-1"></i> {{UPDATE}}</a>
+                              <a class="dropdown-item" href="{% url 'shoe_model_delete' shoe_model.id %}"><i class="bx bx-trash me-1"></i> {{DELETE}}</a>
                           </div>
                       </div>
                   </div>
@@ -30,7 +30,7 @@
                   <p class="card-text">{{shoe_model.description|slice:":100"}}...</p>
   
                   <!-- Display total quantity for this shoe model -->
-                  <p><strong>Umumiy miqdori: </strong><span class="total-quantity"></span>ta</p>
+                  <p><strong>{{TOTAL_QUANTITY}}: </strong><span class="total-quantity"></span>ta</p>
               </div>
           </div>
       </div>

@@ -8,7 +8,7 @@
             <h3 class="mb-0 text-white">{{UPDATE}}</h3>
         </div>
         <div class="card-body">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 <div class="row g-3">
@@ -26,17 +26,7 @@
                 </div>
                 
                 <div class="d-flex gap-3 align-items-center justify-content-end mt-4">
-
-                    <a href="{% if request.GET.next == 'shoe_model_read' %} 
-                    {% url 'shoe_model_read' producement.shoe_model_id.id %}
-                    {% elif request.GET.next == 'work' %}
-                    {% url 'staff_view' %}
-                {% else %} 
-                    {% url 'producement_view' %}
-                {% endif %}" class="btn btn-secondary">
-                    <i class="bx bx-arrow-back"></i> {{CANCEL}}
-                </a>
-
+                    <a href="{% url url_back_name %}" class="btn btn-secondary">{{CANCEL|capfirst}}</a> 
                     <button type="submit" class="btn btn-primary">{{SAVE}}</button>
                 </div>
             </form>

@@ -1,0 +1,88 @@
+# General Labels and Titles
+ID = "ID"
+TITLE = "Chelsea shoes"
+BRAND_NAME = "Chelsea"
+SEARCH = "Qidiruv..."
+LOG_OUT = "Chiqish"
+
+# Buttons and Actions
+CREATE_BUTTON = "Qo'shish"
+READ = "Ochish"
+UPDATE = "Yangilash"
+DELETE = "O'chirish"
+PAY = "To'lov qilish"
+
+# Shoe Models and Quantities
+SHOE_MODELS = "Oyoq kiyim modellari"
+TOTAL_QUANTITY = "Umumiy miqdori"
+MODEL = "Madel"
+PRICE = "Narx"
+QUANTITY = "Miqdor"
+TOTAL = "Jami"
+STATUS = "Holati"
+
+# Delete Confirmation Dialog
+DELETE_CONFIRMATION_TITLE = "O'chirib tashlashni tasdiqlash"
+DELETE_CONFIRMATION_INFO = "Haqiqatan ham bu elementni oʻchirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo‘lmaydi."
+DELETE_CONFIRMATION_BUTTON = "Ha, O'chirib tashla"
+
+# Menu Items
+PRODUCTS = "Mahsulotlar"
+SELL = "Sotuv"
+INCOME = "Daromad"
+STAFFS = "Xodimlar"
+DEBTS = "Qarzlar"
+PRODUCEMENT = "Ishlab chiqarish"
+CLIENTS = "Xaridorlar"
+EXPENSES = "Xarajatlar"
+ORDERS = "Buyurtmalar"
+REFERENCE = "Ma'lumotnoma"
+
+# Filters
+FILTER = "Filterlash"
+CLEAN = "Tozalash"
+NAME = "Ism"
+GENDER = "Jins"
+PROFESSION = "Kasb"
+PHONE_NUMBER = "Telefon raqam"
+CHOOSE = "Tanlang..."
+
+# Staff Table Details
+STAFF = "Xodim"
+NEW = "Yangi"
+BIRTH_DATE = "to'g'ilgan sanasi"
+ENTERED_DATE = "ishga kirgan sanasi"
+BALANCE = "balance"
+ACTIONS = "amallar"
+PAYMENTS_LIST = "To'lovlar ro'yxati"
+WORK_LIST = "Ishlar ro'yxati"
+SUM = "summa"
+DATE = "Sana"
+PAYMENTS = "To'lovlar"
+WORKS = "Ishlar"
+NO_DATA = "mavjud emas"
+
+
+
+
+#-
+
+COLOR = "Rang"
+LEATHER_TYPE = "Teri turi"
+SOLE_TYPE = "Taglik turi"
+ORDER = "Buyurtma"
+WAREHOUSE = "Sklat"
+PAGE = "Sahifa"
+CURRENCY = "Pul birligi"
+LOCATION = "Manzili"
+CLIENT = "Xaridor"
+TOTAL_PRICE  = "Jami narx"
+DEADLINE = "Topshirish sana"
+TYPE = "turi"
+VALUE = "qiymati"
+LEATHER = "Teri"
+SOLE = "Taglik"
+LINING = "Astar"
+CLOSE = "Yopish"
+SAVE = "Saqlash"
+CANCEL = "bekor qilish"

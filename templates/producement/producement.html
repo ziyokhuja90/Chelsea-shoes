@@ -2,22 +2,148 @@
 
 {% block content %}
 <div class="container">
+
+  <div class="card p-3 my-3">
+    <h1 class="text-center mb-4">{{FILTER}}</h1>
+
+    <!-- Filtering Form -->
+    <form id="filterForm" class="mb-4" method="get">
+        <div class="row g-3">
+
+            <!-- Staff ID -->
+            <div class="col-md-3">
+                <label for="staff_id" class="form-label">{{STAFF}}</label>
+                <select id="staff_id" name="staff_id" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for staff in staff_list %}
+                        <option 
+                            value="{{ staff.id }}" 
+                            {% if request.GET.staff_id == staff.id %}selected{% endif %}>
+                            {{ staff }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Shoe Model -->
+            <div class="col-md-3">
+                <label for="shoe_model_id" class="form-label">{{MODEL}}</label>
+                <select id="shoe_model_id" name="shoe_model_id" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for model in shoe_models %}
+                        <option 
+                            value="{{ model.id }}" 
+                            {% if request.GET.shoe_model_id == model.id %}selected{% endif %}
+                        >
+                            {{ model }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Color -->
+            <div class="col-md-3">
+                <label for="color_id" class="form-label">{{COLOR}}</label>
+                <select id="color_id" name="color_id" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for color in colors %}
+                        <option 
+                            value="{{ color.id }}" 
+                            {% if request.GET.color_id == color.id %}selected{% endif %}
+                        >
+                            {{ color }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Leather Type -->
+            <div class="col-md-3">
+                <label for="leather_type" class="form-label">{{LEATHER_TYPE}}</label>
+                <select id="leather_type" name="leather_type" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for leather in leather_types %}
+                        <option 
+                            value="{{ leather.id }}" 
+                            {% if request.GET.leather_type == leather.id %}selected{% endif %}
+                        >
+                            {{ leather }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Solo Type -->
+            <div class="col-md-3">
+                <label for="solo_type" class="form-label">{{SOLE_TYPE}}</label>
+                <select id="solo_type" name="solo_type" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for solo in sole_types %}
+                        <option 
+                            value="{{ solo.id }}" 
+                            {% if request.GET.solo_type == solo.id %}selected{% endif %}
+                        >
+                            {{ solo }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-3">
+                <label for="status" class="form-label">{{STATUS}}</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for status in statuses %}
+                        <option 
+                            value="{{ status.id }}" 
+                            {% if request.GET.status == status.id %}selected{% endif %}
+                        >
+                            {{ status }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- Order -->
+            <div class="col-md-3">
+                <label for="order" class="form-label">{{ORDER}}</label>
+                <select id="order" name="order" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for order in order_list %}
+                        <option 
+                            value="{{ order.id }}" 
+                            {% if request.GET.order == order.id %}selected{% endif %}
+                        >
+                            {{ order }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="mt-3 text-end">
+            <button type="submit" class="btn btn-primary">{{FILTER}}</button>
+            <a href="{% url 'staff_view' %}" class="btn btn-secondary">{{CLEAN}}</a>
+        </div>
+    </form>
+</div>
     <div class="card mt-3">
         <div class="d-flex justify-content-between align-items-center p-3">
-            <h5 class="card-header p-0 bg-white border-0">Ishlab chiqarish</h5>
-            <a class="btn btn-primary" href="{% url "producement_create" %}">Yangi ishlab chiqarish</a>
+            <h5 class="card-header p-0 bg-white border-0">{{PRODUCEMENT}}</h5>
+            <a class="btn btn-primary" href="{% url "producement_create" %}">{{NEW}} {{PRODUCEMENT|lower}}</a>
         </div>
 
             <!-- Tabs navigation -->
             <ul class="nav nav-tabs p-3" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">
-                        Buyurtma ishlar
+                        {{ORDER}} {{WORKS}}
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">
-                        Sklat
+                        {{WAREHOUSE}}
                     </button>
                 </li>
             </ul>
@@ -25,143 +151,19 @@
                 <!-- Tab 1 content -->
                 <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
                     <div class="table-responsive text-nowrap mt-0">
-                        <div class="card p-3 my-3">
-                            <h1 class="text-center mb-4">Filterlash</h1>
-                        
-                            <!-- Filtering Form -->
-                            <form id="filterForm" class="mb-4" method="get">
-                                <div class="row g-3">
-                        
-                                    <!-- Staff ID -->
-                                    <div class="col-md-3">
-                                        <label for="staff_id" class="form-label">Xodim ID</label>
-                                        <select id="staff_id" name="staff_id" class="form-control">
-                                            <option value="">Tanlang...</option>
-                                            {% for staff in staff_list %}
-                                                <option 
-                                                    value="{{ staff.id }}" 
-                                                    {% if request.GET.staff_id == staff.id %}selected{% endif %}>
-                                                    {{ staff.name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                        
-                                    <!-- Shoe Model -->
-                                    <div class="col-md-3">
-                                        <label for="shoe_model_id" class="form-label">Oyoq kiyim modeli</label>
-                                        <select id="shoe_model_id" name="shoe_model_id" class="form-control">
-                                            <option value="">Tanlang...</option>
-                                            {% for model in shoe_models %}
-                                                <option 
-                                                    value="{{ model.id }}" 
-                                                    {% if request.GET.shoe_model_id == model.id %}selected{% endif %}
-                                                >
-                                                    {{ model.name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                        
-                                    <!-- Color -->
-                                    <div class="col-md-3">
-                                        <label for="color_id" class="form-label">Rang</label>
-                                        <select id="color_id" name="color_id" class="form-control">
-                                            <option value="">Tanlang...</option>
-                                            {% for color in colors %}
-                                                <option 
-                                                    value="{{ color.id }}" 
-                                                    {% if request.GET.color_id == color.id %}selected{% endif %}
-                                                >
-                                                    {{ color.name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                        
-                                    <!-- Leather Type -->
-                                    <div class="col-md-3">
-                                        <label for="leather_type" class="form-label">Terining turi</label>
-                                        <select id="leather_type" name="leather_type" class="form-control">
-                                            <option value="">Tanlang...</option>
-                                            {% for leather in leathers %}
-                                                <option 
-                                                    value="{{ leather.id }}" 
-                                                    {% if request.GET.leather_type == leather.id %}selected{% endif %}
-                                                >
-                                                    {{ leather.name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                        
-                                    <!-- Solo Type -->
-                                    <div class="col-md-3">
-                                        <label for="solo_type" class="form-label">Tovon turi</label>
-                                        <select id="solo_type" name="solo_type" class="form-control">
-                                            <option value="">Tanlang...</option>
-                                            {% for solo in solos %}
-                                                <option 
-                                                    value="{{ solo.id }}" 
-                                                    {% if request.GET.solo_type == solo.id %}selected{% endif %}
-                                                >
-                                                    {{ solo.name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                        
-                                    <!-- Status -->
-                                    <div class="col-md-3">
-                                        <label for="status" class="form-label">Holat</label>
-                                        <select id="status" name="status" class="form-control">
-                                            <option value="">Tanlang...</option>
-                                            {% for status in statuses %}
-                                                <option 
-                                                    value="{{ status.id }}" 
-                                                    {% if request.GET.status == status.id %}selected{% endif %}
-                                                >
-                                                    {{ status.name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <!-- Order -->
-                                    <div class="col-md-3">
-                                        <label for="status" class="form-label">Buyurtma</label>
-                                        <select id="status" name="status" class="form-control">
-                                            <option value="">Tanlang...</option>
-                                            {% for order in orders %}
-                                                <option 
-                                                    value="{{ status.id }}" 
-                                                    {% if request.GET.order == order.id %}selected{% endif %}
-                                                >
-                                                    {{ status.name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                        
-                                <!-- Buttons -->
-                                <div class="mt-3 text-end">
-                                    <button type="submit" class="btn btn-primary">Filterlash</button>
-                                    <a href="{% url 'staff_view' %}" class="btn btn-secondary">Tozalash</a>
-                                </div>
-                            </form>
-                        </div>
+
                         
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Xodim</th>
-                                    <th>Model</th>
-                                    <th>Buyurtma</th>
-                                    <th>Miqdor</th>
-                                    <th>Birlik Narxi</th>
-                                    <th>Status</th>
-                                    <th>Amallar</th>
+                                    <th>{{ID}}</th>
+                                    <th>{{STAFF}}</th>
+                                    <th>{{MODEL}}</th>
+                                    <th>{{ORDER}}</th>
+                                    <th>{{QUANTITY}}</th>
+                                    <th>{{PRICE}}</th>
+                                    <th>{{STATUS}}</th>
+                                    <th>{{ACTIONS}}</th>
                                 </tr>
                             </thead>
                             <tbody class="table-border-bottom-0">
@@ -204,7 +206,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="8" class="text-center">Ishlab chiqarish mavjud emas.</td>
+                                    <td colspan="8" class="text-center">{{PRODUCEMENT}} {{NO_DATA}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -240,7 +242,7 @@
                               <!-- Joriy sahifa ma'lumoti -->
                               <li class="page-item disabled">
                                 <a class="page-link">
-                                  Sahifa {{ producement_list.number }} / {{ producement_list.paginator.num_pages }}
+                                  {{PAGE}} {{ producement_list.number }} / {{ producement_list.paginator.num_pages }}
                                 </a>
                               </li>
                           
@@ -279,13 +281,13 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Xodim</th>
-                                    <th>Model</th>
-                                    <th>Buyurtma</th>
-                                    <th>Miqdor</th>
-                                    <th>Birlik Narxi</th>
-                                    <th>Status</th>
-                                    <th>Amallar</th>
+                                    <th>{{STAFF}}</th>
+                                    <th>{{MODEL}}</th>
+                                    <th>{{ORDER}}</th>
+                                    <th>{{QUANTITY}}</th>
+                                    <th>{{PRICE}}</th>
+                                    <th>{{STATUS}}</th>
+                                    <th>{{ACTIONS}}</th>
                                 </tr>
                             </thead>
                             <tbody class="table-border-bottom-0">
@@ -328,7 +330,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="8" class="text-center">Ishlab chiqarish mavjud emas.</td>
+                                    <td colspan="8" class="text-center">{{PRODUCEMENT}} {{NO_DATA}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -363,7 +365,7 @@
                               <!-- Joriy sahifa ma'lumoti -->
                               <li class="page-item disabled">
                                 <a class="page-link">
-                                  Sahifa {{ producement_sklat_list.number }} / {{ producement_sklat_list.paginator.num_pages }}
+                                  {{PAGE}} {{ producement_sklat_list.number }} / {{ producement_sklat_list.paginator.num_pages }}
                                 </a>
                               </li>
                           

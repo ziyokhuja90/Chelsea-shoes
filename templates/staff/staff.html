@@ -5,29 +5,29 @@
 {% block content %}
 <div class="container">
   <div class="card p-3 mt-3">
-    <h1 class="text-center mb-4">Filterlash</h1>
+    <h1 class="text-center mb-4">{{FILTER}}</h1>
 
         <!-- Filtering Form -->
         <form id="filterForm" class="mb-4" method="get">
             <div class="row g-3">
                 <!-- Full Name -->
                 <div class="col-md-3">
-                    <label for="name" class="form-label">Ismi</label>
+                    <label for="name" class="form-label">{{NAME}}</label>
                     <input 
                         type="text" 
                         name="full_name" 
                         id="name" 
                         class="form-control uppercase-input" 
-                        placeholder="Ismi" 
+                        placeholder="{{NAME}}" 
                         value="{{ request.GET.full_name }}"
                     >
                 </div>
         
                 <!-- Gender -->
                 <div class="col-md-2">
-                    <label for="gender" class="form-label">Jinsi</label>
+                    <label for="gender" class="form-label">{{GENDER}}</label>
                     <select id="gender" class="form-select" name="gender">
-                        <option value="">Tanlang...</option>
+                        <option value="">{{CHOOSE}}</option>
                         {% for gender in genders %}
                             <option 
                                 value="{{ gender.value }}" 
@@ -41,9 +41,9 @@
         
                 <!-- Profession -->
                 <div class="col-md-2">
-                    <label for="job" class="form-label">Kasbi</label>
+                    <label for="job" class="form-label">{{PROFESSION}}</label>
                     <select id="job" class="form-select" name="profession">
-                        <option value="">Tanlang...</option>
+                        <option value="">{{CHOOSE}}</option>
                         {% for profession in professions %}
                             <option 
                                 value="{{ profession.value }}" 
@@ -57,13 +57,13 @@
         
                 <!-- Phone -->
                 <div class="col-md-3">
-                    <label for="phone" class="form-label">Telefon raqami</label>
+                    <label for="phone" class="form-label">{{PHONE_NUMBER}}</label>
                     <input 
                         type="text" 
                         id="phone" 
                         name="phone" 
                         class="form-control" 
-                        placeholder="Telefon raqami" 
+                        placeholder="{{PHONE_NUMBER}}" 
                         value="{{ request.GET.phone }}"
                     >
                 </div>
@@ -71,8 +71,8 @@
         
             <!-- Buttons -->
             <div class="mt-3 text-end">
-                <button type="submit" class="btn btn-primary">Filterlash</button>
-                <a href="{% url 'staff_view' %}" class="btn btn-secondary">Tozalash</a>
+                <button type="submit" class="btn btn-primary">{{FILTER}}</button>
+                <a href="{% url 'staff_view' %}" class="btn btn-secondary">{{CLEAN}}</a>
             </div>
         </form>
         
@@ -81,22 +81,22 @@
 <div class="card mt-3">
   <div class="d-flex justify-content-between align-items-center p-3">
     
-    <h5 class="card-header p-0 bg-white border-0">Xodimlar</h5>
-    <a class="btn btn-primary" href="{% url "staff_create" %}">Yangi xodim</a>
+    <h5 class="card-header p-0 bg-white border-0">{{STAFFS}}</h5>
+    <a class="btn btn-primary " href="{% url "staff_create" %}">{{NEW}} {{STAFF|lower}}</a>     
 
   </div>
     <div class="table-responsive text-nowrap">
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>ismi</th>
-            <th>to'g'ilgan sanasi</th>
-            <th>jinsi</th>
-            <th>kasbi</th>
-            <th>ishga kirgan sanasi</th>
-            <th>telefon raqami</th>
-            <th>Balance</th>
-            <th>tahrirlash</th>
+            <th>{{NAME}}</th>
+            <th>{{BIRTH_DATE}}</th>
+            <th>{{GENDER}}</th>
+            <th>{{PROFESSION}}</th>
+            <th>{{ENTERED_DATE}}</th>
+            <th>{{PHONE_NUMBER}}</th>
+            <th>{{BALANCE}}</th>
+            <th>{{ACTIONS}}</th>
           </tr>
         </thead>
         <tbody class="table-border-bottom-0">
@@ -153,7 +153,7 @@
       <!-- Card Header with Balance -->
       <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0"></h5>
-          <h5>Balance: 
+          <h5>{{BALANCE|title}}: 
             {% if balance >= 0 %}
             <span class="text-success">{{ balance }}</span>
             {% else %}
@@ -168,12 +168,12 @@
           <ul class="nav nav-tabs" id="staffTabs" role="tablist">
               <li class="nav-item" role="presentation">
                   <button class="nav-link active" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab" aria-controls="payments" aria-selected="true">
-                    To'lovlar ro'yxati
+                    {{PAYMENTS_LIST}}
                   </button>
               </li>
               <li class="nav-item" role="presentation">
                   <button class="nav-link" id="work-tab" data-bs-toggle="tab" data-bs-target="#work" type="button" role="tab" aria-controls="work" aria-selected="false">
-                      Xodim ishlari
+                      {{WORK_LIST}}
                   </button> 
               </li>
           </ul>
@@ -183,20 +183,20 @@
               <!-- Staff Payments Tab -->
               <div class="tab-pane fade show active" id="payments" role="tabpanel" aria-labelledby="payments-tab">
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h5>To'lovlar ro'yxati</h5>
+                      <h5>{{PAYMENTS_LIST}}</h5>
                       <!-- Add Payment Button -->
                       <a class="btn btn-primary" href="{% url "staff_payment_create" %}">
-                           To'lov qilish
+                           {{PAY}}
                       </a>
                   </div>
                   <table class="table table-hover">
                       <thead class="table-light">
                           <tr>
-                              <th>ID</th>
-                              <th>Xodim</th>
-                              <th>Summa</th>
-                              <th>Sana</th>
-                              <th>Amallar</th>
+                              <th>{{ID}}</th>
+                              <th>{{STAFF}}</th>
+                              <th>{{SUM}}</th>
+                              <th>{{DATE}}</th>
+                              <th>{{ACTIONS}}</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -221,7 +221,7 @@
                           </tr>
                           {% empty %}
                           <tr>
-                              <td colspan="5" class="text-center">To'lovlar mavjud emas</td>
+                              <td colspan="5" class="text-center">{{PAYMENTS}} {{NO_DATA}}</td>
                           </tr>
                           {% endfor %}
                       </tbody>
@@ -233,14 +233,14 @@
                   <table class="table table-hover  ">
                       <thead class="table-light">
                           <tr>
-                              <th>ID</th>
-                              <th>Xodim</th>
-                              <th>Madel</th>
-                              <th>Narxi</th>
-                              <th>Miqdori</th>
-                              <th>Jami</th>
-                              <th>Holati</th>
-                              <th>Amallar</th>
+                              <th>{{ID}}</th>
+                              <th>{{STAFF}}</th>
+                              <th>{{MODEL}}</th>
+                              <th>{{PRICE}}</th>
+                              <th>{{QUANTITY}}</th>
+                              <th>{{TOTAL}}</th>
+                              <th>{{STATUS}}</th>
+                              <th>{{ACTIONS}}</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -278,7 +278,7 @@
                           </tr>
                           {% empty %}
                           <tr>
-                              <td colspan="6" class="text-center">Ishlar topilmadi</td>
+                              <td colspan="6" class="text-center">{{WORKS}} {{NO_DATA}}</td>
                           </tr>
                           {% endfor %}
                       </tbody>

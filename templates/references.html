@@ -13,7 +13,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="modalCenterTitle">
-            Ma'lumotnoma qo'shish
+            {{NEW}} {{REFENRECE}} 
           </h5>
           <button
             type="button"
@@ -25,28 +25,28 @@
         <div class="modal-body">
           <div class="row">
             <div class="col mb-3">
-              <label for="type" class="form-label">Ma'lumotnoma turi</label>
+              <label for="type" class="form-label">{{REFERENCE}} {{TYPE}}</label>
 
               <select name="type" id="types" class="form-select">
                 <option value="--------" selected disabled>--------</option>
                 
-                <option value="3">Rang</option>
-                <option value="4">Teri</option>
-                <option value="5">Kasb</option>
-                <option value="8">Taglik</option>
-                <option value="9">Astar</option>
+                <option value="3">{{COLOR}}</option>
+                <option value="4">{{LEATHER}}</option>
+                <option value="5">{{PROFESSION}}</option>
+                <option value="8">{{SOLE}}</option>
+                <option value="9">{{LINING}}</option>
                 
               </select>
             </div>
           </div>
           <div class="row g-2">
             <div class="col mb-0">
-              <label for="value" class="form-label ">Ma'lumotnoma qiymati</label>
+              <label for="value" class="form-label ">{{REFERENCE}} {{VALUE}}</label>
               <input
                 type="text"
                 id="emailWithTitle"
                 class="form-control uppercase-input"
-                placeholder="Ma'lumotnoma qiymati"
+                placeholder="{{REFERENCE}} {{VALUE}}"
                 name="value"
               />
             </div>
@@ -58,9 +58,9 @@
             class="btn btn-outline-secondary"
             data-bs-dismiss="modal"
           >
-            Yopish
+            {{CLOSE}}
           </button>
-          <button type="submit" class="btn btn-primary">Saqlash</button>
+          <button type="submit" class="btn btn-primary">{{SAVE}}</button>
         </div>
       </div>
     </div>
@@ -70,9 +70,9 @@
 
 <div class="card  pb-3 m-3 mx-4">
   <div class="card-header d-flex align-items-center justify-content-between">
-    <h2 class="">Ma'lumotnoma</h2>
+    <h2 class="">{{REFERENCE}}</h2>
     <button type="button" class="btn btn-primary" id="openModal">
-      Ma'lumotnoma qo'shish
+      {{NEW}} {{REFERENCE}}
     </button>
   </div>
   <div class="col-md mb-4 mb-md-0 container-fluid">
@@ -88,7 +88,7 @@
             aria-expanded="false"
             aria-controls="accordionOne"
           >
-            Holati
+            {{STATUS}}
           </button>
         </h2>
 
@@ -116,7 +116,7 @@
       </div>
     </div>
 {% comment %} Gender {% endcomment %}
-<div class="accordion mt-3" id="accordionExample">
+    <div class="accordion mt-3" id="accordionExample">
   <div class="card accordion-item">
     <h2 class="accordion-header" id="headingTwo">
       <button
@@ -126,8 +126,8 @@
         data-bs-target="#accordionTwo"
         aria-expanded="false"
         aria-controls="accordionTwo"
-      >
-        Jinsi
+      > 
+        {{GENDER}}
       </button>
     </h2>
 
@@ -150,335 +150,335 @@
       </div>
     </div>
   </div>
-</div>
+    </div>
 
 {% comment %} Color {% endcomment %}
 
-<div class="accordion mt-3" id="accordionExample">
-  <div class="card accordion-item">
-    <h2 class="accordion-header" id="headingThree">
-      <button
-        type="button"
-        class="accordion-button collapsed"
-        data-bs-toggle="collapse"
-        data-bs-target="#accordionThree"
-        aria-expanded="false"
-        aria-controls="accordionThree"
-      >
-        Ranglar
-      </button>
-    </h2>
-
-    <div
-      id="accordionThree"
-      class="accordion-collapse collapse"
-      data-bs-parent="#accordionExample"
-    >
-      <div class="accordion-body">
-        {% for value_item in reference %}
-        {% if value_item.type == 3 and not value_item.IsDeleted %}
-        <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
-          <h5>{{ value_item.value }}</h5>
-          <!-- Edit Button -->
-          <div>
-            <button
+    <div class="accordion mt-3" id="accordionExample">
+      <div class="card accordion-item">
+        <h2 class="accordion-header" id="headingThree">
+          <button
             type="button"
-            class="btn btn-warning btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#modalCenter"
-            data-action="edit"
-            data-value="{{ value_item.value }}"
-            data-type="{{ value_item }}"
-            data-id="{{ value_item.id }}"
-            >
-          <i class="bx bx-edit text-white"></i>
-        </button>
-        <!-- Delete Button -->
-        <form
-        action="{% url 'delete_reference' value_item.id %}"
-        method="POST"
-        style="display: inline"
-      >
-        {% csrf_token %}
-        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
-          <i class="bx bx-trash"></i>
-        </button>
-      </form>
-    </div>
-    
-  </div>
-  {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-</div>
+            class="accordion-button collapsed"
+            data-bs-toggle="collapse"
+            data-bs-target="#accordionThree"
+            aria-expanded="false"
+            aria-controls="accordionThree"
+          >
+            {{COLOR}}
+          </button>
+        </h2>
 
-{% comment %} LEATHER_TYPE {% endcomment %}
-
-<div class="accordion mt-3" id="accordionExample">
-  <div class="card accordion-item">
-    <h2 class="accordion-header" id="headingFour">
-      <button
-        type="button"
-        class="accordion-button collapsed"
-        data-bs-toggle="collapse"
-        data-bs-target="#accordionFour"
-        aria-expanded="false"
-        aria-controls="accordionFour"
-      >
-        Teri turi
-      </button>
-    </h2>
-
-    <div
-      id="accordionFour"
-      class="accordion-collapse collapse"
-      data-bs-parent="#accordionExample"
-    >
-      <div class="accordion-body">
-        {% for value_item in reference %}
-        {% if value_item.type == 4 and not value_item.IsDeleted %}
-        <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
-          <h5>{{ value_item.value }}</h5>
-          <!-- Edit Button -->
-          <div>
-            <button
-            type="button"
-            class="btn btn-warning btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#modalCenter"
-            data-action="edit"
-            data-value="{{ value_item.value }}"
-            data-type="{{ value_item }}"
-            data-id="{{ value_item.id }}"
-            >
-          <i class="bx bx-edit text-white"></i>
-        </button>
-        <!-- Delete Button -->
-        <form
-        action="{% url 'delete_reference' value_item.id %}"
-        method="POST"
-        style="display: inline"
-      >
-        {% csrf_token %}
-        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
-          <i class="bx bx-trash"></i>
-        </button>
-      </form>
-    </div>
-    
-  </div>
-  {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-</div>
-
-{% comment %} PROFESSION {% endcomment %}
-
-<div class="accordion mt-3" id="accordionExample">
-  <div class="card accordion-item">
-    <h2 class="accordion-header" id="headingFive">
-      <button
-        type="button"
-        class="accordion-button collapsed"
-        data-bs-toggle="collapse"
-        data-bs-target="#accordionFive"
-        aria-expanded="false"
-        aria-controls="accordionFive"
-      >
-        Kasblar
-      </button>
-    </h2>
-
-    <div
-      id="accordionFive"
-      class="accordion-collapse collapse"
-      data-bs-parent="#accordionExample"
-    >
-      <div class="accordion-body">
-        {% for value_item in reference %}
-        {% if value_item.type == 5 and not value_item.IsDeleted %}
-        <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
-          <h5>{{ value_item.value }}</h5>
-          <!-- Edit Button -->
-          <div>
-            <button
-            type="button"
-            class="btn btn-warning btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#modalCenter"
-            data-action="edit"
-            data-value="{{ value_item.value }}"
-            data-type="{{ value_item }}"
-            data-id="{{ value_item.id }}"
-            >
-          <i class="bx bx-edit text-white"></i>
-        </button>
-        <!-- Delete Button -->
-        <form
-        action="{% url "delete_reference" value_item.id %}"
-        method="POST"
-        style="display: inline"
+        <div
+          id="accordionThree"
+          class="accordion-collapse collapse"
+          data-bs-parent="#accordionExample"
         >
-        {% csrf_token %}
-        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
-          <i class="bx bx-trash"></i>
-        </button>
-      </form>
-    </div>
-    
-  </div>
-  {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-</div>
-{% comment %} QUANTITY_TYPE {% endcomment %}
-
-<div class="accordion mt-3" id="accordionExample">
-  <div class="card accordion-item">
-    <h2 class="accordion-header" id="headingSix">
-      <button
-        type="button"
-        class="accordion-button collapsed"
-        data-bs-toggle="collapse"
-        data-bs-target="#accordionSix"
-        aria-expanded="false"
-        aria-controls="accordionSix"
-      >
-        Miqdor turi
-      </button>
-    </h2>
-
-    <div
-      id="accordionSix"
-      class="accordion-collapse collapse"
-      data-bs-parent="#accordionExample"
-    >
-      <div class="accordion-body">
-        {% for value_item in reference %}
-        {% if value_item.type == 6 and not value.IsDeleted %}
-        <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
-          <h5>{{ value_item.value }}</h5>
-          <!-- Edit Button -->
-          
-            
-        <!-- Delete Button -->
-      
-    </div>
-    
-  </div>
-  {% endif %}
-  {% endfor %}
-</div>
-    </div>
-  </div>
-
-{% comment %} CURRENCY {% endcomment %}
-
-<div class="accordion mt-3" id="accordionExample">
-  <div class="card accordion-item">
-    <h2 class="accordion-header" id="headingSeven">
-      <button
-        type="button"
-        class="accordion-button collapsed"
-        data-bs-toggle="collapse"
-        data-bs-target="#accordionSeven"
-        aria-expanded="false"
-        aria-controls="accordionSeven"
-      >
-        Pul birligi
-      </button>
-    </h2>
-
-    <div
-      id="accordionSeven"
-      class="accordion-collapse collapse"
-      data-bs-parent="#accordionExample"
-    >
-      <div class="accordion-body">
-        {% for value_item in reference %}
-        {% if value_item.type == 7 and not value.IsDeleted %}
-        <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
-          <h5>{{ value_item.value }}</h5>
-          <!-- Edit Button -->
-          
-    
-  </div>
-  {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-</div>
-
-
-{% comment %} SOLO_TYPE {% endcomment %}
-
-<div class="accordion mt-3" id="accordionExample">
-  <div class="card accordion-item">
-    <h2 class="accordion-header" id="headingEight">
-      <button
-        type="button"
-        class="accordion-button collapsed"
-        data-bs-toggle="collapse"
-        data-bs-target="#accordionEight"
-        aria-expanded="false"
-        aria-controls="accordionEight"
-      >
-        Taglik
-      </button>
-    </h2>
-
-    <div
-      id="accordionEight"
-      class="accordion-collapse collapse"
-      data-bs-parent="#accordionExample"
-    >
-      <div class="accordion-body">
-        {% for value_item in reference %}
-        {% if value_item.type == 8 and not value_item.IsDeleted %}
-        <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
-          <h5>{{ value_item.value }}</h5>
-          <!-- Edit Button -->
-          <div>
-            <button
-            type="button"
-            class="btn btn-warning btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#modalCenter"
-            data-action="edit"
-            data-value="{{ value_item.value }}"
-            data-type="{{ value_item }}"
-            data-id="{{ value_item.id }}"
-            >
-          <i class="bx bx-edit text-white"></i>
-        </button>
-        <!-- Delete Button -->
-        <form
-        action="{% url "delete_reference" value_item.id %}"
-        method="POST"
-        style="display: inline"
+          <div class="accordion-body">
+            {% for value_item in reference %}
+            {% if value_item.type == 3 and not value_item.IsDeleted %}
+            <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
+              <h5>{{ value_item.value }}</h5>
+              <!-- Edit Button -->
+              <div>
+                <button
+                type="button"
+                class="btn btn-warning btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#modalCenter"
+                data-action="edit"
+                data-value="{{ value_item.value }}"
+                data-type="{{ value_item }}"
+                data-id="{{ value_item.id }}"
+                >
+              <i class="bx bx-edit text-white"></i>
+            </button>
+            <!-- Delete Button -->
+            <form
+            action="{% url 'delete_reference' value_item.id %}"
+            method="POST"
+            style="display: inline"
+          >
+            {% csrf_token %}
+            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+              <i class="bx bx-trash"></i>
+            </button>
+          </form>
+        </div>
         
-        >
-        {% csrf_token %}
-        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
-          <i class="bx bx-trash"></i>
-        </button>
-      </form>
-    </div>
-    
-  </div>
-  {% endif %}
-        {% endfor %}
+      </div>
+      {% endif %}
+            {% endfor %}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+
+    {% comment %} LEATHER_TYPE {% endcomment %}
+
+    <div class="accordion mt-3" id="accordionExample">
+      <div class="card accordion-item">
+        <h2 class="accordion-header" id="headingFour">
+          <button
+            type="button"
+            class="accordion-button collapsed"
+            data-bs-toggle="collapse"
+            data-bs-target="#accordionFour"
+            aria-expanded="false"
+            aria-controls="accordionFour"
+          >
+            {{LEATHER_TYPE}} 
+          </button>
+        </h2>
+
+        <div
+          id="accordionFour"
+          class="accordion-collapse collapse"
+          data-bs-parent="#accordionExample"
+        >
+          <div class="accordion-body">
+            {% for value_item in reference %}
+            {% if value_item.type == 4 and not value_item.IsDeleted %}
+            <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
+              <h5>{{ value_item.value }}</h5>
+              <!-- Edit Button -->
+              <div>
+                <button
+                type="button"
+                class="btn btn-warning btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#modalCenter"
+                data-action="edit"
+                data-value="{{ value_item.value }}"
+                data-type="{{ value_item }}"
+                data-id="{{ value_item.id }}"
+                >
+              <i class="bx bx-edit text-white"></i>
+            </button>
+            <!-- Delete Button -->
+            <form
+            action="{% url 'delete_reference' value_item.id %}"
+            method="POST"
+            style="display: inline"
+          >
+            {% csrf_token %}
+            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+              <i class="bx bx-trash"></i>
+            </button>
+          </form>
+        </div>
+        
+      </div>
+      {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% comment %} PROFESSION {% endcomment %}
+
+    <div class="accordion mt-3" id="accordionExample">
+      <div class="card accordion-item">
+        <h2 class="accordion-header" id="headingFive">
+          <button
+            type="button"
+            class="accordion-button collapsed"
+            data-bs-toggle="collapse"
+            data-bs-target="#accordionFive"
+            aria-expanded="false"
+            aria-controls="accordionFive"
+          >
+            {{PROFESSION}}
+          </button>
+        </h2>
+
+        <div
+          id="accordionFive"
+          class="accordion-collapse collapse"
+          data-bs-parent="#accordionExample"
+        >
+          <div class="accordion-body">
+            {% for value_item in reference %}
+            {% if value_item.type == 5 and not value_item.IsDeleted %}
+            <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
+              <h5>{{ value_item.value }}</h5>
+              <!-- Edit Button -->
+              <div>
+                <button
+                type="button"
+                class="btn btn-warning btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#modalCenter"
+                data-action="edit"
+                data-value="{{ value_item.value }}"
+                data-type="{{ value_item }}"
+                data-id="{{ value_item.id }}"
+                >
+              <i class="bx bx-edit text-white"></i>
+            </button>
+            <!-- Delete Button -->
+            <form
+            action="{% url "delete_reference" value_item.id %}"
+            method="POST"
+            style="display: inline"
+            >
+            {% csrf_token %}
+            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+              <i class="bx bx-trash"></i>
+            </button>
+          </form>
+        </div>
+        
+      </div>
+      {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% comment %} QUANTITY_TYPE {% endcomment %}
+
+    <div class="accordion mt-3" id="accordionExample">
+      <div class="card accordion-item">
+        <h2 class="accordion-header" id="headingSix">
+          <button
+            type="button"
+            class="accordion-button collapsed"
+            data-bs-toggle="collapse"
+            data-bs-target="#accordionSix"
+            aria-expanded="false"
+            aria-controls="accordionSix"
+          >
+            {{QUANTITY}} {{TYPE}}
+          </button>
+        </h2>
+
+        <div
+          id="accordionSix"
+          class="accordion-collapse collapse"
+          data-bs-parent="#accordionExample"
+        >
+          <div class="accordion-body">
+            {% for value_item in reference %}
+            {% if value_item.type == 6 and not value.IsDeleted %}
+            <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
+              <h5>{{ value_item.value }}</h5>
+              <!-- Edit Button -->
+              
+                
+            <!-- Delete Button -->
+          
+        </div>
+        
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+        </div>
+      </div>
+
+    {% comment %} CURRENCY {% endcomment %}
+
+    <div class="accordion mt-3" id="accordionExample">
+      <div class="card accordion-item">
+        <h2 class="accordion-header" id="headingSeven">
+          <button
+            type="button"
+            class="accordion-button collapsed"
+            data-bs-toggle="collapse"
+            data-bs-target="#accordionSeven"
+            aria-expanded="false"
+            aria-controls="accordionSeven"
+          >
+            {{CURRENCY}}
+          </button>
+        </h2>
+
+        <div
+          id="accordionSeven"
+          class="accordion-collapse collapse"
+          data-bs-parent="#accordionExample"
+        >
+          <div class="accordion-body">
+            {% for value_item in reference %}
+            {% if value_item.type == 7 and not value.IsDeleted %}
+            <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
+              <h5>{{ value_item.value }}</h5>
+              <!-- Edit Button -->
+              
+        
+      </div>
+      {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    {% comment %} SOLO_TYPE {% endcomment %}
+
+    <div class="accordion mt-3" id="accordionExample">
+      <div class="card accordion-item">
+        <h2 class="accordion-header" id="headingEight">
+          <button
+            type="button"
+            class="accordion-button collapsed"
+            data-bs-toggle="collapse"
+            data-bs-target="#accordionEight"
+            aria-expanded="false"
+            aria-controls="accordionEight"
+          >
+            {{SOLE}}
+          </button>
+        </h2>
+
+        <div
+          id="accordionEight"
+          class="accordion-collapse collapse"
+          data-bs-parent="#accordionExample"
+        >
+          <div class="accordion-body">
+            {% for value_item in reference %}
+            {% if value_item.type == 8 and not value_item.IsDeleted %}
+            <div class="item border-bottom py-2 d-flex align-items-center justify-content-between">
+              <h5>{{ value_item.value }}</h5>
+              <!-- Edit Button -->
+              <div>
+                <button
+                type="button"
+                class="btn btn-warning btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#modalCenter"
+                data-action="edit"
+                data-value="{{ value_item.value }}"
+                data-type="{{ value_item }}"
+                data-id="{{ value_item.id }}"
+                >
+              <i class="bx bx-edit text-white"></i>
+            </button>
+            <!-- Delete Button -->
+            <form
+            action="{% url "delete_reference" value_item.id %}"
+            method="POST"
+            style="display: inline"
+            
+            >
+            {% csrf_token %}
+            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+              <i class="bx bx-trash"></i>
+            </button>
+          </form>
+        </div>
+        
+      </div>
+      {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
 
 {% comment %} LINING_TYPE {% endcomment %}
 
@@ -493,7 +493,7 @@
         aria-expanded="false"
         aria-controls="accordionNine"
       >
-       Astar
+       {{LINING}}
       </button>
     </h2>
 
@@ -571,7 +571,7 @@
           modal.find('select[name="type"]').parent().hide(); // Hide the type field
           modal.find('form').attr('action', "{% url 'update_reference' 0 %}".replace('0', id)); // Set form action to the correct update URL with the ID
         } else {
-          modal.find('.modal-title').text('Ma\'lumotnoma qo\'shish');
+          modal.find('.modal-title').text("{{NEW}} Ma'lumotnoma");
           modal.find('input[name="value"]').val('');
           modal.find('select[name="type"]').parent().show(); // Show the type field
           modal.find('select[name="type"]').val('--------');

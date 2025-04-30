@@ -148,9 +148,10 @@ def shoe_model_update(request, pk):
 
     forms = shoe_model_forms(instance=shoe_model_item)
     context = {
-        "forms":forms
+        "forms":forms,
+        "back_url_name":"home"
     }
-    return render(request , 'shoe_model/shoe_model_update.html', context=context)
+    return render(request , 'update.html', context=context)
 
 def shoe_model_delete(request, pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
@@ -228,9 +229,10 @@ def staff_update(request, pk):
     
     forms = staff_forms(instance=staff_item)
     context = {
-        "forms":forms
+        "forms":forms,
+        "url_back_name":"staff_view"
     }
-    return render(request , "staff/staff_update.html" , context=context)
+    return render(request , "update.html" , context=context)
 
 def staff_delete(request, pk):
     staff_item = staff.objects.get(pk=pk)
@@ -285,10 +287,11 @@ def clients_update(request, pk):
             return redirect('clients_view')
     
     forms = clients_forms(instance=client_item)
-    context ={
-        "forms":forms
+    context = {
+        "forms":forms,
+        "url_back_name":"clients_view"
     }
-    return render(request , "clients/clients_update.html" , context=context)
+    return render(request , "update.html" , context=context)
 
 def clients_delete(request, pk):
     client_item = clients.objects.get(pk=pk)
@@ -335,7 +338,7 @@ def orders_create(request):
     }
     return render(request, "orders/orders_create.html", context=context)
 
-def order_read(request , pk):
+def order_read(request, pk):
     order_item = orders.objects.get(pk=pk)
     details = Order_details.objects.filter(order_id=order_item.pk, IsDeleted=False)
 
@@ -345,7 +348,7 @@ def order_read(request , pk):
     }
     return render(request , "orders/order_read.html" , context=context)
 
-def orders_update(request , pk):
+def orders_update(request, pk):
     order_item = orders.objects.get(pk=pk)
     
     if request.method == "POST":
@@ -355,19 +358,29 @@ def orders_update(request , pk):
             return redirect('orders_view')  
     
     form = orders_forms(instance=order_item)
-    return render(request, 'orders/orders_update.html', {'forms': form})
+    context = {
+        "forms":form,
+        "url_back_name":"orders_view"
+    }
+    return render(request, 'update.html', context=context)
 
-def orders_delete(request , pk):
+def orders_delete(request, pk):
     order_item = orders.objects.get(pk=pk)
     order_item.IsDeleted = True
     order_item.save()
     return redirect('orders_view')
 
 # producement
-
 def producement_view(request):
     producement_list = producement.objects.filter(~Q(order_id__client_id__name="SKLAT") , IsDeleted=False).order_by('id')
     producement_sklat_list = producement.objects.filter(order_id__client_id__name="SKLAT", IsDeleted=False).order_by('id')
+    staff_list = staff.objects.filter(IsDeleted=False)
+    shoe_models = shoe_model.objects.filter(IsDeleted=False)
+    colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value)
+    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value)
+    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value)
+    statuses = references.objects.filter(IsDeleted=False, type=ReferenceType.STATUS.value)
+    order_list = orders.objects.filter(IsDeleted=False)
 
     paginator = Paginator(producement_list, 10)  # Paginate by 10 items per page
     page_number = request.GET.get('page', 1)
@@ -382,6 +395,13 @@ def producement_view(request):
     context = {
         "producement_list":page_obj,
         "producement_sklat_list":page_obj_sklat,
+        "staff_list":staff_list,
+        "shoe_models":shoe_models,
+        "colors":colors,
+        "leather_types":leather_types,
+        "sole_types":sole_types,
+        "statuses":statuses,
+        "order_list":order_list
 
     }
     return render(request,'producement/producement.html' ,context=context)
@@ -455,7 +475,6 @@ def producement_delete(request ,pk):
     return redirect('producement_view') 
 
 # staff_payments
-
 def staff_payment_create(request):
     if request.method == "POST":
         forms = staff_payments_forms(request.POST)

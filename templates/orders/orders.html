@@ -4,19 +4,19 @@
 <div class="container">
   <div class="card mt-3">
     <div class="d-flex justify-content-between align-items-center p-3">
-      <h5 class="card-header p-0 bg-white border-0">Buyurtmalar</h5>
-      <a class="btn btn-primary" href="{% url "orders_create" %}">Yangi buyurtma</a>
+      <h5 class="card-header p-0 bg-white border-0">{{ORDERS}}</h5>
+      <a class="btn btn-primary" href="{% url "orders_create" %}">{{NEW}} {{ORDER}}</a>
     </div>
     <div class="table-responsive text-nowrap">
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>No.</th>
-            <th>Klient</th>
-            <th>Jami Narxi</th>
-            <th>Topshirish sana</th>
-            <th>Status</th>
-            <th>Tahrirlash</th>
+            <th>{{ID}}</th>
+            <th>{{CLIENT}}</th>
+            <th>{{TOTAL_PRICE}}</th>
+            <th>{{DEADLINE}}</th>
+            <th>{{STATUS}}</th>
+            <th>{{ACTIONS}}</th>
           </tr>
         </thead>
         <tbody class="table-border-bottom-0">
@@ -40,7 +40,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="8" class="text-center">Buyurtmalar mavjud emas.</td>
+            <td colspan="8" class="text-center">{{ORDERS}} {{NO_DATA}}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -75,7 +75,7 @@
           <!-- Joriy sahifa ma'lumoti -->
           <li class="page-item disabled">
             <a class="page-link">
-              Sahifa {{ orders_list.number }} / {{ orders_list.paginator.num_pages }}
+              {{PAGE}} {{ orders_list.number }} / {{ orders_list.paginator.num_pages }}
             </a>
           </li>
       

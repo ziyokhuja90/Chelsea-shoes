@@ -19,7 +19,7 @@
     />
     <title>
       
-      Chelsea shoes
+      {{TITLE}}
      
      </title>
  
@@ -77,15 +77,15 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="deleteModalLabel">O'chirib tashlashni tasdiqlash</h5>
+            <h5 class="modal-title" id="deleteModalLabel">{{DELETE_CONFIRMATION_TITLE}}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            Haqiqatan ham bu elementni oʻchirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo‘lmaydi.
+            {{DELETE_CONFIRMATION_INFO}}
           </div>
           <div class="modal-footer">
-            <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Ha, O'chirib tashla</button>
-            <a id="confirmDeleteLink" href="#" class="btn btn-danger" style="display: none;">Ha, O'chirib tashla</a>
+            <button type="button" id="confirmDeleteBtn" class="btn btn-danger">{{DELETE_CONFIRMATION_BUTTON}}</button>
+            <a id="confirmDeleteLink" href="#" class="btn btn-danger" style="display: none;">{{DELETE_CONFIRMATION_BUTTON}}</a>
           </div>
         </div>
       </div>
@@ -103,7 +103,7 @@
               <span class="app-brand-logo demo">
                 <img src="{% static 'Chelsea-shoes.png' %}" alt="Chelsea-shoes" width="35">
               </span>
-              <span class="app-brand-text demo menu-text fw-bolder ms-2 text-capitalize">Chelsea</span>
+              <span class="app-brand-text demo menu-text fw-bolder ms-2 text-capitalize">{{BRAND_NAME}}</span>
             </a>
 
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
@@ -118,7 +118,7 @@
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-home"></i>
                   <span class="fw-bolder">
-                    Mahsulotlar
+                    {{PRODUCTS}}
                   </span>
                   
                 </div>
@@ -129,7 +129,7 @@
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-cart-alt"></i>
                   <span class="fw-bolder">
-                    Sotuv
+                    {{SELL}}
                   </span>
                   
                 </div>
@@ -140,7 +140,7 @@
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-money"></i>
                   <span class="fw-bolder">
-                    Daromad
+                    {{INCOME}}
                   </span>
                   
                 </div>
@@ -151,7 +151,7 @@
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-briefcase"></i>
                   <span class="fw-bolder">
-                    Xodimlar
+                    {{STAFFS}}
                   </span>
                   
                 </div>
@@ -164,19 +164,18 @@
 
 
                   <span class="fw-bolder">
-                    Qarzlar
+                    {{DEBTS}}
                   </span>
                   
                 </div>
               </a>
             </li>
-
             <li class="menu-item">
               <a href="{% url "producement_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-package"></i>
                   <span class="fw-bolder">
-                    Ishlab chiqarish
+                    {{PRODUCEMENT}}
                   </span>
                   
                 </div>
@@ -187,7 +186,7 @@
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-group"></i>
                   <span class="fw-bolder">
-                    Xaridorlar
+                    {{CLIENTS}}
                   </span>
                 </div>
               </a>
@@ -197,7 +196,7 @@
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-wallet"></i>
                   <span class="fw-bolder">
-                    Xarjatlar
+                    {{EXPENSES}}
                   </span>
                   
                 </div>
@@ -208,7 +207,7 @@
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-receipt"></i>
                   <span class="fw-bolder">
-                    Buyurtmalar
+                    {{ORDERS}}
                   </span>
                   
                 </div>
@@ -219,7 +218,7 @@
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-file"></i>
                   <span class="fw-bolder">
-                    Ma'lumotnoma
+                    {{REFERENCE}}
                   </span>
                 </div>
               </a>
@@ -251,7 +250,7 @@
                   <input
                     type="text"
                     class="form-control border-0 shadow-none"
-                    placeholder="Qidiruv..."
+                    placeholder="{{SEARCH}}"
                     aria-label="Search..."
                   />
                 </div>
@@ -265,7 +264,7 @@
                 <!-- User -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
 
-                  <a class="btn btn-danger text-white" href="{% url "logout" %}">Chiqish</a>
+                  <a class="btn btn-danger text-white" href="{% url "logout" %}">{{LOG_OUT}}</a>
                 </li>
                 <!--/ User -->
               </ul>
