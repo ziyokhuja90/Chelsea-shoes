@@ -382,6 +382,40 @@ def producement_view(request):
     statuses = references.objects.filter(IsDeleted=False, type=ReferenceType.STATUS.value)
     order_list = orders.objects.filter(IsDeleted=False)
 
+
+    staff_id, model, color, leather, sole, status, order = request.GET.get('staff_id', None), request.GET.get('shoe_model_id',None),request.GET.get('color_id',None),request.GET.get('leather_type',None),request.GET.get('solo_type',None),request.GET.get('status',None),request.GET.get('order',None) 
+
+    fields = [staff_id, model, color, leather, sole, status, order]
+    valid_filters = {}
+    
+    if any(fields):
+        filters = {
+            'staff_id': staff_id,
+            'shoe_model_id': model,
+            'color_id': color,
+            'leather_type': leather,
+            'solo_type': sole,
+            'status': status,
+            'order_id': order,
+            'IsDeleted': False,
+        }
+        valid_filters = {key: int(value) for key, value in filters.items() if value not in [None, '']}
+        
+        producement_list = producement.objects.filter(
+            ~Q(order_id__client_id__name="SKLAT"), 
+            **valid_filters
+
+            ).order_by('id')
+        
+        producement_sklat_list = producement.objects.filter(
+            order_id__client_id__name="SKLAT",
+            
+            **valid_filters    
+            
+            ).order_by('id')
+        
+
+
     paginator = Paginator(producement_list, 10)  # Paginate by 10 items per page
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
@@ -401,7 +435,8 @@ def producement_view(request):
         "leather_types":leather_types,
         "sole_types":sole_types,
         "statuses":statuses,
-        "order_list":order_list
+        "order_list":order_list,
+        **valid_filters
 
     }
     return render(request,'producement/producement.html' ,context=context)

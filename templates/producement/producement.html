@@ -18,7 +18,8 @@
                     {% for staff in staff_list %}
                         <option 
                             value="{{ staff.id }}" 
-                            {% if request.GET.staff_id == staff.id %}selected{% endif %}>
+                            {% if staff_id == staff.id %}selected{% endif %}
+                            >
                             {{ staff }}
                         </option>
                     {% endfor %}
@@ -33,7 +34,7 @@
                     {% for model in shoe_models %}
                         <option 
                             value="{{ model.id }}" 
-                            {% if request.GET.shoe_model_id == model.id %}selected{% endif %}
+                            {% if shoe_model_id == model.id %}selected{% endif %}
                         >
                             {{ model }}
                         </option>
@@ -49,7 +50,7 @@
                     {% for color in colors %}
                         <option 
                             value="{{ color.id }}" 
-                            {% if request.GET.color_id == color.id %}selected{% endif %}
+                            {% if color_id == color.id %}selected{% endif %}
                         >
                             {{ color }}
                         </option>
@@ -65,7 +66,7 @@
                     {% for leather in leather_types %}
                         <option 
                             value="{{ leather.id }}" 
-                            {% if request.GET.leather_type == leather.id %}selected{% endif %}
+                            {% if leather_type == leather.id %}selected{% endif %}
                         >
                             {{ leather }}
                         </option>
@@ -81,7 +82,7 @@
                     {% for solo in sole_types %}
                         <option 
                             value="{{ solo.id }}" 
-                            {% if request.GET.solo_type == solo.id %}selected{% endif %}
+                            {% if solo_type == solo.id %}selected{% endif %}
                         >
                             {{ solo }}
                         </option>
@@ -94,12 +95,12 @@
                 <label for="status" class="form-label">{{STATUS}}</label>
                 <select id="status" name="status" class="form-control">
                     <option value="">{{CHOOSE}}</option>
-                    {% for status in statuses %}
+                    {% for status_item in statuses %}
                         <option 
-                            value="{{ status.id }}" 
-                            {% if request.GET.status == status.id %}selected{% endif %}
+                            value="{{ status_item.id }}" 
+                            {% if status == status_item.id %}selected{% endif %}
                         >
-                            {{ status }}
+                            {{ status_item }}
                         </option>
                     {% endfor %}
                 </select>
@@ -112,7 +113,7 @@
                     {% for order in order_list %}
                         <option 
                             value="{{ order.id }}" 
-                            {% if request.GET.order == order.id %}selected{% endif %}
+                            {% if order_id == order.id %}selected{% endif %}
                         >
                             {{ order }}
                         </option>
