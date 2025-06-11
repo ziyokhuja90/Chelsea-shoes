@@ -288,7 +288,102 @@ class staff_payments_read_forms(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Set the initial date value in the proper display format
-        print("--------------------------------------------------")
 
         self.fields['date'].initial = now().strftime('%d %m %Y')
         self.fields['date'].input_formats = ['%d %m %Y']
+
+
+class ProducementKroyForms(forms.Form):
+    order_id = forms.ModelChoiceField(
+        queryset=models.orders.objects.filter(IsDeleted=False),
+        empty_label='---------',
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        )
+        )
+    
+    shoe_model_id = forms.ModelChoiceField(
+        queryset=models.shoe_model.objects.filter(IsDeleted=False),
+        empty_label='---------',
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+
+    staff_id = forms.ModelChoiceField(
+        queryset=models.staff.objects.filter(profession__value='KROYCHI' ,IsDeleted=False), 
+        empty_label='---------',
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    color_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.COLOR.value,
+            IsDeleted=False), 
+        empty_label='---------',
+        
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    leather_type = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.LEATHER_TYPE.value,
+            IsDeleted=False),
+        empty_label='---------',
+        
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    lining_type_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.LINING_TYPE.value, 
+            IsDeleted=False), 
+        empty_label='---------',
+        
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    quantity = forms.IntegerField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+
+    quantity_type_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.QUANTITY_TYPE.value,
+            IsDeleted=False), 
+        empty_label='---------',
+        
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    price = forms.FloatField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    
+    status = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.STATUS.value,
+            IsDeleted=False), 
+        empty_label='---------',
+        initial= models.references.objects.get(value="YARATILDI"),
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+
+    date = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "class": "form-control datepicker",
+                "placeholder": "dd mm yyyy",
+            },
+            format='%d %m %Y'  # Display format
+        ),
+        input_formats=['%d %m %Y'],  # Accepted input formats
+        initial=now().strftime('%d %m %Y')  # Initial value
+    )

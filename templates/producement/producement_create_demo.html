@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-3">
+    <div class="card shadow-sm">
+        <div class="card-header bg-info ">
+            <h3 class="mb-0 text-white">{{CREATE}}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    {% for field in forms %}
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            
+                <div class="d-flex gap-3 align-items-center justify-content-end mt-4">
+                    <a href="{% url 'producement_view' %}" class="btn btn-secondary">{{CANCEL}}</a>
+                    <button type="submit" class="btn btn-primary">{{SAVE}}</button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script>
+    $(document).ready(function() {
+        console.log("Script is running");
+
+        // Assuming details JSON data is passed from the backend
+        const details = JSON.parse('{{ details|safe }}');
+
+        console.log(details); // Debugging output to check details
+
+        // Listen for changes on the order_id dropdown
+        $('#id_order_id').change(function () {
+
+            // Get the selected order ID
+            const selectedOrderId = $(this).val();
+            const SelectedOrderText = $(this).find(":selected").text();
+            console.log("Selected Order ID: " + selectedOrderId);
+            
+
+
+            // Reference the order_detail_id dropdown
+            const orderDetailSelect = $('#id_order_detail_id');
+
+            // Clear existing options in the order_detail_id dropdown
+            orderDetailSelect.empty();
+
+            if (SelectedOrderText == "SKLAT"){
+                orderDetailSelect.prop("disabled", true);
+            }
+
+            // Check if an order ID is selected
+            if (selectedOrderId) {
+                orderDetailSelect.append('<option value="">----------</option>');
+                // Filter details based on the selected order_id and populate options
+                details.forEach(detail => {
+                    if (detail.order_id == selectedOrderId) {
+                        // Add a new option to the dropdown
+                        orderDetailSelect.append(`
+                            <option value="${detail.id}">
+                                ${detail.model_id__name} - Quantity: ${detail.quantity} - Price: ${detail.price}
+                            </option>
+                        `);
+                    }
+                });
+
+                // If no matching details are found, show a default message
+                if (orderDetailSelect.children().length === 0) {
+                    orderDetailSelect.append('<option value="">No details available</option>');
+                }
+            } else {
+                // If no order ID is selected, show a default option
+                orderDetailSelect.append('<option value="">Please select an order first</option>');
+            }
+        });
+        function setSelectedValue(selectId, value) {
+            const selectElement = document.getElementById(selectId);
+            console.log("-----------------------");
+            console.log(selectElement);
+            
+            
+            if (selectElement) {
+                // Loop through all options and set the matching one as selected
+                Array.from(selectElement.options).forEach(option => {
+                    option.selected = option.value == value;
+                    console.log(`option value = ${option.value}; value= ${value}`);
+                    
+                });
+            }
+    }
+
+        let selectFields = ["id_color_id", "id_leather_type", "id_solo_type", "id_lining_type_id", "id_shoe_model_id"];
+        $('#id_order_detail_id').change(function (){
+            const selectedOrderDetail = $(this).val();
+            details.forEach(detail =>{
+                if(detail.id == selectedOrderDetail){
+                    
+                    setSelectedValue("id_color_id", detail.color_id);
+                    setSelectedValue("id_leather_type", detail.leather_type);
+                    setSelectedValue("id_solo_type", detail.sole_type_id);
+                    setSelectedValue("id_lining_type_id", detail.lining_type_id);
+                    setSelectedValue("id_shoe_model_id", detail.model_id);
+                }
+            })
+            
+        })
+    });
+</script>
+
+
+
+{% endblock content %}

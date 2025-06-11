@@ -372,8 +372,11 @@ def orders_delete(request, pk):
 
 # producement
 def producement_view(request):
+    professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False).order_by("order")
+
     producement_list = producement.objects.filter(~Q(order_id__client_id__name="SKLAT") , IsDeleted=False).order_by('id')
     producement_sklat_list = producement.objects.filter(order_id__client_id__name="SKLAT", IsDeleted=False).order_by('id')
+    
     staff_list = staff.objects.filter(IsDeleted=False)
     shoe_models = shoe_model.objects.filter(IsDeleted=False)
     colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value)
@@ -427,6 +430,7 @@ def producement_view(request):
 
 
     context = {
+        "professions":professions,
         "producement_list":page_obj,
         "producement_sklat_list":page_obj_sklat,
         "staff_list":staff_list,
@@ -472,6 +476,32 @@ def producement_create(request):
         "details":details_json,
     }    
     return render(request, "producement/producement_create.html", context=context)
+
+def producement_create_kroy(request):
+    if request.method == "POST":
+        forms = ProducementKroyForms(request.POST)
+        if forms.is_valid():
+            producment_data = {
+                'order_id': forms.cleaned_data['order_id'],
+                'shoe_model_id': forms.cleaned_data['shoe_model_id'],
+                'staff_id': forms.cleaned_data['staff_id'],
+                'color_id': forms.cleaned_data['color_id'],
+                'leather_type': forms.cleaned_data['leather_type'],
+                'lining_type_id': forms.cleaned_data['lining_type_id'],
+                'quantity': forms.cleaned_data['quantity'],
+                'quantity_type_id': forms.cleaned_data['quantity_type_id'],
+                'price': forms.cleaned_data['price'],
+                'status': forms.cleaned_data['status'],
+                'date': forms.cleaned_data['date'],
+            }
+            producement.objects.create(**producment_data)
+            return redirect('producement_view')
+    else:
+        forms = ProducementKroyForms()
+    context = {
+        "forms":forms
+    }
+    return render(request, 'producement/producement_create.html', context=context)
 
 def producement_read(request, pk):
     producement_item = producement.objects.get(pk=pk)

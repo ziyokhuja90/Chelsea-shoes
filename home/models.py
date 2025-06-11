@@ -31,6 +31,7 @@ class references(models.Model):
     value = models.CharField(max_length=255 , verbose_name="ma'lumotnoma qiymati")
     IsDeleted = models.BooleanField(default=False)
     IsSystem = models.BooleanField(default=False)
+    order = models.IntegerField(default=0)
     
     class Meta:
         db_table = "references"
@@ -102,7 +103,8 @@ class orders(models.Model):
         verbose_name="buyurtma xolati"
     )
     IsDeleted = models.BooleanField(default=False)
-
+    IsSystem = models.BooleanField(default=False)
+    
     class Meta:
         db_table = "orders"
         
@@ -237,7 +239,9 @@ class producement(models.Model):
         to=references,
         on_delete=models.CASCADE,
         related_name="solo_type_reference",
-        verbose_name="tagliki"    
+        verbose_name="tagliki",
+        null=True,
+        blank=True 
     )
     quantity = models.IntegerField(verbose_name="ish miqdori")
     quantity_type_id = models.ForeignKey(
@@ -276,6 +280,7 @@ class producement(models.Model):
         related_name="lining_type_producement"
 
     )
+    producement_id = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     IsDeleted = models.BooleanField(default=False)
 
     class Meta:

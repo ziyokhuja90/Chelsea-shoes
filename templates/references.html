@@ -305,29 +305,8 @@
               <h5>{{ value_item.value }}</h5>
               <!-- Edit Button -->
               <div>
-                <button
-                type="button"
-                class="btn btn-warning btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#modalCenter"
-                data-action="edit"
-                data-value="{{ value_item.value }}"
-                data-type="{{ value_item }}"
-                data-id="{{ value_item.id }}"
-                >
-              <i class="bx bx-edit text-white"></i>
-            </button>
+
             <!-- Delete Button -->
-            <form
-            action="{% url "delete_reference" value_item.id %}"
-            method="POST"
-            style="display: inline"
-            >
-            {% csrf_token %}
-            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
-              <i class="bx bx-trash"></i>
-            </button>
-          </form>
         </div>
         
       </div>

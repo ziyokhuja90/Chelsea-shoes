@@ -39,7 +39,8 @@ urlpatterns = [
     
     # producement
     path('producement' , views.producement_view , name="producement_view"),
-    path('producement/create' , views.producement_create , name='producement_create'),
+    path('producement/create' , views.producement_create , name='producement_kroy'),
+    path('producement/create/kroy' , views.producement_create_kroy , name='producement_create_kroy'),
     path('producement/read/<int:pk>' , views.producement_read , name='producement_read'),
     path('producement/update/<int:pk>' , views.producement_update , name="producement_update"),
     path('producement/delete/<int:pk>', views.producement_delete , name="producement_delete"),

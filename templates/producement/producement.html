@@ -130,153 +130,149 @@
     </form>
 </div>
     <div class="card mt-3">
-        <div class="d-flex justify-content-between align-items-center p-3">
-            <h5 class="card-header p-0 bg-white border-0">{{PRODUCEMENT}}</h5>
-            <a class="btn btn-primary" href="{% url "producement_create" %}">{{NEW}} {{PRODUCEMENT|lower}}</a>
-        </div>
+
 
             <!-- Tabs navigation -->
-            <ul class="nav nav-tabs p-3" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">
-                        {{ORDER}} {{WORKS}}
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">
-                        {{WAREHOUSE}}
-                    </button>
-                </li>
-            </ul>
-            <div class="tab-content p-1" id="myTabContent">
-                <!-- Tab 1 content -->
-                <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
-                    <div class="table-responsive text-nowrap mt-0">
+        <div class="container">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        {% for profession in professions %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                    id="profession-{{ profession.order }}-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#profession-{{ profession.order }}" 
+                    type="button" role="tab" 
+                    aria-controls="profession-{{ profession.order }}" 
+                    aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                {{ profession.value }}
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
 
-                        
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>{{ID}}</th>
-                                    <th>{{STAFF}}</th>
-                                    <th>{{MODEL}}</th>
-                                    <th>{{ORDER}}</th>
-                                    <th>{{QUANTITY}}</th>
-                                    <th>{{PRICE}}</th>
-                                    <th>{{STATUS}}</th>
-                                    <th>{{ACTIONS}}</th>
-                                </tr>
-                            </thead>
-                            <tbody class="table-border-bottom-0">
-                                {% for producement in producement_list %}
-                                <tr>
-                                    <td><strong>{{ forloop.counter}}</strong></td>
-                                    <td>{{ producement.staff_id }}</td>
-                                    <td>
-                                        <strong>Nomi:</strong> {{ producement.shoe_model_id }} <br> 
-                                        <strong>Rangi: </strong> {{ producement.color_id }} <br>
-                                        <strong>Tagliki: </strong> {{ producement.solo_type }} <br>
-                                        <strong>Astari: </strong> {{ producement.lining_type_id }} 
-                                    </td>
-                                    <td>
-                                        <strong>Xaridor:</strong> {{ producement.order_id.client_id }}<br>
-                                        <strong>Yakunlanish sana:</strong> {{ producement.order_id.complete_date|date:"d.m.Y" }}<br>
-                                        <strong>Sana:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
-                                    </td>
-                                    <td>{{ producement.quantity }}</td>
-                                    <td>{{ producement.price }}</td>
-                                    <td>
-                                        <span class="badge text-secondary">
-                                            {{ producement.status }}
-                                        </span>
-                                    </td>
-                                    <td class="d-flex flex-column gap-1 align-items-center">
-                                        <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">
-                                            <i class="bx bx-show "></i>
-                                        </a>
-                                        <a class="btn btn-sm btn-warning text-white" href="{% url 'producement_update' producement.id %}">
-                                            <i class="bx bx-edit-alt "></i>
-                                        </a>
-                                        <a class="btn btn-sm btn-danger" href="#"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteModal"
-                                            data-delete-url="{% url 'producement_delete' producement.id %}">
-                                            <i class="bx bx-trash "></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="8" class="text-center">{{PRODUCEMENT}} {{NO_DATA}}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+    <!-- Tab Content -->
+    <div class="tab-content" id="myTabContent">
+        {% for profession in professions %}
+        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+            id="profession-{{ profession.order }}" 
+            role="tabpanel" 
+            aria-labelledby="profession-{{ profession.order }}-tab">
+        <div class="d-flex justify-content-between align-items-center p-3">
+            <h5 class="card-header p-0 bg-white border-0">{{PRODUCEMENT}}</h5>
+            <a class="btn btn-primary"
+            {% if profession.order == 1 %}
+            href="{% url "producement_create_kroy" %}"
+            {%else%}
+            href=""
+            {% endif %}
 
-                        <nav aria-label="Sahifa navigatsiyasi" class="my-4">
-                            <ul class="pagination justify-content-center">
-                              <!-- Oldingi tugmalar -->
-                              {% if producement_list.has_previous %}
-                                <li class="page-item">
-                                  <a class="page-link" href="?page=1" aria-label="Birinchi">
-                                    <i class="bx bx-chevrons-left"></i> 
-                                  </a>
-                                </li>
-                                <li class="page-item">
-                                  <a class="page-link" href="?page={{ producement_list.previous_page_number }}" aria-label="Oldingi">
-                                    <i class="bx bx-chevron-left"></i> 
-                                  </a>
-                                </li>
-                              {% else %}
-                                <li class="page-item disabled">
-                                  <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                    <i class="bx bx-chevrons-left"></i> 
-                                  </a>
-                                </li>
-                                <li class="page-item disabled">
-                                  <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                    <i class="bx bx-chevron-left"></i> 
-                                  </a>
-                                </li>
-                              {% endif %}
-                          
-                              <!-- Joriy sahifa ma'lumoti -->
-                              <li class="page-item disabled">
-                                <a class="page-link">
-                                  {{PAGE}} {{ producement_list.number }} / {{ producement_list.paginator.num_pages }}
-                                </a>
-                              </li>
-                          
-                              <!-- Keyingi tugmalar -->
-                              {% if producement_list.has_next %}
-                                <li class="page-item">
-                                  <a class="page-link" href="?page={{ producement_list.next_page_number }}" aria-label="Keyingi">
-                                     <i class="bx bx-chevron-right"></i>
-                                  </a>
-                                </li>
-                                <li class="page-item">
-                                  <a class="page-link" href="?page={{ producement_list.paginator.num_pages }}" aria-label="Oxirgi">
-                                     <i class="bx bx-chevrons-right"></i>
-                                  </a>
-                                </li>
-                              {% else %}
-                                <li class="page-item disabled">
-                                  <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                     <i class="bx bx-chevron-right"></i>
-                                  </a>
-                                </li>
-                                <li class="page-item disabled">
-                                  <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                     <i class="bx bx-chevrons-right"></i>
-                                  </a>
-                                </li>
-                              {% endif %}
-                            </ul>
-                          </nav>
-                    </div>
-                </div>
+            
+            
+            >{{NEW}} {{PRODUCEMENT|lower}}</a>
+        </div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{{ ID }}</th>
+                        <th>{{ STAFF }}</th>
+                        <th>{{ MODEL }}</th>
+                        <th>{{ ORDER }}</th>
+                        <th>{{ QUANTITY }}</th>
+                        <th>{{ PRICE }}</th>
+                        <th>{{ STATUS }}</th>
+                        <th>{{ ACTIONS }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% with 0 as counter %}
+                        {% for producement in producement_list %}
+                            {% if producement.staff_id.profession.id == profession.id %}
+                                {% with counter|add:"1" as counter %}
+                                    <tr>
+                                        <td>{{ counter }}</td>
+                                        <td>{{ producement.staff_id }}</td>
+                                        <td>
+                                            <strong>Nomi:</strong> {{ producement.shoe_model_id }} <br>
+                                            <strong>Rangi:</strong> {{ producement.color_id }} <br>
+                                            <strong>Tagliki:</strong> {{ producement.solo_type }} <br>
+                                            <strong>Astari:</strong> {{ producement.lining_type_id }}
+                                        </td>
+                                        <td>
+                                            <strong>Xaridor:</strong> {{ producement.order_id.client_id }}<br>
+                                            <strong>Yakunlanish sana:</strong> {{ producement.order_id.complete_date|date:"d.m.Y" }}<br>
+                                            <strong>Sana:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
+                                        </td>
+                                        <td>{{ producement.quantity }}</td>
+                                        <td>{{ producement.price }}</td>
+                                        <td>
+                                            <span class="badge text-secondary">
+                                                {{ producement.status }}
+                                            </span>
+                                        </td>
+                                        <td class="d-flex flex-column gap-1 align-items-center">
+                                            <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">
+                                                <i class="bx bx-show"></i>
+                                            </a>
+                                            <a class="btn btn-sm btn-warning text-white" href="{% url 'producement_update' producement.id %}">
+                                                <i class="bx bx-edit-alt"></i>
+                                            </a>
+                                            <a class="btn btn-sm btn-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" data-delete-url="{% url 'producement_delete' producement.id %}">
+                                                <i class="bx bx-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endwith %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+    </div>
+    <!-- Pagination -->
+    <nav aria-label="Sahifa navigatsiyasi" class="my-4">
+      <ul class="pagination justify-content-center">
+        <!-- Oldingi tugmalar -->
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="Birinchi">
+            <i class="bx bx-chevrons-left"></i>
+          </a>
+        </li>
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="Oldingi">
+            <i class="bx bx-chevron-left"></i>
+          </a>
+        </li>
+        <!-- Joriy sahifa -->
+        <li class="page-item disabled">
+          <a class="page-link"> {{PAGE}} 1 / 5</a>
+        </li>
+        <!-- Keyingi tugmalar -->
+        <li class="page-item">
+          <a class="page-link" href="#" aria-label="Keyingi">
+            <i class="bx bx-chevron-right"></i>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="#" aria-label="Oxirgi">
+            <i class="bx bx-chevrons-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+      </div> 
+    </div>
+</div>
                 <!-- Tab 2 content -->
-                <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+                {% comment %} <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
                     <div class="table-responsive text-nowrap mt-3">
                         <table class="table table-hover">
                             <thead>
@@ -398,34 +394,10 @@
                           </nav>
                     </div>
                     </div>
-                </div>
-        </div>        
-    </div>
-</div>
+                    {% endcomment %}
 
+          
 
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const tabKey = "activeTab";
-    const activeTab = localStorage.getItem(tabKey);
-
-    if (activeTab) {
-      const tabElement = document.querySelector(`#${activeTab}-tab`);
-      if (tabElement) {
-        const tab = new bootstrap.Tab(tabElement);
-        tab.show();
-      }
-    }
-
-    const tabs = document.querySelectorAll('.nav-link[data-bs-toggle="tab"]');
-    tabs.forEach((tab) => {
-      tab.addEventListener("shown.bs.tab", function (event) {
-        localStorage.setItem(tabKey, event.target.id.split('-')[0]);
-      });
-    });
-  });
-</script>
 
 
 
