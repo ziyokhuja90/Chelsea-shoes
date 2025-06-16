@@ -4,6 +4,7 @@ from django.utils.timezone import now
 from datetime import datetime
 
 from django.forms.widgets import DateInput
+from config import system_variables
 
 class shoe_model_forms(forms.ModelForm):
     class Meta:
@@ -124,7 +125,7 @@ class orders_forms(forms.ModelForm):
         self.fields['date'].input_formats = ['%d %m %Y']
         self.fields['complete_date'].input_formats = ['%d %m %Y']
 
-        self.fields['status'].initial = models.references.objects.get(value="YARATILDI")
+        self.fields['status'].initial = models.references.objects.get(value=system_variables.CREATED)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
 
 
@@ -208,7 +209,7 @@ class producement_forms(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['status'].initial = models.references.objects.get(value="YARATILDI")
+        self.fields['status'].initial = models.references.objects.get(value=system_variables.CREATED)
         self.fields['date'].initial = now()
         self.fields['date'].input_formats = ['%d %m %Y']
 
@@ -296,7 +297,7 @@ class staff_payments_read_forms(forms.ModelForm):
 class ProducementKroyForms(forms.Form):
     order_id = forms.ModelChoiceField(
         queryset=models.orders.objects.filter(IsDeleted=False),
-        empty_label='---------',
+        empty_label= system_variables.EMPTY_LABEL,
         widget=forms.Select(
             attrs={'class':"form-select"}
         )
@@ -304,14 +305,14 @@ class ProducementKroyForms(forms.Form):
     
     shoe_model_id = forms.ModelChoiceField(
         queryset=models.shoe_model.objects.filter(IsDeleted=False),
-        empty_label='---------',
+        empty_label= system_variables.EMPTY_LABEL ,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
 
     staff_id = forms.ModelChoiceField(
-        queryset=models.staff.objects.filter(profession__value='KROYCHI' ,IsDeleted=False), 
-        empty_label='---------',
+        queryset=models.staff.objects.filter(profession__value=system_variables.KROY ,IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
@@ -320,7 +321,7 @@ class ProducementKroyForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.COLOR.value,
             IsDeleted=False), 
-        empty_label='---------',
+        empty_label= system_variables.EMPTY_LABEL ,
         
         widget=forms.Select(
             attrs={'class':"form-select"}
@@ -330,7 +331,7 @@ class ProducementKroyForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.LEATHER_TYPE.value,
             IsDeleted=False),
-        empty_label='---------',
+        empty_label= system_variables.EMPTY_LABEL ,
         
         widget=forms.Select(
             attrs={'class':"form-select"}
@@ -340,7 +341,7 @@ class ProducementKroyForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.LINING_TYPE.value, 
             IsDeleted=False), 
-        empty_label='---------',
+        empty_label= system_variables.EMPTY_LABEL ,
         
         widget=forms.Select(
             attrs={'class':"form-select"}
@@ -355,7 +356,7 @@ class ProducementKroyForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.QUANTITY_TYPE.value,
             IsDeleted=False), 
-        empty_label='---------',
+        empty_label= system_variables.EMPTY_LABEL ,
         
         widget=forms.Select(
             attrs={'class':"form-select"}
@@ -370,8 +371,118 @@ class ProducementKroyForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.STATUS.value,
             IsDeleted=False), 
-        empty_label='---------',
-        initial= models.references.objects.get(value="YARATILDI"),
+        empty_label= system_variables.EMPTY_LABEL ,
+        initial= models.references.objects.get(value=system_variables.CREATED),
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+
+    date = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "class": "form-control datepicker",
+                "placeholder": "dd mm yyyy",
+            },
+            format='%d %m %Y'  # Display format
+        ),
+        input_formats=['%d %m %Y'],  # Accepted input formats
+        initial=now().strftime('%d %m %Y')  # Initial value
+    )
+
+class ProducementLazirForms(forms.Form):
+    producement_id = forms.ModelChoiceField(
+        queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.KROY),
+        empty_label=system_variables.EMPTY_LABEL,
+        widget=forms.Select(
+            attrs={'class':'form-control'}
+        )
+    )
+    staff_id = forms.ModelChoiceField(
+        queryset=models.staff.objects.filter(profession__value=system_variables.LAZIR ,IsDeleted=False), 
+        empty_label=system_variables.EMPTY_LABEL,
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    quantity = forms.IntegerField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    quantity_type_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.QUANTITY_TYPE.value,
+            IsDeleted=False), 
+        empty_label=system_variables.EMPTY_LABEL,
+        
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    price = forms.FloatField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    
+    status = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.STATUS.value,
+            IsDeleted=False), 
+        empty_label=system_variables.EMPTY_LABEL,
+        initial= models.references.objects.get(value=system_variables.CREATED),
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+
+    date = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "class": "form-control datepicker",
+                "placeholder": "dd mm yyyy",
+            },
+            format='%d %m %Y'  # Display format
+        ),
+        input_formats=['%d %m %Y'],  # Accepted input formats
+        initial=now().strftime('%d %m %Y')  # Initial value
+    )
+
+class ProducementZakatopForms(forms.Form):
+    producement_id = forms.ModelChoiceField(
+        queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.LAZIR),
+        empty_label= system_variables.EMPTY_LABEL ,
+        widget=forms.Select(
+            attrs={'class':'form-control'}
+        )
+    )
+    staff_id = forms.ModelChoiceField(
+        queryset=models.staff.objects.filter(profession__value=system_variables.ZAKATOP ,IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    quantity = forms.IntegerField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    quantity_type_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.QUANTITY_TYPE.value,
+            IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    price = forms.FloatField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    
+    status = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.STATUS.value,
+            IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        initial= models.references.objects.get(value=system_variables.CREATED),
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))

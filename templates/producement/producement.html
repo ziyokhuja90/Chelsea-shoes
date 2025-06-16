@@ -163,6 +163,11 @@
             <a class="btn btn-primary"
             {% if profession.order == 1 %}
             href="{% url "producement_create_kroy" %}"
+            {% elif profession.order == 2 %}
+            href="{% url "producement_create_lazir" %}"
+            {% elif profession.order == 3 %}
+            href="{% url "producement_create_zakatop" %}"
+
             {%else%}
             href=""
             {% endif %}
