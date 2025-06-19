@@ -167,7 +167,10 @@
             href="{% url "producement_create_lazir" %}"
             {% elif profession.order == 3 %}
             href="{% url "producement_create_zakatop" %}"
-
+            {% elif profession.order == 4 %}
+            href="{% url "producement_create_tuquvchi" %}"
+            {% elif profession.order == 5 %}
+            href="{% url "producement_create_kosib" %}"
             {%else%}
             href=""
             {% endif %}

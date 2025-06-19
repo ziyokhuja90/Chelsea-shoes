@@ -536,7 +536,7 @@ def producement_create_zakatop(request):
                 new_producement.save()
 
                 # Redirect to a success page or display a success message
-                return redirect('prudcement_view')  # Replace with your success URL
+                return redirect('producement_view')  # Replace with your success URL
             except producement.DoesNotExist:
                 form.add_error('producement_id', 'Invalid Producement ID selected.')
     else:
@@ -579,11 +579,97 @@ def producement_create_lazir(request):
                 new_producement.save()
 
                 # Redirect to a success page or display a success message
-                return redirect('prudcement_view')  # Replace with your success URL
+                return redirect('producement_view')  # Replace with your success URL
             except producement.DoesNotExist:
                 form.add_error('producement_id', 'Invalid Producement ID selected.')
     else:
         forms = ProducementLazirForms()
+    context = {
+        "forms":forms
+    }
+    return render(request, 'producement/producement_create.html', context=context)
+
+def producement_create_tuquvchi(request):
+    if request.method == "POST":
+        form = ProducementTuquvchiForms(request.POST)
+        if form.is_valid():
+            # Get the selected producement_id
+            selected_producement_id = form.cleaned_data['producement_id']
+            try:
+                # Fetch the Producement object
+                original_producement = producement.objects.get(id=selected_producement_id.id)
+
+                # Create a new Producement object
+                new_producement = producement(
+                    staff_id=form.cleaned_data['staff_id'],
+                    shoe_model_id=original_producement.shoe_model_id,
+                    date=form.cleaned_data['date'],
+                    color_id=original_producement.color_id,
+                    leather_type=original_producement.leather_type,
+                    solo_type=original_producement.solo_type,
+                    quantity=form.cleaned_data['quantity'],
+                    quantity_type_id=form.cleaned_data['quantity_type_id'],
+                    price=form.cleaned_data['price'],
+                    order_id=original_producement.order_id,
+                    status=form.cleaned_data['status'],
+                    order_detail_id=original_producement.order_detail_id,
+                    lining_type_id=original_producement.lining_type_id,
+                    producement_id=original_producement,  # Link to original producement
+                    IsDeleted=False
+                )
+
+                # Save the new Producement object
+                new_producement.save()
+
+                # Redirect to a success page or display a success message
+                return redirect('producement_view')  # Replace with your success URL
+            except producement.DoesNotExist:
+                form.add_error('producement_id', 'Invalid Producement ID selected.')
+    else:
+        forms = ProducementTuquvchiForms()
+    context = {
+        "forms":forms
+    }
+    return render(request, 'producement/producement_create.html', context=context)
+
+def producement_create_kosib(request):
+    if request.method == "POST":
+        form = ProducementKosibForms(request.POST)
+        if form.is_valid():
+            # Get the selected producement_id
+            selected_producement_id = form.cleaned_data['producement_id']
+            try:
+                # Fetch the Producement object
+                original_producement = producement.objects.get(id=selected_producement_id.id)
+
+                # Create a new Producement object
+                new_producement = producement(
+                    staff_id=form.cleaned_data['staff_id'],
+                    shoe_model_id=original_producement.shoe_model_id,
+                    date=form.cleaned_data['date'],
+                    color_id=original_producement.color_id,
+                    leather_type=original_producement.leather_type,
+                    solo_type=original_producement.solo_type,
+                    quantity=form.cleaned_data['quantity'],
+                    quantity_type_id=form.cleaned_data['quantity_type_id'],
+                    price=form.cleaned_data['price'],
+                    order_id=original_producement.order_id,
+                    status=form.cleaned_data['status'],
+                    order_detail_id=original_producement.order_detail_id,
+                    lining_type_id=original_producement.lining_type_id,
+                    producement_id=original_producement,  # Link to original producement
+                    IsDeleted=False
+                )
+
+                # Save the new Producement object
+                new_producement.save()
+
+                # Redirect to a success page or display a success message
+                return redirect('producement_view')  # Replace with your success URL
+            except producement.DoesNotExist:
+                form.add_error('producement_id', 'Invalid Producement ID selected.')
+    else:
+        forms = ProducementKosibForms()
     context = {
         "forms":forms
     }

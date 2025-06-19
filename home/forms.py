@@ -498,3 +498,121 @@ class ProducementZakatopForms(forms.Form):
         input_formats=['%d %m %Y'],  # Accepted input formats
         initial=now().strftime('%d %m %Y')  # Initial value
     )
+
+class ProducementTuquvchiForms(forms.Form):
+    producement_id = forms.ModelChoiceField(
+        queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.ZAKATOP),
+        empty_label= system_variables.EMPTY_LABEL ,
+        widget=forms.Select(
+            attrs={'class':'form-control'}
+        )
+    )
+    staff_id = forms.ModelChoiceField(
+        queryset=models.staff.objects.filter(profession__value=system_variables.TUQUVCHI ,IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    quantity = forms.IntegerField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    quantity_type_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.QUANTITY_TYPE.value,
+            IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    price = forms.FloatField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    
+    status = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.STATUS.value,
+            IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        initial= models.references.objects.get(value=system_variables.CREATED),
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+
+    date = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "class": "form-control datepicker",
+                "placeholder": "dd mm yyyy",
+            },
+            format='%d %m %Y'  # Display format
+        ),
+        input_formats=['%d %m %Y'],  # Accepted input formats
+        initial=now().strftime('%d %m %Y')  # Initial value
+    )
+
+class ProducementKosibForms(forms.Form):
+    producement_id = forms.ModelChoiceField(
+        queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.TUQUVCHI),
+        empty_label= system_variables.EMPTY_LABEL ,
+        widget=forms.Select(
+            attrs={'class':'form-control'}
+        )
+    )
+    staff_id = forms.ModelChoiceField(
+        queryset=models.staff.objects.filter(profession__value=system_variables.KOSIB ,IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    sole_type_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.SOLO_TYPE.value,
+            IsDeleted=False),
+        empty_label= system_variables.EMPTY_LABEL ,
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    quantity = forms.IntegerField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    quantity_type_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.QUANTITY_TYPE.value,
+            IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    price = forms.FloatField(min_value=0,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    
+    status = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.STATUS.value,
+            IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        initial= models.references.objects.get(value=system_variables.CREATED),
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+
+    date = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "class": "form-control datepicker",
+                "placeholder": "dd mm yyyy",
+            },
+            format='%d %m %Y'  # Display format
+        ),
+        input_formats=['%d %m %Y'],  # Accepted input formats
+        initial=now().strftime('%d %m %Y')  # Initial value
+    )
