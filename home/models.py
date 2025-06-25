@@ -280,7 +280,7 @@ class producement(models.Model):
         related_name="lining_type_producement"
 
     )
-    producement_id = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    producement_id = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='parent_producement')
     IsDeleted = models.BooleanField(default=False)
 
     class Meta:

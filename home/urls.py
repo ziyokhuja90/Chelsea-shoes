@@ -45,6 +45,7 @@ urlpatterns = [
     path('producement/create/zakatop' , views.producement_create_zakatop , name='producement_create_zakatop'),
     path('producement/create/tuquvchi' , views.producement_create_tuquvchi , name='producement_create_tuquvchi'),
     path('producement/create/kosib' , views.producement_create_kosib , name='producement_create_kosib'),
+    path('producement/create/upakovkachi' , views.producement_create_upakovkachi , name='producement_create_upakovkachi'),
 
     path('producement/read/<int:pk>' , views.producement_read , name='producement_read'),
     path('producement/update/<int:pk>' , views.producement_update , name="producement_update"),

@@ -478,9 +478,25 @@ def producement_create(request):
     return render(request, "producement/producement_create.html", context=context)
 
 def producement_create_kroy(request):
+    details = Order_details.objects.filter(IsDeleted=False).values(
+        'id', 'order_id', 'model_id', 'model_id__name',
+        'quantity', 'price', 'quantity_type_id',
+        'color_id','leather_type','sole_type_id',
+        "lining_type_id"
+
+    )
+    details_list = []
+    for detail in details:
+        detail['price'] = float(detail['price'])  # Convert Decimal to float
+        details_list.append(detail)
+
+
+    details_json = json.dumps(details_list)
+
     if request.method == "POST":
         forms = ProducementKroyForms(request.POST)
         if forms.is_valid():
+            sole_type_id = forms.cleaned_data['order_detail_id'].sole_type_id
             producment_data = {
                 'order_id': forms.cleaned_data['order_id'],
                 'shoe_model_id': forms.cleaned_data['shoe_model_id'],
@@ -490,6 +506,7 @@ def producement_create_kroy(request):
                 'lining_type_id': forms.cleaned_data['lining_type_id'],
                 'quantity': forms.cleaned_data['quantity'],
                 'quantity_type_id': forms.cleaned_data['quantity_type_id'],
+                'solo_type':sole_type_id,
                 'price': forms.cleaned_data['price'],
                 'status': forms.cleaned_data['status'],
                 'date': forms.cleaned_data['date'],
@@ -499,7 +516,8 @@ def producement_create_kroy(request):
     else:
         forms = ProducementKroyForms()
     context = {
-        "forms":forms
+        "forms":forms,
+        "details":details_json,
     }
     return render(request, 'producement/producement_create.html', context=context)
 
@@ -540,9 +558,9 @@ def producement_create_zakatop(request):
             except producement.DoesNotExist:
                 form.add_error('producement_id', 'Invalid Producement ID selected.')
     else:
-        forms = ProducementZakatopForms()
+        form = ProducementZakatopForms()
     context = {
-        "forms":forms
+        "forms":form
     }
     return render(request, 'producement/producement_create.html', context=context)
 
@@ -582,10 +600,14 @@ def producement_create_lazir(request):
                 return redirect('producement_view')  # Replace with your success URL
             except producement.DoesNotExist:
                 form.add_error('producement_id', 'Invalid Producement ID selected.')
+        else:
+            for field in form:
+                print(field.errors, "------------")
+            print(form.errors)
     else:
-        forms = ProducementLazirForms()
+        form = ProducementLazirForms()
     context = {
-        "forms":forms
+        "forms":form
     }
     return render(request, 'producement/producement_create.html', context=context)
 
@@ -626,13 +648,21 @@ def producement_create_tuquvchi(request):
             except producement.DoesNotExist:
                 form.add_error('producement_id', 'Invalid Producement ID selected.')
     else:
-        forms = ProducementTuquvchiForms()
+        form = ProducementTuquvchiForms()
     context = {
-        "forms":forms
+        "forms":form
     }
     return render(request, 'producement/producement_create.html', context=context)
 
 def producement_create_kosib(request):
+    producement_list = producement.objects.filter(staff_id__profession__value=system_variables.TUQUVCHI ,IsDeleted=False).values(
+        'id', 'solo_type'
+    )
+    data = list(producement_list)
+    
+    # Convert the list to a JSON string
+    data_json = json.dumps(data)
+
     if request.method == "POST":
         form = ProducementKosibForms(request.POST)
         if form.is_valid():
@@ -670,6 +700,50 @@ def producement_create_kosib(request):
                 form.add_error('producement_id', 'Invalid Producement ID selected.')
     else:
         forms = ProducementKosibForms()
+    context = {
+        "forms":forms,
+        "producements":data_json
+    }
+    return render(request, 'producement/producement_create.html', context=context)
+
+def producement_create_upakovkachi(request):
+    if request.method == "POST":
+        form = ProducementUpakovkachiForms(request.POST)
+        if form.is_valid():
+            # Get the selected producement_id
+            selected_producement_id = form.cleaned_data['producement_id']
+            try:
+                # Fetch the Producement object
+                original_producement = producement.objects.get(id=selected_producement_id.id)
+
+                # Create a new Producement object
+                new_producement = producement(
+                    staff_id=form.cleaned_data['staff_id'],
+                    shoe_model_id=original_producement.shoe_model_id,
+                    date=form.cleaned_data['date'],
+                    color_id=original_producement.color_id,
+                    leather_type=original_producement.leather_type,
+                    solo_type=original_producement.solo_type,
+                    quantity=form.cleaned_data['quantity'],
+                    quantity_type_id=form.cleaned_data['quantity_type_id'],
+                    price=form.cleaned_data['price'],
+                    order_id=original_producement.order_id,
+                    status=form.cleaned_data['status'],
+                    order_detail_id=original_producement.order_detail_id,
+                    lining_type_id=original_producement.lining_type_id,
+                    producement_id=original_producement,  # Link to original producement
+                    IsDeleted=False
+                )
+
+                # Save the new Producement object
+                new_producement.save()
+
+                # Redirect to a success page or display a success message
+                return redirect('producement_view')  # Replace with your success URL
+            except producement.DoesNotExist:
+                form.add_error('producement_id', 'Invalid Producement ID selected.')
+    else:
+        forms = ProducementUpakovkachiForms()
     context = {
         "forms":forms
     }

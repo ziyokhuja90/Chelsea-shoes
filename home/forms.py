@@ -5,6 +5,7 @@ from datetime import datetime
 
 from django.forms.widgets import DateInput
 from config import system_variables
+from django.db.models import Sum
 
 class shoe_model_forms(forms.ModelForm):
     class Meta:
@@ -271,8 +272,6 @@ class staff_payments_forms(forms.ModelForm):
         self.fields['date'].initial = now()
         self.fields['date'].input_formats = ['%d %m %Y']
 
-
-
 class staff_payments_read_forms(forms.ModelForm):
     class Meta:
         model = models.staff_payments
@@ -298,21 +297,31 @@ class ProducementKroyForms(forms.Form):
     order_id = forms.ModelChoiceField(
         queryset=models.orders.objects.filter(IsDeleted=False),
         empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.ORDER,
         widget=forms.Select(
             attrs={'class':"form-select"}
         )
         )
+    order_detail_id = forms.ModelChoiceField(
+        queryset=models.Order_details.objects.filter(IsDeleted=False),
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.ORDER_DETAILS,
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
     
     shoe_model_id = forms.ModelChoiceField(
         queryset=models.shoe_model.objects.filter(IsDeleted=False),
-        empty_label= system_variables.EMPTY_LABEL ,
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.MODEL,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
 
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.KROY ,IsDeleted=False), 
-        empty_label= system_variables.EMPTY_LABEL ,
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.STAFF,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
@@ -321,8 +330,8 @@ class ProducementKroyForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.COLOR.value,
             IsDeleted=False), 
-        empty_label= system_variables.EMPTY_LABEL ,
-        
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.COLOR,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
@@ -331,8 +340,8 @@ class ProducementKroyForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.LEATHER_TYPE.value,
             IsDeleted=False),
-        empty_label= system_variables.EMPTY_LABEL ,
-        
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.LEATHER_TYPE,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
@@ -341,13 +350,15 @@ class ProducementKroyForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.LINING_TYPE.value, 
             IsDeleted=False), 
-        empty_label= system_variables.EMPTY_LABEL ,
-        
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.LINING,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
     
-    quantity = forms.IntegerField(min_value=0,
+    quantity = forms.IntegerField(
+        min_value=0,
+        label=system_variables.QUANTITY,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -356,13 +367,15 @@ class ProducementKroyForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.QUANTITY_TYPE.value,
             IsDeleted=False), 
-        empty_label= system_variables.EMPTY_LABEL ,
-        
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.QUANTITY_TYPE,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
     
-    price = forms.FloatField(min_value=0,
+    price = forms.FloatField(
+        min_value=0,
+        label=system_variables.PRICE,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -372,6 +385,7 @@ class ProducementKroyForms(forms.Form):
             type=models.ReferenceType.STATUS.value,
             IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.STATUS,
         initial= models.references.objects.get(value=system_variables.CREATED),
         widget=forms.Select(
             attrs={'class':"form-select"}
@@ -385,14 +399,34 @@ class ProducementKroyForms(forms.Form):
             },
             format='%d %m %Y'  # Display format
         ),
+        label=system_variables.DATE,
         input_formats=['%d %m %Y'],  # Accepted input formats
         initial=now().strftime('%d %m %Y')  # Initial value
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['order_id'].label_from_instance = lambda obj: (
+            "SKLAT" if obj.client_id.name == system_variables.WAREHOUSE.upper() else f"Klient: {obj.client_id.name} - Sana: {obj.date.strftime('%d %m %Y')}"
+        )
+  # Custom label for order field
+
+    # def get_order_label(self, order):
+    #     # Include the order details in the label
+    #     details = order.ordeer_id_orders.all()  # Use related_name
+    #     details_text = "; ".join(
+    #         f"Model: {detail.model_id} | Qty: {detail.quantity} | Color: {detail.color_id}" 
+    #         for detail in details
+    #     )
+    #     # Return a label combining order and related details
+    #     return f"Order #{order.id} - Client: {order.client_id} - Details: [{details_text}]"
 
 class ProducementLazirForms(forms.Form):
     producement_id = forms.ModelChoiceField(
         queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.KROY),
         empty_label=system_variables.EMPTY_LABEL,
+        label=system_variables.PRODUCEMENT_ID,
         widget=forms.Select(
             attrs={'class':'form-control'}
         )
@@ -400,10 +434,13 @@ class ProducementLazirForms(forms.Form):
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.LAZIR ,IsDeleted=False), 
         empty_label=system_variables.EMPTY_LABEL,
+        label=system_variables.STAFF,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
-    quantity = forms.IntegerField(min_value=0,
+    quantity = forms.IntegerField(
+        min_value=0,
+        label=system_variables.QUANTITY,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -412,12 +449,15 @@ class ProducementLazirForms(forms.Form):
             type=models.ReferenceType.QUANTITY_TYPE.value,
             IsDeleted=False), 
         empty_label=system_variables.EMPTY_LABEL,
+        label=system_variables.QUANTITY_TYPE,
         
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
     
-    price = forms.FloatField(min_value=0,
+    price = forms.FloatField(
+        min_value=0,
+        label=system_variables.PRICE,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -427,6 +467,7 @@ class ProducementLazirForms(forms.Form):
             type=models.ReferenceType.STATUS.value,
             IsDeleted=False), 
         empty_label=system_variables.EMPTY_LABEL,
+        label=system_variables.STATUS,
         initial= models.references.objects.get(value=system_variables.CREATED),
         widget=forms.Select(
             attrs={'class':"form-select"}
@@ -440,25 +481,65 @@ class ProducementLazirForms(forms.Form):
             },
             format='%d %m %Y'  # Display format
         ),
+        label=system_variables.DATE,
         input_formats=['%d %m %Y'],  # Accepted input formats
         initial=now().strftime('%d %m %Y')  # Initial value
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['producement_id'].label_from_instance = lambda obj: (
+            f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
+        )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        producement = cleaned_data.get('producement_id')  # Correct field name
+        user_entered_quantity = cleaned_data.get('quantity')
+
+        print(f"Producement: {producement}")
+        print(f"User Entered Quantity: {user_entered_quantity}")
+
+        if producement and user_entered_quantity is not None:
+            # Aggregate the total quantity of related details
+            total_quantity_used = producement.parent_producement.aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+            print(f"Total Quantity Used: {total_quantity_used}")
+            print(f"Producement Quantity: {producement.quantity}")
+
+            # Check if adding the user's quantity exceeds the allowed limit
+            if total_quantity_used + user_entered_quantity > producement.quantity:
+                self.add_error(
+                    'quantity',  # Attach the error to the 'quantity' field
+                    f"Total quantity exceeds the limit! "
+                    f"Available: {producement.quantity - total_quantity_used}, "
+                    f"Requested: {user_entered_quantity}."
+                )
+        return cleaned_data
+
+
+
 class ProducementZakatopForms(forms.Form):
     producement_id = forms.ModelChoiceField(
         queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.LAZIR),
-        empty_label= system_variables.EMPTY_LABEL ,
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.PRODUCEMENT_ID,
         widget=forms.Select(
             attrs={'class':'form-control'}
         )
     )
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.ZAKATOP ,IsDeleted=False), 
-        empty_label= system_variables.EMPTY_LABEL ,
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.STAFF,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
-    quantity = forms.IntegerField(min_value=0,
+    quantity = forms.IntegerField(
+        min_value=0,
+        label=system_variables.QUANTITY,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -466,13 +547,16 @@ class ProducementZakatopForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.QUANTITY_TYPE.value,
             IsDeleted=False), 
-        empty_label= system_variables.EMPTY_LABEL ,
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.QUANTITY_TYPE,
         
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
     
-    price = forms.FloatField(min_value=0,
+    price = forms.FloatField(
+        min_value=0,
+        label=system_variables.PRICE,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -481,7 +565,8 @@ class ProducementZakatopForms(forms.Form):
         queryset=models.references.objects.filter(
             type=models.ReferenceType.STATUS.value,
             IsDeleted=False), 
-        empty_label= system_variables.EMPTY_LABEL ,
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.STATUS,
         initial= models.references.objects.get(value=system_variables.CREATED),
         widget=forms.Select(
             attrs={'class':"form-select"}
@@ -495,25 +580,62 @@ class ProducementZakatopForms(forms.Form):
             },
             format='%d %m %Y'  # Display format
         ),
+        label=system_variables.DATE,
         input_formats=['%d %m %Y'],  # Accepted input formats
         initial=now().strftime('%d %m %Y')  # Initial value
     )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['producement_id'].label_from_instance = lambda obj: (
+            f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        producement = cleaned_data.get('producement_id')  # Correct field name
+        user_entered_quantity = cleaned_data.get('quantity')
+
+        print(f"Producement: {producement}")
+        print(f"User Entered Quantity: {user_entered_quantity}")
+
+        if producement and user_entered_quantity is not None:
+            # Aggregate the total quantity of related details
+            total_quantity_used = producement.parent_producement.aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+            print(f"Total Quantity Used: {total_quantity_used}")
+            print(f"Producement Quantity: {producement.quantity}")
+
+            # Check if adding the user's quantity exceeds the allowed limit
+            if total_quantity_used + user_entered_quantity > producement.quantity:
+                self.add_error(
+                    'quantity',  # Attach the error to the 'quantity' field
+                    f"Total quantity exceeds the limit! "
+                    f"Available: {producement.quantity - total_quantity_used}, "
+                    f"Requested: {user_entered_quantity}."
+                )
+        return cleaned_data
 
 class ProducementTuquvchiForms(forms.Form):
     producement_id = forms.ModelChoiceField(
         queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.ZAKATOP),
-        empty_label= system_variables.EMPTY_LABEL ,
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.PRODUCEMENT_ID,
         widget=forms.Select(
             attrs={'class':'form-control'}
         )
     )
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.TUQUVCHI ,IsDeleted=False), 
-        empty_label= system_variables.EMPTY_LABEL ,
+        empty_label= system_variables.EMPTY_LABEL,
+        label=system_variables.STAFF,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
-    quantity = forms.IntegerField(min_value=0,
+    quantity = forms.IntegerField(
+        min_value=0,
+        label=system_variables.QUANTITY,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -522,12 +644,15 @@ class ProducementTuquvchiForms(forms.Form):
             type=models.ReferenceType.QUANTITY_TYPE.value,
             IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.QUANTITY_TYPE,
         
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
     
-    price = forms.FloatField(min_value=0,
+    price = forms.FloatField(
+        min_value=0,
+        label=system_variables.PRICE,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -537,6 +662,7 @@ class ProducementTuquvchiForms(forms.Form):
             type=models.ReferenceType.STATUS.value,
             IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.STATUS,
         initial= models.references.objects.get(value=system_variables.CREATED),
         widget=forms.Select(
             attrs={'class':"form-select"}
@@ -550,14 +676,48 @@ class ProducementTuquvchiForms(forms.Form):
             },
             format='%d %m %Y'  # Display format
         ),
+        label=system_variables.DATE,
         input_formats=['%d %m %Y'],  # Accepted input formats
         initial=now().strftime('%d %m %Y')  # Initial value
     )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['producement_id'].label_from_instance = lambda obj: (
+            f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        producement = cleaned_data.get('producement_id')  # Correct field name
+        user_entered_quantity = cleaned_data.get('quantity')
+
+        print(f"Producement: {producement}")
+        print(f"User Entered Quantity: {user_entered_quantity}")
+
+        if producement and user_entered_quantity is not None:
+            # Aggregate the total quantity of related details
+            total_quantity_used = producement.parent_producement.aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+            print(f"Total Quantity Used: {total_quantity_used}")
+            print(f"Producement Quantity: {producement.quantity}")
+
+            # Check if adding the user's quantity exceeds the allowed limit
+            if total_quantity_used + user_entered_quantity > producement.quantity:
+                self.add_error(
+                    'quantity',  # Attach the error to the 'quantity' field
+                    f"Total quantity exceeds the limit! "
+                    f"Available: {producement.quantity - total_quantity_used}, "
+                    f"Requested: {user_entered_quantity}."
+                )
+        return cleaned_data
 
 class ProducementKosibForms(forms.Form):
     producement_id = forms.ModelChoiceField(
         queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.TUQUVCHI),
         empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.PRODUCEMENT_ID,
         widget=forms.Select(
             attrs={'class':'form-control'}
         )
@@ -565,6 +725,7 @@ class ProducementKosibForms(forms.Form):
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.KOSIB ,IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.STAFF,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
@@ -573,10 +734,12 @@ class ProducementKosibForms(forms.Form):
             type=models.ReferenceType.SOLO_TYPE.value,
             IsDeleted=False),
         empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.SOLE_TYPE,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
     quantity = forms.IntegerField(min_value=0,
+        label=system_variables.QUANTITY,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -585,12 +748,14 @@ class ProducementKosibForms(forms.Form):
             type=models.ReferenceType.QUANTITY_TYPE.value,
             IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.QUANTITY_TYPE,
         
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
     
     price = forms.FloatField(min_value=0,
+        label=system_variables.PRICE,
         widget=forms.NumberInput(
             attrs={'class':"form-control"}
         ))
@@ -600,6 +765,7 @@ class ProducementKosibForms(forms.Form):
             type=models.ReferenceType.STATUS.value,
             IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.STATUS,
         initial= models.references.objects.get(value=system_variables.CREATED),
         widget=forms.Select(
             attrs={'class':"form-select"}
@@ -613,6 +779,133 @@ class ProducementKosibForms(forms.Form):
             },
             format='%d %m %Y'  # Display format
         ),
+        label=system_variables.DATE,
         input_formats=['%d %m %Y'],  # Accepted input formats
         initial=now().strftime('%d %m %Y')  # Initial value
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['producement_id'].label_from_instance = lambda obj: (
+            f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        producement = cleaned_data.get('producement_id')  # Correct field name
+        user_entered_quantity = cleaned_data.get('quantity')
+
+        print(f"Producement: {producement}")
+        print(f"User Entered Quantity: {user_entered_quantity}")
+
+        if producement and user_entered_quantity is not None:
+            # Aggregate the total quantity of related details
+            total_quantity_used = producement.parent_producement.aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+            print(f"Total Quantity Used: {total_quantity_used}")
+            print(f"Producement Quantity: {producement.quantity}")
+
+            # Check if adding the user's quantity exceeds the allowed limit
+            if total_quantity_used + user_entered_quantity > producement.quantity:
+                self.add_error(
+                    'quantity',  # Attach the error to the 'quantity' field
+                    f"Total quantity exceeds the limit! "
+                    f"Available: {producement.quantity - total_quantity_used}, "
+                    f"Requested: {user_entered_quantity}."
+                )
+        return cleaned_data
+    
+class ProducementUpakovkachiForms(forms.Form):
+    producement_id = forms.ModelChoiceField(
+        queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.KOSIB),
+        empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.PRODUCEMENT_ID,
+        widget=forms.Select(
+            attrs={'class':'form-control'}
+        )
+    )
+    staff_id = forms.ModelChoiceField(
+        queryset=models.staff.objects.filter(profession__value=system_variables.UPAKOVKACHI ,IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.STAFF,
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    quantity = forms.IntegerField(min_value=0,
+        label=system_variables.QUANTITY,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    quantity_type_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.QUANTITY_TYPE.value,
+            IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.QUANTITY_TYPE,
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+    
+    price = forms.FloatField(min_value=0,
+        label=system_variables.PRICE,
+        widget=forms.NumberInput(
+            attrs={'class':"form-control"}
+        ))
+    
+    status = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.STATUS.value,
+            IsDeleted=False), 
+        empty_label= system_variables.EMPTY_LABEL ,
+        label=system_variables.STATUS,
+        initial= models.references.objects.get(value=system_variables.CREATED),
+        widget=forms.Select(
+            attrs={'class':"form-select"}
+        ))
+
+    date = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "class": "form-control datepicker",
+                "placeholder": "dd mm yyyy",
+            },
+            format='%d %m %Y'  # Display format
+        ),
+        label=system_variables.DATE,
+        input_formats=['%d %m %Y'],  # Accepted input formats
+        initial=now().strftime('%d %m %Y')  # Initial value
+    )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['producement_id'].label_from_instance = lambda obj: (
+            f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        producement = cleaned_data.get('producement_id')  # Correct field name
+        user_entered_quantity = cleaned_data.get('quantity')
+
+        print(f"Producement: {producement}")
+        print(f"User Entered Quantity: {user_entered_quantity}")
+
+        if producement and user_entered_quantity is not None:
+            # Aggregate the total quantity of related details
+            total_quantity_used = producement.parent_producement.aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+            print(f"Total Quantity Used: {total_quantity_used}")
+            print(f"Producement Quantity: {producement.quantity}")
+
+            # Check if adding the user's quantity exceeds the allowed limit
+            if total_quantity_used + user_entered_quantity > producement.quantity:
+                self.add_error(
+                    'quantity',  # Attach the error to the 'quantity' field
+                    f"Total quantity exceeds the limit! "
+                    f"Available: {producement.quantity - total_quantity_used}, "
+                    f"Requested: {user_entered_quantity}."
+                )
+        return cleaned_data

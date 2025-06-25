@@ -171,6 +171,8 @@
             href="{% url "producement_create_tuquvchi" %}"
             {% elif profession.order == 5 %}
             href="{% url "producement_create_kosib" %}"
+            {% elif profession.order == 6 %}
+            href="{% url "producement_create_upakovkachi" %}"
             {%else%}
             href=""
             {% endif %}
