@@ -743,9 +743,9 @@ def producement_create_upakovkachi(request):
             except producement.DoesNotExist:
                 form.add_error('producement_id', 'Invalid Producement ID selected.')
     else:
-        forms = ProducementUpakovkachiForms()
+        form = ProducementUpakovkachiForms()
     context = {
-        "forms":forms
+        "forms":form
     }
     return render(request, 'producement/producement_create.html', context=context)
 

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from django.forms.widgets import DateInput
 from config import system_variables
-from django.db.models import Sum
+from django.db.models import Sum, Q, F
 
 class shoe_model_forms(forms.ModelForm):
     class Meta:
@@ -369,6 +369,7 @@ class ProducementKroyForms(forms.Form):
             IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL,
         label=system_variables.QUANTITY_TYPE,
+        initial=models.references.objects.get(value=system_variables.COUPLE),
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
@@ -424,7 +425,7 @@ class ProducementKroyForms(forms.Form):
 
 class ProducementLazirForms(forms.Form):
     producement_id = forms.ModelChoiceField(
-        queryset=models.producement.objects.filter(staff_id__profession__value=system_variables.KROY),
+        queryset=None,
         empty_label=system_variables.EMPTY_LABEL,
         label=system_variables.PRODUCEMENT_ID,
         widget=forms.Select(
@@ -449,6 +450,7 @@ class ProducementLazirForms(forms.Form):
             type=models.ReferenceType.QUANTITY_TYPE.value,
             IsDeleted=False), 
         empty_label=system_variables.EMPTY_LABEL,
+        initial=models.references.objects.get(value=system_variables.COUPLE),
         label=system_variables.QUANTITY_TYPE,
         
         widget=forms.Select(
@@ -492,30 +494,53 @@ class ProducementLazirForms(forms.Form):
         self.fields['producement_id'].label_from_instance = lambda obj: (
             f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
         )
+        self.fields['producement_id'].queryset = self.get_filtered_queryset()
     
+    @staticmethod
+    def get_filtered_queryset():
+        """
+        Returns filtered queryset:
+        - Includes only 'KROY' producements where total 'LAZIR' quantities
+          linked to them are less than their 'KROY' quantity.
+        """
+        # Fetch all KROY producements
+        kroy_producements = models.producement.objects.filter(
+            staff_id__profession__value=system_variables.KROY
+        )
+
+        # Annotate each 'KROY' producement with the total linked 'LAZIR' quantities
+        annotated_queryset = kroy_producements.annotate(
+            total_lazir_quantity=Sum(
+                'parent_producement__quantity',
+                filter=Q(parent_producement__staff_id__profession__value=system_variables.LAZIR)
+            )
+        )
+
+        # Filter to include only those 'KROY' where total linked 'LAZIR' quantity < 'KROY' quantity
+        return annotated_queryset.filter(
+            Q(total_lazir_quantity__lt=F('quantity')) | Q(total_lazir_quantity__isnull=True)
+        )
+
     def clean(self):
         cleaned_data = super().clean()
         producement = cleaned_data.get('producement_id')  # Correct field name
         user_entered_quantity = cleaned_data.get('quantity')
 
-        print(f"Producement: {producement}")
-        print(f"User Entered Quantity: {user_entered_quantity}")
 
         if producement and user_entered_quantity is not None:
             # Aggregate the total quantity of related details
             total_quantity_used = producement.parent_producement.aggregate(
                 total=Sum('quantity')
             )['total'] or 0
-            print(f"Total Quantity Used: {total_quantity_used}")
-            print(f"Producement Quantity: {producement.quantity}")
+
 
             # Check if adding the user's quantity exceeds the allowed limit
             if total_quantity_used + user_entered_quantity > producement.quantity:
                 self.add_error(
                     'quantity',  # Attach the error to the 'quantity' field
-                    f"Total quantity exceeds the limit! "
-                    f"Available: {producement.quantity - total_quantity_used}, "
-                    f"Requested: {user_entered_quantity}."
+                    f"{system_variables.EXCEEDS_LIMIT} "
+                    f"{producement.quantity - total_quantity_used}ta "
+
                 )
         return cleaned_data
 
@@ -590,6 +615,27 @@ class ProducementZakatopForms(forms.Form):
         self.fields['producement_id'].label_from_instance = lambda obj: (
             f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
         )
+        self.fields['producement_id'].queryset = self.get_filtered_queryset()
+    
+    @staticmethod
+    def get_filtered_queryset():
+
+        lazir_producements = models.producement.objects.filter(
+            staff_id__profession__value=system_variables.LAZIR
+        )
+
+        # Annotate each 'LAZIR' producement with the total linked 'ZAKATOP' quantities
+        annotated_queryset = lazir_producements.annotate(
+            total_zakatop_quantity=Sum(
+                'parent_producement__quantity',
+                filter=Q(parent_producement__staff_id__profession__value=system_variables.ZAKATOP)
+            )
+        )
+
+
+        return annotated_queryset.filter(
+            Q(total_zakatop_quantity__lt=F('quantity')) | Q(total_zakatop_quantity__isnull=True)
+        )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -611,9 +657,8 @@ class ProducementZakatopForms(forms.Form):
             if total_quantity_used + user_entered_quantity > producement.quantity:
                 self.add_error(
                     'quantity',  # Attach the error to the 'quantity' field
-                    f"Total quantity exceeds the limit! "
-                    f"Available: {producement.quantity - total_quantity_used}, "
-                    f"Requested: {user_entered_quantity}."
+                    f"{system_variables.EXCEEDS_LIMIT} "
+                    f"{producement.quantity - total_quantity_used}ta"
                 )
         return cleaned_data
 
@@ -686,7 +731,25 @@ class ProducementTuquvchiForms(forms.Form):
         self.fields['producement_id'].label_from_instance = lambda obj: (
             f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
         )
+        self.fields['producement_id'].queryset = self.get_filtered_queryset()
 
+    @staticmethod
+    def get_filtered_queryset():
+        zakatop_producements = models.producement.objects.filter(
+            staff_id__profession__value=system_variables.ZAKATOP
+        )
+        
+        annotated_queryset = zakatop_producements.annotate(
+            total_tuquvchi_quantity=Sum(
+                'parent_producement__quantity',
+                filter=Q(parent_producement__staff_id__profession__value=system_variables.TUQUVCHI)
+            )
+        )
+
+        return annotated_queryset.filter(
+            Q(total_tuquvchi_quantity__lt=F('quantity')) | Q(total_tuquvchi_quantity__isnull=True)
+        )
+    
     def clean(self):
         cleaned_data = super().clean()
         producement = cleaned_data.get('producement_id')  # Correct field name
@@ -790,6 +853,25 @@ class ProducementKosibForms(forms.Form):
         self.fields['producement_id'].label_from_instance = lambda obj: (
             f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
         )
+        self.fields['producement_id'].queryset = self.get_filtered_queryset()
+    
+    @staticmethod
+    def get_filtered_queryset():
+        tuquvchi_producements = models.producement.objects.filter(
+            staff_id__profession__value=system_variables.TUQUVCHI
+        )
+
+        # Annotate each 'TUQUVCHI' producement with the total linked 'KOSIB' quantities
+        annotated_queryset = tuquvchi_producements.annotate(
+            total_kosib_quantity=Sum(
+                'parent_producement__quantity',
+                filter=Q(parent_producement__staff_id__profession__value=system_variables.KOSIB)
+            )
+        )
+
+        return annotated_queryset.filter(
+            Q(total_kosib_quantity__lt=F('quantity')) | Q(total_kosib_quantity__isnull=True)
+        )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -882,6 +964,25 @@ class ProducementUpakovkachiForms(forms.Form):
 
         self.fields['producement_id'].label_from_instance = lambda obj: (
             f"{system_variables.MODEL}: {obj.shoe_model_id.name} - {system_variables.QUANTITY}: {obj.quantity}"
+        )
+        self.fields['producement_id'].queryset = self.get_filtered_queryset()
+    
+    @staticmethod
+    def get_filtered_queryset():
+        kosib_producements = models.producement.objects.filter(
+            staff_id__profession__value=system_variables.KOSIB
+        )
+
+        # Annotate each 'KOSIB' producement with the total linked 'UPAKOVKACHI' quantities
+        annotated_queryset = kosib_producements.annotate(
+            total_upakovkachi_quantity=Sum(
+                'parent_producement__quantity',
+                filter=Q(parent_producement__staff_id__profession__value=system_variables.UPAKOVKACHI)
+            )
+        )
+
+        return annotated_queryset.filter(
+            Q(total_upakovkachi_quantity__lt=F('quantity')) | Q(total_upakovkachi_quantity__isnull=True)
         )
 
     def clean(self):
