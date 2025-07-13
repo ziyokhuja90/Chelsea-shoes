@@ -2,6 +2,14 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from .forms import (
+    ProducementKroyForms,
+    ProducementLazirForms,
+    ProducementZakatopForms,
+    ProducementTuquvchiForms,
+    ProducementKosibForms,
+    ProducementUpakovkachiForms,
+)
 
 urlpatterns = [
     path("", views.home, name="home"),
@@ -39,13 +47,13 @@ urlpatterns = [
     
     # producement
     path('producement' , views.producement_view , name="producement_view"),
-    path('producement/create' , views.producement_create , name='producement_kroy'),
-    path('producement/create/kroy' , views.producement_create_kroy , name='producement_create_kroy'),
-    path('producement/create/lazir' , views.producement_create_lazir , name='producement_create_lazir'),
-    path('producement/create/zakatop' , views.producement_create_zakatop , name='producement_create_zakatop'),
-    path('producement/create/tuquvchi' , views.producement_create_tuquvchi , name='producement_create_tuquvchi'),
-    path('producement/create/kosib' , views.producement_create_kosib , name='producement_create_kosib'),
-    path('producement/create/upakovkachi' , views.producement_create_upakovkachi , name='producement_create_upakovkachi'),
+    # path('producement/create' , views.producement_create , name='producement_create'),
+    path('producement/create/kroy' , lambda request: views.producement_create(request, ProducementKroyForms), name='producement_create_kroy'),
+    path('producement/create/lazir' , lambda request: views.producement_create(request, ProducementLazirForms), name='producement_create_lazir'),
+    path('producement/create/zakatop' , lambda request: views.producement_create(request, ProducementZakatopForms), name='producement_create_zakatop'),
+    path('producement/create/tuquvchi' , lambda request: views.producement_create(request, ProducementTuquvchiForms), name='producement_create_tuquvchi'),
+    path('producement/create/kosib' , lambda request: views.producement_create(request, ProducementKosibForms), name='producement_create_kosib'),
+    path('producement/create/upakovkachi' , lambda request: views.producement_create(request, ProducementUpakovkachiForms), name='producement_create_upakovkachi'),
 
     path('producement/read/<int:pk>' , views.producement_read , name='producement_read'),
     path('producement/update/<int:pk>' , views.producement_update , name="producement_update"),

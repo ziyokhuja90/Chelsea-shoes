@@ -374,7 +374,7 @@ def orders_delete(request, pk):
 def producement_view(request):
     professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False).order_by("order")
 
-    producement_list = producement.objects.filter(~Q(order_id__client_id__name="SKLAT") , IsDeleted=False).order_by('id')
+    producement_list = producement.objects.filter(~Q(order_id__client_id__name=system_variables.WAREHOUSE.upper()), IsDeleted=False).order_by('id')
     producement_sklat_list = producement.objects.filter(order_id__client_id__name="SKLAT", IsDeleted=False).order_by('id')
     
     staff_list = staff.objects.filter(IsDeleted=False)
@@ -445,7 +445,7 @@ def producement_view(request):
     }
     return render(request,'producement/producement.html' ,context=context)
 
-def producement_create(request):
+def producement_create(request, ProducementForms):
     details = Order_details.objects.filter(IsDeleted=False).values(
         'id', 'order_id', 'model_id', 'model_id__name',
         'quantity', 'price', 'quantity_type_id',
@@ -463,14 +463,28 @@ def producement_create(request):
 
     details_json = json.dumps(details_list)
     if request.method == "POST":
-        forms = producement_forms(request.POST)
-        print("-------------------",request.POST)
-        print(forms)
+        forms = ProducementForms(request.POST)
         if forms.is_valid():
-            forms.save()
+            sole_type_id = forms.cleaned_data['order_detail_id'].sole_type_id
+            producment_data = {
+                'order_id': forms.cleaned_data['order_id'],
+                'order_detail_id': forms.cleaned_data['order_detail_id'],
+                'shoe_model_id': forms.cleaned_data['shoe_model_id'],
+                'staff_id': forms.cleaned_data['staff_id'],
+                'color_id': forms.cleaned_data['color_id'],
+                'leather_type': forms.cleaned_data['leather_type'],
+                'lining_type_id': forms.cleaned_data['lining_type_id'],
+                'quantity': forms.cleaned_data['quantity'],
+                'quantity_type_id': forms.cleaned_data['quantity_type_id'],
+                'solo_type':sole_type_id,
+                'price': forms.cleaned_data['price'],
+                'status': forms.cleaned_data['status'],
+                'date': forms.cleaned_data['date'],
+            }
+            producement.objects.create(**producment_data)
             return redirect('producement_view')
     else:
-        forms = producement_forms()
+        forms = ProducementForms()
     context = {
         "forms":forms,
         "details":details_json,
@@ -522,6 +536,20 @@ def producement_create_kroy(request):
     return render(request, 'producement/producement_create.html', context=context)
 
 def producement_create_zakatop(request):
+    details = Order_details.objects.filter(IsDeleted=False).values(
+        'id', 'order_id', 'model_id', 'model_id__name',
+        'quantity', 'price', 'quantity_type_id',
+        'color_id','leather_type','sole_type_id',
+        "lining_type_id"
+    )
+
+    details_list = []
+    for detail in details:
+        detail['price'] = float(detail['price'])  # Convert Decimal to float
+        details_list.append(detail)
+
+
+    details_json = json.dumps(details_list)
     if request.method == "POST":
         form = ProducementZakatopForms(request.POST)
         if form.is_valid():

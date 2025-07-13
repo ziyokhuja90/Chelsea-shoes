@@ -46,27 +46,13 @@
 <script>
     $(document).ready(function() {
         console.log("Script is running");
-        const producements = JSON.parse('{{ producements|default:"null"|safe }}')
-        if(producements){
-            console.log(producements, "----------");
-            
-            $('#id_producement_id').change(function (){
-                const selectedProducement_id = $(this).val()
-                producements.forEach(producement =>{
-                    if(producement.id == selectedProducement_id){
-
-                        setSelectedValue("id_sole_type_id", producement.solo_type);
-
-                    }
-                })
-                
-            })
-        }
         
         // Assuming details JSON data is passed from the backend
         const details = JSON.parse('{{ details|default:"null"|safe }}');
 
         console.log(details); // Debugging output to check details
+
+
 
         // Listen for changes on the order_id dropdown
         $('#id_order_id').change(function () {
@@ -83,22 +69,6 @@
 
             // Clear existing options in the order_detail_id dropdown
             orderDetailSelect.empty();
-            if (SelectedOrderText == "{{ WAREHOUSE|escapejs  }}".toUpperCase()){
-                orderDetailSelect.prop("disabled", true);
-                let selectFields = ["id_color_id", "id_leather_type", "id_solo_type", "id_lining_type_id", "id_shoe_model_id"];
-                selectFields.forEach(id => {
-                    const $field = $(`#${id}`);
-                    
-                    // Prevent interaction
-                    $field.off('mousedown keydown');
-
-                    // Remove the 'select' class
-                    $field.removeClass('readonly');
-                });
-            }
-            else{
-                orderDetailSelect.prop("disabled", false);
-            }
 
             // Check if an order ID is selected
             if (selectedOrderId) {
@@ -114,14 +84,9 @@
                         `);
                     }
                 });
-
-                // If no matching details are found, show a default message
-                if (orderDetailSelect.children().length === 0) {
-                    orderDetailSelect.append('<option value="">No details available</option>');
-                }
             } else {
                 // If no order ID is selected, show a default option
-                orderDetailSelect.append('<option value="">Please select an order first</option>');
+                orderDetailSelect.append('<option value="">---------</option>');
             }
         });
         function setSelectedValue(selectId, value) {
@@ -165,9 +130,44 @@
             })
             
         })
+        function populateOrderDetailsDropdown() {
+        const selectedOrderId = $('#id_order_id').val();
+        const orderDetailSelect = $('#id_order_detail_id');
 
+        // Clear existing options
+        orderDetailSelect.empty();
 
+        if (selectedOrderId) {
+            details.forEach(detail => {
+                if (detail.order_id == selectedOrderId) {
+                    const isSelected = detail.id == orderDetailSelect.data('selected-id') ? 'selected' : '';
+                    orderDetailSelect.append(`
+                        <option value="${detail.id}" ${isSelected}>
+                            ${detail.model_id__name} - Quantity: ${detail.quantity} - Price: ${detail.price}
+                        </option>
+                    `);
+                }
+            });
+        } else {
+            orderDetailSelect.append('<option value="">---------</option>');
+        }
+    }
+    function updateFieldsFromOrderDetail() {
+    const selectedOrderDetail = $('#id_order_detail_id').val();
+
+    details.forEach(detail => {
+        if (detail.id == selectedOrderDetail) {
+            setSelectedValue("id_color_id", detail.color_id);
+            setSelectedValue("id_leather_type", detail.leather_type);
+            setSelectedValue("id_sole_type_id", detail.sole_type_id);
+            setSelectedValue("id_lining_type_id", detail.lining_type_id);
+            setSelectedValue("id_shoe_model_id", detail.model_id);
+        }
     });
+}
+    populateOrderDetailsDropdown();
+    updateFieldsFromOrderDetail();
+});
 </script>
 
 {% endblock content %}
