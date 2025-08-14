@@ -29,7 +29,6 @@ class shoe_model_forms(forms.ModelForm):
             raise forms.ValidationError("Ism 3tadan kam bo'lmasligi kerak")
         return name
 
-
 class staff_forms(forms.ModelForm):
     class Meta:
         model = models.staff
@@ -80,7 +79,6 @@ class staff_forms(forms.ModelForm):
                 models.references.objects.filter(pk=self.instance.profession.pk)
             ).distinct()
 
-
 class clients_forms(forms.ModelForm):
     class Meta:
         model = models.clients
@@ -129,7 +127,6 @@ class orders_forms(forms.ModelForm):
 
         self.fields['status'].initial = models.references.objects.get(value=system_variables.CREATED)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
-
 
 class orderDetails_forms(forms.ModelForm):
     class Meta:
@@ -408,6 +405,7 @@ class DefaultProducementForms(forms.Form):
         input_formats=['%d %m %Y'],  # Accepted input formats
         initial=now().strftime('%d %m %Y')  # Initial value
     )
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -460,7 +458,7 @@ class DefaultProducementForms(forms.Form):
 
 class ProducementKroyForms(DefaultProducementForms):
     staff_id = forms.ModelChoiceField(
-        queryset=models.staff.objects.filter(profession__value=system_variables.KROY ,IsDeleted=False), 
+        queryset=models.staff.objects.filter(profession__value=system_variables.KROY, IsDeleted=False),
         empty_label= system_variables.EMPTY_LABEL,
         label=system_variables.STAFF,
         widget=forms.Select(
@@ -498,9 +496,6 @@ class ProducementLazirForms(DefaultProducementForms):
             attrs={'class':"form-select"}
         ))
 
-
-
-
 class ProducementZakatopForms(DefaultProducementForms):
 
     staff_id = forms.ModelChoiceField(
@@ -510,9 +505,7 @@ class ProducementZakatopForms(DefaultProducementForms):
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
-
-    
-
+ 
 class ProducementTuquvchiForms(DefaultProducementForms):
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.TUQUVCHI ,IsDeleted=False),
@@ -540,7 +533,6 @@ class ProducementKosibForms(DefaultProducementForms):
             attrs={'class':"form-select"}
         ))
     
-    
 class ProducementUpakovkachiForms(DefaultProducementForms):
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.UPAKOVKACHI ,IsDeleted=False), 
@@ -549,3 +541,24 @@ class ProducementUpakovkachiForms(DefaultProducementForms):
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))
+
+
+class SalesForm(forms.ModelForm):
+    class Meta:
+        model = models.Sales
+        fields = ['warehouse', 'client', 'date']
+
+        widgets = {
+            'warehouse': forms.Select(attrs={'class': 'form-control'}),
+            'client': forms.Select(attrs={'class': 'form-control'}),
+            'date':forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
+                format='%d %m %Y'),
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['warehouse'].queryset = models.Warehouse.objects.filter(IsDeleted=False)
+        self.fields['client'].queryset = models.clients.objects.filter(IsDeleted=False)
+        self.fields['date'].initial = now()
+        self.fields['date'].input_formats = ['%d %m %Y']

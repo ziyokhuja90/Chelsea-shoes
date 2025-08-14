@@ -8,6 +8,8 @@
 
     <!-- Filtering Form -->
     <form id="filterForm" class="mb-4" method="get">
+    <input type="hidden" name="active_tab" id="active-tab" value="{{ active_tab|default:'#profession-1' }}">
+
         <div class="row g-3">
 
             <!-- Staff ID -->
@@ -125,7 +127,7 @@
         <!-- Buttons -->
         <div class="mt-3 text-end">
             <button type="submit" class="btn btn-primary">{{FILTER}}</button>
-            <a href="{% url 'staff_view' %}" class="btn btn-secondary">{{CLEAN}}</a>
+            <a href="{% url 'producement_view' %}" class="btn btn-secondary">{{CLEAN}}</a>
         </div>
     </form>
 </div>
@@ -224,7 +226,23 @@
                                             <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">
                                                 <i class="bx bx-show"></i>
                                             </a>
-                                            <a class="btn btn-sm btn-warning text-white" href="{% url 'producement_update' producement.id %}">
+
+                                            <a class="btn btn-sm btn-warning text-white"
+                                            {% if profession.order == 1 %}
+                                               href="{% url 'producement_update_kroy' producement.id %}"
+                                            {% elif profession.order == 2 %}
+                                               href="{% url 'producement_update_lazir' producement.id %}"
+                                            {% elif profession.order == 3 %}
+                                               href="{% url 'producement_update_zakatop' producement.id %}"
+                                            {% elif profession.order == 4 %}
+                                               href="{% url 'producement_update_tuquvchi' producement.id %}"
+                                            {% elif profession.order == 5 %}
+                                               href="{% url 'producement_update_kosib' producement.id %}"
+                                            {% elif profession.order == 6 %}
+                                               href="{% url 'producement_update_upakovkachi' producement.id %}"
+                                            {% endif %} 
+
+                                             >
                                                 <i class="bx bx-edit-alt"></i>
                                             </a>
                                             <a class="btn btn-sm btn-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" data-delete-url="{% url 'producement_delete' producement.id %}">
@@ -410,6 +428,28 @@
 
 
 
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tabButtons = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    const activeTabInput = document.getElementById('active-tab');
+
+    // When user clicks a tab, update hidden input
+    tabButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        const target = this.getAttribute('data-bs-target');
+        activeTabInput.value = target;
+      });
+    });
+
+    // On page load: activate the tab from URL param (via Django)
+    const currentTab = "{{ active_tab|default:'#profession-1' }}";
+    const triggerButton = document.querySelector(`button[data-bs-target="${currentTab}"]`);
+    if (triggerButton) {
+      new bootstrap.Tab(triggerButton).show();
+    }
+  });
+</script>
 
 
 

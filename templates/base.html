@@ -113,7 +113,7 @@
           <div class="menu-inner-shadow"></div>
           <ul class="menu-inner py-1">  
             
-            <li class="menu-item">
+            <li class="menu-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
               <a href="{% url 'home' %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-home"></i>
@@ -124,7 +124,7 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item {% if request.resolver_match.url_name == 'sale' %}active{% endif %}">
               <a href="{% url 'sale' %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-cart-alt"></i>
@@ -135,7 +135,7 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item {% if request.resolver_match.url_name == 'income' %}active{% endif %}">
               <a href="" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-money"></i>
@@ -146,7 +146,7 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item {% if request.resolver_match.url_name == 'staff_view' %}active{% endif %}">
               <a href="{% url "staff_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                 <i class="menu-icon tf-icons bx bx-briefcase"></i>
@@ -170,7 +170,7 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item {% if request.resolver_match.url_name == 'producement_view' %}active{% endif %}">
               <a href="{% url "producement_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-package"></i>
@@ -181,7 +181,7 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item {% if request.resolver_match.url_name == 'clients_view' %}active{% endif %}">
               <a href="{% url "clients_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-group"></i>
@@ -202,7 +202,7 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item {% if request.resolver_match.url_name == 'orders_view' %}active{% endif %}">
               <a href="{% url "orders_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-receipt"></i>
@@ -213,7 +213,7 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item {% if request.resolver_match.url_name == 'reference' %}active{% endif %}">
               <a href="{% url "reference" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-file"></i>

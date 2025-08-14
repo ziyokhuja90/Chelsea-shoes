@@ -1,85 +1,62 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
 
-<div class="container mt-4">
-<div class="card">
+<div class="container mt-3">
 
-    <h1 class="text-center mb-4">Chealsea - Sotuv Sahifasi</h1>
-    <ul class="nav nav-tabs ml-3 pb-1" id="sellTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active " id="sell-tab" data-bs-toggle="tab" data-bs-target="#sell" type="button" role="tab" aria-controls="sell" aria-selected="true">Mahsulotni sotish</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link " id="sold-tab" data-bs-toggle="tab" data-bs-target="#sold" type="button" role="tab" aria-controls="sold" aria-selected="false">Sotilgan mahsulotlar</button>
-            </li>
-        </ul>
-        <div class="tab-content mt-3" id="sellTabsContent">
-            <div class="tab-pane fade show active" id="sell" role="tabpanel" aria-labelledby="sell-tab">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Mijoz</th>
-                            <th>Model</th>
-                            <th>Soni</th>
-                            <th>Narxi</th>
-                            <th>Umumiy narxi</th>
-                            <th>Sana</th>
-                            <th>Amallar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for sale in order_sale_list %}
-                          
-                        <tr>
-                            <td>{{sale.client_id}}</td>
-                            <td>{{sale.model_id}}</td>
-                            <td>{{sale.quantity}}</td>
-                            <td>{{sale.price}}</td>
-                            <td>{{sale.total_amount}}</td>
-                            <td>{{sale.date|date:"Y.m.d"}}</td>
-                            <td>
-                                <button class="btn btn-warning btn-sm"><i class='bx bx-edit text-white'></i> </button>
-                                <button class="btn btn-danger btn-sm"><i class='bx bx-trash'></i></button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-
-                    </tbody>
-                </table>
-            </div>
-            <div class="tab-pane fade" id="sold" role="tabpanel" aria-labelledby="sold-tab">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Mijoz</th>
-                            <th>Model</th>
-                            <th>Soni</th>
-                            <th>Narxi</th>
-                            <th>Umumiy narxi</th>
-                            <th>Sana</th>
-                            <th>Amallar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for sold in order_sold_list %}
-                        <tr>
-                            <td>{{sold.client_id}}</td>
-                            <td>{{sold.model_id}}</td>
-                            <td>{{sold.quantity}}</td>
-                            <td>{{sold.price}}</td>
-                            <td>{{sold.total_amount}}</td>
-                            <td>{{sold.date|date:"Y.m.d"}}</td>
-                            <td>
-                                <button class="btn btn-warning btn-sm"><i class='bx bx-edit text-white'></i> </button>
-                                <button class="btn btn-danger btn-sm"><i class='bx bx-trash'></i></button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="card">
+        <div class="d-flex justify-content-between align-items-center">
+            
+            <h3 class="card-title">{{SELL}}</h3>
+            <div class="card-tools">
+                <a href="{% url 'sale_create' %}" class="btn btn-primary">{{NEW}} {{SELL}} {{CREATE_BUTTON}}</a>
             </div>
         </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>{{ID}}</th>
+                    <th>{{SHOE_MODEL}}</th>
+                    <th>{{QUANTITY}}</th>
+                    <th>{{PRICE}}</th>
+                    <th>{{TOTAL}}</th>
+                    <th>{{COLOR}}</th>
+                    <th>{{LEATHER}}</th>
+                    <th>{{SOLE}}</th>
+                    <th>{{LINING}}</th>
+                    <th>{{ACTIONS}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sold_item in sold_items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ sold_item.warehouse.model_id }}</td>
+                        <td>{{ sold_item.warehouse.quantity }}</td>
+                        <td>{{ sold_item.warehouse.price }}</td>
+                        <td>{{ sold_item.warehouse.total }}</td>
+                        <td>{{ sold_item.warehouse.color_id }}</td>
+                        <td>{{ sold_item.warehouse.leather_type }}</td>
+                        <td>{{ sold_item.warehouse.sole_type }}</td>
+                        <td>{{ sold_item.warehouse.lining_type_id }}</td>
+                        <td>
+                            <a class="btn btn-sm btn-warning" href="{% url "sale_update" sold_item.id %}"><i class="bx bx-edit-alt text-white"></i></a>
+                            <a class="btn btn-sm btn-danger" href="#"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteModal"
+                            data-delete-url="{% url 'sale_delete' sold_item.id %}"> 
+
+                            <i class="bx bx-trash "></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <!-- Sale items will be dynamically inserted here -->
+            </tbody>
+        </table>
     </div>
-</div>    
-    {% endblock %}
+</div>
+</div>
+
+{% endblock content %}

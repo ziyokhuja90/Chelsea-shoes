@@ -330,4 +330,73 @@ class expenses(models.Model):
         
     def __str__(self):
         return f"{self.type}"
+
+class Warehouse(models.Model):
+    model_id = models.ForeignKey(
+        to=shoe_model,
+        on_delete=models.CASCADE,
+        related_name="model_id_warehouse",
+        verbose_name="buyurtma modeli"
+    )
+    quantity = models.IntegerField(verbose_name="buyurtma miqdori")
+    quantity_type_id = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name="quantity_type_warehouse",
+        verbose_name="buyurtma miqdor turi"
+    )
+    price = models.DecimalField(max_digits=20 , decimal_places=2)
+    total_amount = models.DecimalField(max_digits=20 , decimal_places=2)
+    color_id = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name="color_id_warehouse",
+        verbose_name="buyurtma rangi"
+    )
+
+    leather_type = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name="leather_type_warehouse",
+        verbose_name="terisi"    
+    )
+    sole_type_id = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name='sole_type_warehouse',                
+    )
+    lining_type_id = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name="lining_type_warehouse",
+
+    )
+    
+    IsDeleted = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "warehouse"
+
+    def __str__(self):
+        return f"{self.model_id} - {self.quantity} - {self.total_amount}"
+
+class Sales(models.Model):
+    warehouse = models.ForeignKey(
+        Warehouse,
+        on_delete=models.CASCADE,
+        related_name="warehouse_sales",
+    )
+    client = models.ForeignKey(
+        clients,
+        on_delete=models.CASCADE,
+        related_name="client_sales",
+    )
+    date = models.DateField(default=now)
+    IsDeleted = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "sales"
+    
+    def __str__(self):
+        return f"{self.model_id} - {self.quantity} - {self.total_price}"
     

@@ -240,7 +240,7 @@ def staff_delete(request, pk):
     staff_item.save()
     return redirect("staff_view")
 
-# clients
+# clients   
 def clients_view(request):
     clients_list = clients.objects.filter(IsDeleted=False).order_by('id')
     currencys = references.objects.filter(type=ReferenceType.CURRENCY.value, IsDeleted=False).order_by("id")
@@ -375,7 +375,7 @@ def producement_view(request):
     professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False).order_by("order")
 
     producement_list = producement.objects.filter(~Q(order_id__client_id__name=system_variables.WAREHOUSE.upper()), IsDeleted=False).order_by('id')
-    producement_sklat_list = producement.objects.filter(order_id__client_id__name="SKLAT", IsDeleted=False).order_by('id')
+    producement_sklat_list = producement.objects.filter(order_id__client_id__name=system_variables.WAREHOUSE.upper(), IsDeleted=False).order_by('id')
     
     staff_list = staff.objects.filter(IsDeleted=False)
     shoe_models = shoe_model.objects.filter(IsDeleted=False)
@@ -405,18 +405,16 @@ def producement_view(request):
         valid_filters = {key: int(value) for key, value in filters.items() if value not in [None, '']}
         
         producement_list = producement.objects.filter(
-            ~Q(order_id__client_id__name="SKLAT"), 
+            ~Q(order_id__client_id__name=system_variables.WAREHOUSE.upper(),), 
             **valid_filters
 
             ).order_by('id')
         
         producement_sklat_list = producement.objects.filter(
-            order_id__client_id__name="SKLAT",
-            
-            **valid_filters    
-            
-            ).order_by('id')
-        
+            order_id__client_id__name=system_variables.WAREHOUSE.upper(),
+            **valid_filters
+        ).order_by('id')
+
 
 
     paginator = Paginator(producement_list, 10)  # Paginate by 10 items per page
@@ -428,7 +426,7 @@ def producement_view(request):
     page_obj_sklat = paginator_sklat.get_page(page_number_sklat)
 
 
-
+    active_tab = request.GET.get("active_tab", "#profession-1")
     context = {
         "professions":professions,
         "producement_list":page_obj,
@@ -440,7 +438,8 @@ def producement_view(request):
         "sole_types":sole_types,
         "statuses":statuses,
         "order_list":order_list,
-        **valid_filters
+        **valid_filters,
+        "active_tab": active_tab
 
     }
     return render(request,'producement/producement.html' ,context=context)
@@ -784,28 +783,80 @@ def producement_read(request, pk):
     }
     return render(request , 'producement/producement_read.html' , context=context)
 
-def producement_update(request, pk):
+def producement_update(request, pk, ProducementForms):
     producement_item = producement.objects.get(pk=pk)
-    if request.method == "POST":
-        form = producement_forms(request.POST, instance=producement_item)
-        if form.is_valid():
-            form.save()
-            next_page = request.GET.get("next")
 
+    # Prepare Order_details JSON (same as in create)
+    details = Order_details.objects.filter(IsDeleted=False).values(
+        'id', 'order_id', 'model_id', 'model_id__name',
+        'quantity', 'price', 'quantity_type_id',
+        'color_id', 'leather_type', 'sole_type_id',
+        'lining_type_id'
+    )
+    details_list = []
+    for detail in details:
+        detail['price'] = float(detail['price'])  # Decimal to float
+        details_list.append(detail)
+    details_json = json.dumps(details_list)
+
+    if request.method == "POST":
+        form = ProducementForms(request.POST)
+        if form.is_valid():
+            # Update manually
+            sole_type_id = form.cleaned_data['order_detail_id'].sole_type_id
+            producment_data = {
+                'order_id': form.cleaned_data['order_id'],
+                'order_detail_id': form.cleaned_data['order_detail_id'],
+                'shoe_model_id': form.cleaned_data['shoe_model_id'],
+                'staff_id': form.cleaned_data['staff_id'],
+                'color_id': form.cleaned_data['color_id'],
+                'leather_type': form.cleaned_data['leather_type'],
+                'lining_type_id': form.cleaned_data['lining_type_id'],
+                'quantity': form.cleaned_data['quantity'],
+                'quantity_type_id': form.cleaned_data['quantity_type_id'],
+                'solo_type': sole_type_id,
+                'price': form.cleaned_data['price'],
+                'status': form.cleaned_data['status'],
+                'date': form.cleaned_data['date'],
+            }
+
+            # Manually update fields
+            for field, value in producment_data.items():
+                setattr(producement_item, field, value)
+            producement_item.save()
+
+            next_page = request.GET.get("next")
             if next_page == "shoe_model_read":
                 return redirect("shoe_model_read", pk=producement_item.shoe_model_id.id)
             elif next_page == "work":
-                return redirect("staff_view")  # Update "work_view" and pk logic if necessary
+                return redirect("staff_view")
             else:
                 return redirect("producement_view")
     else:
-        form = producement_forms(instance=producement_item)
+        # Set initial values from instance manually
+        initial_data = {
+            'order_id': producement_item.order_id,
+            'order_detail_id': producement_item.order_detail_id,
+            'shoe_model_id': producement_item.shoe_model_id,
+            'staff_id': producement_item.staff_id,
+            'color_id': producement_item.color_id,
+            'leather_type': producement_item.leather_type,
+            'lining_type_id': producement_item.lining_type_id,
+            'quantity': producement_item.quantity,
+            'quantity_type_id': producement_item.quantity_type_id,
+            'price': producement_item.price,
+            'status': producement_item.status,
+            'date': producement_item.date,
+        }
+        form = ProducementForms(initial=initial_data)
 
     context = {
         "forms": form,
         "producement": producement_item,
+        "details": details_json,
     }
     return render(request, "producement/producement_update.html", context=context)
+
 
 def producement_delete(request ,pk):
     producement_item = producement.objects.get(pk=pk)
@@ -872,17 +923,59 @@ def staff_payment_delete(request, pk):
     return redirect('staff_view')
 
 # Sale 
-def sale_view(request):
+def sales_view(request):
 
     order_sale_list = orders.objects.filter(status__value='Bajarildi', IsDeleted=False)
     order_sold_list = orders.objects.filter(status__value='Qabul qilindi', IsDeleted=False)
+    sold_items = Sales.objects.filter(IsDeleted=False)
 
     context = {
         "order_sale_list":order_sale_list,
         "order_sold_list":order_sold_list,
+        "sold_items":sold_items
     }
 
     return render(request, 'Sale/sale.html', context=context)
+
+def sales_create(request):
+    if request.method == "POST":
+        forms = SalesForm(request.POST)
+        if forms.is_valid():
+            new = forms.save(commit=False)
+            # new.total_price = new.quantity * new.price
+            new.save()
+            return redirect('sale')
+    else:
+        forms = SalesForm()
+
+    context = {
+        "forms": forms
+    }
+    return render(request, 'Sale/sales_create.html', context=context)
+
+def sales_update(request, pk):
+    sale = Sales.objects.get(pk=pk)
+    if request.method == "POST":
+        forms = SalesForm(request.POST, instance=sale)
+        if forms.is_valid():
+            new = forms.save(commit=False)
+            # new.total_price = new.quantity * new.price
+            new.save()
+            return redirect('sale')
+    else:
+        forms = SalesForm(instance=sale)
+
+    context = {
+        "forms": forms
+    }
+    return render(request, 'Sale/sales_update.html', context=context)
+
+def sales_delete(request, pk):
+    sale = Sales.objects.get(pk=pk)
+    sale.IsDeleted = True
+    sale.save()
+    return redirect('sale')
+
 
 # order_details
 def order_detail_create(request, pk):
@@ -891,9 +984,29 @@ def order_detail_create(request, pk):
         forms = orderDetails_forms(request.POST)
         if forms.is_valid():
             new_order_detail = forms.save(commit=False)
-            new_order_detail.order_id = order
-            new_order_detail.total_amount = new_order_detail.price * new_order_detail.quantity
-            new_order_detail.save()
+
+            # Try to find an existing match
+            existing_detail = Order_details.objects.filter(
+            order_id=order,
+            model_id=new_order_detail.model_id,
+            leather_type=new_order_detail.leather_type,
+            color_id=new_order_detail.color_id,
+            lining_type_id=new_order_detail.lining_type_id,
+            price=new_order_detail.price,
+            sole_type_id=new_order_detail.sole_type_id
+            ).first()
+
+            if existing_detail:
+                # Update quantity
+                existing_detail.quantity += new_order_detail.quantity
+                existing_detail.total_amount = existing_detail.price * existing_detail.quantity
+                existing_detail.save()
+            else:
+                # Set order and total for new entry
+                new_order_detail.order_id = order
+                new_order_detail.total_amount = new_order_detail.price * new_order_detail.quantity
+                new_order_detail.save()
+
             return redirect('order_read', pk=pk)
     else:
         forms = orderDetails_forms()

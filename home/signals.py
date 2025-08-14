@@ -1,6 +1,8 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from .models import producement, staff, staff_payments, Order_details, orders
+from .models import producement, staff, staff_payments, Order_details, orders, Warehouse
+from config import system_variables
+
 
 @receiver(post_save, sender=producement)
 @receiver(post_delete, sender=producement)
@@ -47,3 +49,25 @@ def update_order_total_amount(sender, instance, **kwargs):
     
     order.total_amount = total_amount
     order.save()
+
+
+@receiver([post_save, post_delete], sender=orders)
+def details_to_warehouse(sender, instance, **kwargs):
+    if instance.status.value == system_variables.COMPLETED and instance.client_id.name == system_variables.WAREHOUSE.upper():
+        order_details = Order_details.objects.filter(order_id=instance, IsDeleted=False)
+
+        for detail in order_details:
+            Warehouse.objects.create(
+                model_id=detail.model_id,
+                quantity=detail.quantity,
+                quantity_type_id=detail.quantity_type_id,
+                price=detail.price,
+                total_amount=detail.total_amount,
+                color_id=detail.color_id,
+                leather_type=detail.leather_type,
+                sole_type_id=detail.sole_type_id,
+                lining_type_id=detail.lining_type_id,
+                IsDeleted=False
+            )
+    else:
+        pass

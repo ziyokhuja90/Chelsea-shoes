@@ -57,6 +57,14 @@ urlpatterns = [
 
     path('producement/read/<int:pk>' , views.producement_read , name='producement_read'),
     path('producement/update/<int:pk>' , views.producement_update , name="producement_update"),
+    
+    path('producement/update/kroy/<int:pk>', lambda request, pk: views.producement_update(request, pk, ProducementKroyForms), name='producement_update_kroy'),
+    path('producement/update/lazir/<int:pk>', lambda request, pk: views.producement_update(request, pk, ProducementLazirForms), name='producement_update_lazir'),
+    path('producement/update/zakatop/<int:pk>', lambda request, pk: views.producement_update(request, pk, ProducementZakatopForms), name='producement_update_zakatop'),
+    path('producement/update/tuquvchi/<int:pk>', lambda request, pk: views.producement_update(request, pk, ProducementTuquvchiForms), name='producement_update_tuquvchi'),
+    path('producement/update/kosib/<int:pk>', lambda request, pk: views.producement_update(request, pk, ProducementKosibForms), name='producement_update_kosib'),
+    path('producement/update/upakovkachi/<int:pk>', lambda request, pk: views.producement_update(request, pk, ProducementUpakovkachiForms), name='producement_update_upakovkachi'),
+
     path('producement/delete/<int:pk>', views.producement_delete , name="producement_delete"),
     
     # staff_payment
@@ -66,7 +74,10 @@ urlpatterns = [
     path("staff_payment/delete/<int:pk>", views.staff_payment_delete, name="staff_payment_delete"),
 
     # Sale
-    path('Sale/', views.sale_view, name="sale"),
+    path('Sale/', views.sales_view, name="sale"),
+    path('Sale/create', views.sales_create, name="sale_create"),
+    path('Sale/update/<int:pk>', views.sales_update, name="sale_update"),
+    path('Sale/delete/<int:pk>', views.sales_delete, name="sale_delete"),
 
     # order_details
     path("order/detail/create/<int:pk>", views.order_detail_create, name="order_detail_create"),
