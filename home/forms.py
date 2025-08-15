@@ -546,11 +546,13 @@ class ProducementUpakovkachiForms(DefaultProducementForms):
 class SalesForm(forms.ModelForm):
     class Meta:
         model = models.Sales
-        fields = ['warehouse', 'client', 'date']
+        fields = ['warehouse', 'client', 'date', 'price', 'quantity']
 
         widgets = {
             'warehouse': forms.Select(attrs={'class': 'form-control'}),
             'client': forms.Select(attrs={'class': 'form-control'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'date':forms.DateInput(
                 attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
                 format='%d %m %Y'),

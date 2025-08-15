@@ -391,6 +391,9 @@ class Sales(models.Model):
         on_delete=models.CASCADE,
         related_name="client_sales",
     )
+    price = models.DecimalField(max_digits=20, decimal_places=2)
+    quantity = models.IntegerField()
+    total_price = models.DecimalField(max_digits=20, decimal_places=2)
     date = models.DateField(default=now)
     IsDeleted = models.BooleanField(default=False)
 
@@ -399,4 +402,4 @@ class Sales(models.Model):
     
     def __str__(self):
         return f"{self.model_id} - {self.quantity} - {self.total_price}"
-    
+

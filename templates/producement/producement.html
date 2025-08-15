@@ -205,15 +205,15 @@
                                         <td>{{ counter }}</td>
                                         <td>{{ producement.staff_id }}</td>
                                         <td>
-                                            <strong>Nomi:</strong> {{ producement.shoe_model_id }} <br>
-                                            <strong>Rangi:</strong> {{ producement.color_id }} <br>
-                                            <strong>Tagliki:</strong> {{ producement.solo_type }} <br>
-                                            <strong>Astari:</strong> {{ producement.lining_type_id }}
+                                            <strong>{{NAME}}:</strong> {{ producement.shoe_model_id }} <br>
+                                            <strong>{{COLOR}}:</strong> {{ producement.color_id }} <br>
+                                            <strong>{{SOLE}}:</strong> {{ producement.solo_type }} <br>
+                                            <strong>{{LINING}}:</strong> {{ producement.lining_type_id }}
                                         </td>
                                         <td>
-                                            <strong>Xaridor:</strong> {{ producement.order_id.client_id }}<br>
-                                            <strong>Yakunlanish sana:</strong> {{ producement.order_id.complete_date|date:"d.m.Y" }}<br>
-                                            <strong>Sana:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
+                                            <strong>{{CLIENT}}:</strong> {{ producement.order_id.client_id }}<br>
+                                            <strong>{{DEADLINE}}:</strong> {{ producement.order_id.complete_date|date:"d.m.Y" }}<br>
+                                            <strong>{{DATE}}:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
                                         </td>
                                         <td>{{ producement.quantity }}</td>
                                         <td>{{ producement.price }}</td>

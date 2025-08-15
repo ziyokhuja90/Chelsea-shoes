@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 <div class="container mt-3">
     <div class="card shadow-sm">
         <div class="card-header bg-info ">
@@ -9,8 +8,7 @@
         </div>
         <div class="card-body">
             <form method="post">
-                {% csrf_token %}
-                
+                {% csrf_token %}                
                 <div class="row g-3">
                     {% for field in forms %}
                     <div class="col-md-6">
@@ -22,9 +20,8 @@
                             {% endif %}
                         </div>
                     </div>
-                    {% endfor %}
+                    {% endfor %}    
                 </div>
-                
                 <div class="d-flex gap-3 align-items-center justify-content-end mt-4">
                     <a href="{% url 'staff_view' %}" class="btn btn-secondary">{{CANCEL}}</a>
                     <button type="submit" class="btn btn-primary">{{SAVE}}</button>
@@ -33,5 +30,4 @@
         </div>
     </div>
 </div>
-
 {% endblock content %}

@@ -5,14 +5,13 @@
 <div class="container mt-3">
     <div class="card">
         <div class="card-header">
-            <h3>{{CREATE}}</h3>
+            <h3>{{UPDATE}}</h3>
         </div>
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
                 {{forms}}
                 <div class="d-flex gap-3 align-items-center justify-content-end">
-                    
                     <a href="{% url 'clients_view' %}" class="btn btn-secondary mt-3 ">{{CANCEL}}</a>
                     <button type="submit" class="btn btn-primary mt-3">{{SAVE}}</button>
                 </div>

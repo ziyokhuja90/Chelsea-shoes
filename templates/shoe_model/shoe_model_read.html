@@ -13,14 +13,14 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Xodim</th>
-                        <th>Model</th>
-                        <th>Buyurtma</th>
-                        <th>Miqdor</th>
-                        <th>Birlik Narxi</th>
-                        <th>Status</th>
-                        <th>Amallar</th>
+                        <th>{{ID}}</th>
+                        <th>{{STAFF}}</th>
+                        <th>{{MODEL}}</th>
+                        <th>{{ORDER}}</th>
+                        <th>{{QUANTITY}}</th>
+                        <th>{{PRICE}}</th>
+                        <th>{{STATUS}}</th>
+                        <th>{{ACTIONS}}</th>
                     </tr>
                 </thead>
                 <tbody class="table-border-bottom-0">   
@@ -57,7 +57,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center">Ishlab chiqarish mavjud emas.</td>
+                        <td colspan="8" class="text-center">{{PRODUCEMENT}} {{NO_DATA}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
