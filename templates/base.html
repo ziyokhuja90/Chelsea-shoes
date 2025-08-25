@@ -53,21 +53,21 @@
 
     <link rel="stylesheet" href="{% static '/assets/vendor/libs/apex-charts/apex-charts.css' %}" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
+    
     <!-- Page CSS -->
-
+    
     <!-- Helpers -->
     <script src="{% static '/assets/vendor/js/helpers.js' %}"></script>
-
+    
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
-    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-    <script src="{% static '/assets/js/config.js' %}"></script>
-
-
-    <!-- flatpicker -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/uz.js"></script>
+      <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
+      <script src="{% static '/assets/js/config.js' %}"></script>
+      
+      
+      <!-- flatpicker -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+      <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/uz.js"></script>
 
   </head>
 
@@ -130,6 +130,17 @@
                 <i class="menu-icon tf-icons bx bx-cart-alt"></i>
                   <span class="fw-bolder">
                     {{SELL}}
+                  </span>
+                  
+                </div>
+              </a>
+            </li>
+            <li class="menu-item {% if request.resolver_match.url_name == 'warehouse' %}active{% endif %}">
+              <a href="{% url 'warehouse' %}" class="menu-link text-decoration-none">
+                <div data-i18n="Basic ">
+                <i class="menu-icon tf-icons bx bx-buildings"></i>
+                  <span class="fw-bolder">
+                    {{WAREHOUSE}}
                   </span>
                   
                 </div>

@@ -85,7 +85,7 @@ def reference_view(request):
                 new_entry.save()
 
             
-    reference_models = references.objects.filter(IsDeleted=False)
+    reference_models = references.objects.filter(IsDeleted=False).order_by('order')
 
     
     context = {
@@ -857,7 +857,6 @@ def producement_update(request, pk, ProducementForms):
     }
     return render(request, "producement/producement_update.html", context=context)
 
-
 def producement_delete(request ,pk):
     producement_item = producement.objects.get(pk=pk)
     producement_item.IsDeleted = True
@@ -942,7 +941,7 @@ def sales_create(request):
         forms = SalesForm(request.POST)
         if forms.is_valid():
             new = forms.save(commit=False)
-            # new.total_price = new.quantity * new.price
+            new.total_price = new.quantity * new.price
             new.save()
             return redirect('sale')
     else:
@@ -1040,3 +1039,41 @@ def order_detail_delete(request, pk):
     detail.save()
     return redirect('order_read', pk=detail.order_id.pk)
 
+
+# warehouse
+def warehouse_view(request):
+    warehouse_items = Warehouse.objects.filter(IsDeleted=False).order_by('id')
+    context = {
+        "warehouse_items": warehouse_items
+    }
+    return render(request, 'warehouse/warehouse.html', context=context)
+
+
+
+
+# next
+def order_next_status(request, pk):
+    order = get_object_or_404(orders, pk=pk)
+    current_ref = order.status
+    next_status = references.objects.filter(
+        IsDeleted=False,
+        type=ReferenceType.STATUS.value, 
+        order__gt=current_ref.order
+    ).order_by('order').first()
+    if next_status:
+        order.status = next_status
+        order.save()
+    return redirect('orders_view')  # adjust to your list view
+
+def order_prev_status(request, pk):
+    order = get_object_or_404(orders, pk=pk)
+    current_ref = order.status
+    prev_status = references.objects.filter(
+        IsDeleted=False,
+        type=ReferenceType.STATUS.value,
+        order__lt=current_ref.order
+    ).order_by('-order').first()
+    if prev_status:
+        order.status = prev_status
+        order.save()
+    return redirect('orders_view')

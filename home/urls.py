@@ -84,7 +84,14 @@ urlpatterns = [
     path("order/detail/update/<int:pk>", views.order_detail_update, name="order_detail_update"),
     path("order/detail/delete/<int:pk>", views.order_detail_delete, name="order_detail_delete"),
 
+    # warehouse
+    path("warehouse/", views.warehouse_view, name="warehouse"),
 
+    # next
+    path('order/<int:pk>/next/', views.order_next_status, name='order_next_status'),
+    
+    # previous
+    path('order/<int:pk>/prev/', views.order_prev_status, name='order_prev_status'),
 
 ]
 if settings.DEBUG:

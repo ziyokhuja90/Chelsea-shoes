@@ -20,7 +20,7 @@
                     <th>{{SHOE_MODEL}}</th>
                     <th>{{QUANTITY}}</th>
                     <th>{{PRICE}}</th>
-                    <th>{{TOTAL}}</th>
+                    <th>{{TOTAL}} {{PRICE}}</th>
                     <th>{{COLOR}}</th>
                     <th>{{LEATHER}}</th>
                     <th>{{SOLE}}</th>
@@ -33,12 +33,12 @@
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>{{ sold_item.warehouse.model_id }}</td>
-                        <td>{{ sold_item.warehouse.quantity }}</td>
-                        <td>{{ sold_item.warehouse.price }}</td>
-                        <td>{{ sold_item.warehouse.total }}</td>
+                        <td>{{ sold_item.quantity }}</td>
+                        <td>{{ sold_item.price }}</td>
+                        <td>{{ sold_item.total_price }}</td>
                         <td>{{ sold_item.warehouse.color_id }}</td>
                         <td>{{ sold_item.warehouse.leather_type }}</td>
-                        <td>{{ sold_item.warehouse.sole_type }}</td>
+                        <td>{{ sold_item.warehouse.sole_type_id }}</td>
                         <td>{{ sold_item.warehouse.lining_type_id }}</td>
                         <td>
                             <a class="btn btn-sm btn-warning" href="{% url "sale_update" sold_item.id %}"><i class="bx bx-edit-alt text-white"></i></a>

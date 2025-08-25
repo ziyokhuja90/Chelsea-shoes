@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <div class="card mt-3">
+        <div class="d-flex justify-content-between align-items-center p-3">
+            
+            <h5 class="card-header p-0 bg-white border-0">
+                {{WAREHOUSE}}
+            </h5>
+            <!-- <a class="btn btn-primary " href=""></a> -->
+            
+        </div>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{{ID}}</th>
+                        <th>{{SHOE_MODEL}}</th>
+                        <th>{{QUANTITY}}</th>
+                        <th>{{PRICE}}</th>
+                        <th>{{TOTAL_PRICE}}</th>
+                        <th>{{COLOR}}</th>
+                        <th>{{LEATHER_TYPE}}</th>
+                        <th>{{SOLE_TYPE}}</th>
+                        <th>{{LINING}}</th>
+                    </tr>
+                </thead>
+        <tbody class="table-border-bottom-0">
+            {% for warehouse in warehouse_items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ warehouse.model_id }}</td>
+                    <td>{{ warehouse.quantity }}</td>
+                    <td>{{ warehouse.price }}</td>
+                    <td>{{ warehouse.total_amount }}</td>
+                    <td>{{ warehouse.color_id }}</td>
+                    <td>{{ warehouse.leather_type }}</td>
+                    <td>{{ warehouse.sole_type_id}}</td>
+                    <td>{{ warehouse.lining_type_id}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
+</div>
+{% endblock content %}
