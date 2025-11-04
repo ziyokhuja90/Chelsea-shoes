@@ -432,6 +432,7 @@ class DefaultProducementForms(forms.Form):
         cleaned_data = super().clean()
         order_detail = cleaned_data.get('order_detail_id')
         quantity = cleaned_data.get('quantity')
+        staff_id = cleaned_data.get('staff_id')
 
         if order_detail and quantity is not None:
             # Save for potential use
@@ -439,6 +440,7 @@ class DefaultProducementForms(forms.Form):
 
             # Calculate total produced quantity for this Order_detail
             total_produced = models.producement.objects.filter(
+                staff_id__profession=staff_id.profession,
                 order_detail_id=order_detail,
                 IsDeleted=False
             ).aggregate(total=Sum('quantity'))['total'] or 0
@@ -450,8 +452,8 @@ class DefaultProducementForms(forms.Form):
             if quantity > remaining_quantity:
                 self.add_error(
                     'quantity',
-                    f"Maximum quantity allowed for this detail is {remaining_quantity}. "
-                    f"Already produced: {total_produced}, ordered: {order_detail.quantity}"
+                    f"{system_variables.MAX_ALLOWED_Q} — {remaining_quantity}. "
+                    f"{system_variables.ALREADY_PRODUCED}: {total_produced}, {system_variables.ORDERED}: {order_detail.quantity}"
                 )
 
         return cleaned_data
