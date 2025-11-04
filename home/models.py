@@ -28,7 +28,7 @@ class references(models.Model):
         choices=[(ref_type.value, ref_type.name.title()) for ref_type in ReferenceType],
         verbose_name="Reference Type"
     )
-    value = models.CharField(max_length=255 , verbose_name="ma'lumotnoma qiymati")
+    value = models.CharField(max_length=255)
     IsDeleted = models.BooleanField(default=False)
     IsSystem = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
@@ -115,7 +115,7 @@ class Order_details(models.Model):
     order_id = models.ForeignKey(
         orders,
         models.CASCADE,
-        related_name="ordeer_id_orders",
+        related_name="order_id_orders",
         verbose_name="Buyurtma"                                           
     )
     model_id = models.ForeignKey(
@@ -369,7 +369,6 @@ class Warehouse(models.Model):
         to=references,
         on_delete=models.CASCADE,
         related_name="lining_type_warehouse",
-
     )
     
     IsDeleted = models.BooleanField(default=False)

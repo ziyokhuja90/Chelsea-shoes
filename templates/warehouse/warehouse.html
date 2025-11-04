@@ -2,16 +2,104 @@
 
 {% block content %}
 <div class="container">
+  <div class="card p-3 my-3">
+    <h1 class="text-center mb-4">{{FILTER}}</h1>
 
-    <div class="card mt-3">
-        <div class="d-flex justify-content-between align-items-center p-3">
-            
-            <h5 class="card-header p-0 bg-white border-0">
-                {{WAREHOUSE}}
-            </h5>
-            <!-- <a class="btn btn-primary " href=""></a> -->
-            
+    <!-- Filtering Form -->
+    <form id="filterForm" class="mb-4" method="get">
+
+        <div class="row g-3">
+
+            <!-- Shoe Model -->
+            <div class="col-md-3">
+                <label for="shoe_model_id" class="form-label">{{MODEL}}</label>
+                <select id="shoe_model_id" name="shoe_model_id" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for model in shoe_models %}
+                        <option 
+                            value="{{ model.id }}" 
+                            {% if shoe_model_id == model.id %}selected{% endif %}
+                        >
+                            {{ model }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Color -->
+            <div class="col-md-3">
+                <label for="color_id" class="form-label">{{COLOR}}</label>
+                <select id="color_id" name="color_id" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for color in colors %}
+                        <option 
+                            value="{{ color.id }}" 
+                            {% if color_id == color.id %}selected{% endif %}
+                        >
+                            {{ color }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Leather Type -->
+            <div class="col-md-3">
+                <label for="leather_type" class="form-label">{{LEATHER_TYPE}}</label>
+                <select id="leather_type" name="leather_type" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for leather in leather_types %}
+                        <option 
+                            value="{{ leather.id }}" 
+                            {% if leather_type == leather.id %}selected{% endif %}
+                        >
+                            {{ leather }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Solo Type -->
+            <div class="col-md-3">
+                <label for="solo_type" class="form-label">{{SOLE_TYPE}}</label>
+                <select id="solo_type" name="solo_type" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for solo in sole_types %}
+                        <option 
+                            value="{{ solo.id }}" 
+                            {% if solo_type == solo.id %}selected{% endif %}
+                        >
+                            {{ solo }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Client -->
+            <div class="col-md-3">
+                <label for="client" class="form-label">{{CLIENT}}</label>
+                <select id="client" name="client" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for client in clients %}
+                        <option 
+                            value="{{ client.id }}" 
+                            {% if client == client.id %}selected{% endif %}
+                        >
+                            {{ client }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
+
+        <!-- Buttons -->
+        <div class="mt-3 text-end">
+            <button type="submit" class="btn btn-primary">{{FILTER}}</button>
+            <a href="{% url 'sale' %}" class="btn btn-secondary">{{CLEAN}}</a>
+        </div>
+    </form>
+</div>
+    <div class="card mt-3">
+  
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
                 <thead>

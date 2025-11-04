@@ -16,7 +16,8 @@ from django.template.loader import render_to_string
 from django.http import HttpResponse
 from datetime import datetime
 
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
 def phone_to_int(phone_str):
@@ -304,7 +305,7 @@ def orders_view(request):
     # Define the statuses that are "active" or need attention
     active_statuses = ["Jarayonda", "YARATILDI"]
     completed_statuses = ["BAJARILDI", "Bekor qilindi","Qabul qilindi"]
-
+    status = references.objects.filter(type=ReferenceType.STATUS.value)
     # Annotate orders with a custom sorting field: '0' for active, '1' for completed
     orders_list = orders.objects.filter(IsDeleted=False).annotate(
         status__value=Case(
@@ -319,7 +320,8 @@ def orders_view(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "orders_list": page_obj
+        "orders_list": page_obj,
+        "statuses":status
     }
     return render(request, "orders/orders.html", context=context)
 
@@ -923,15 +925,55 @@ def staff_payment_delete(request, pk):
 
 # Sale 
 def sales_view(request):
+    
+    staff_id   = request.GET.get('staff_id')
+    model_id   = request.GET.get('shoe_model_id')
+    color_id   = request.GET.get('color_id')
+    leather_id = request.GET.get('leather_type')
+    sole_id    = request.GET.get('solo_type')
+    status     = request.GET.get('status')
+    order_id   = request.GET.get('order')
 
-    order_sale_list = orders.objects.filter(status__value='Bajarildi', IsDeleted=False)
-    order_sold_list = orders.objects.filter(status__value='Qabul qilindi', IsDeleted=False)
-    sold_items = Sales.objects.filter(IsDeleted=False)
+    # Put them in a dict
+    filters = {
+        'warehouse__staff_id': staff_id,           # adjust field if needed
+        'warehouse__model_id': model_id,      # FK from Warehouse
+        'warehouse__color_id': color_id,
+        'warehouse__leather_type_id': leather_id,
+        'warehouse__sole_type_id': sole_id,
+        'status': status,                          # if Sales has status
+        'order_id': order_id,                      # if exists
+        'IsDeleted': False,
+    }
+
+    # Remove None or empty values
+    valid_filters = {key: int(value) for key, value in filters.items() if value not in [None, '']}
+
+    # Query sales
+    sold_items = Sales.objects.filter(**valid_filters).order_by('id')
+
+    # For dropdowns
+    shoe_models = shoe_model.objects.filter(IsDeleted=False)
+    colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value)
+    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value)
+    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value)
+    client_list = clients.objects.filter(IsDeleted=False)
 
     context = {
-        "order_sale_list":order_sale_list,
-        "order_sold_list":order_sold_list,
-        "sold_items":sold_items
+        "sold_items": sold_items,
+        "shoe_models": shoe_models,
+        "colors": colors,
+        "leather_types": leather_types,
+        "sole_types": sole_types,
+        "clients": client_list,
+        "shoe_model_id": model_id,
+        "color_id": color_id,
+        "leather_type": leather_id,
+        "solo_type": sole_id,
+        "status": status,
+        "order": order_id,
+        "staff_id": staff_id,
+        
     }
 
     return render(request, 'Sale/sale.html', context=context)
@@ -1065,6 +1107,7 @@ def order_next_status(request, pk):
         order.save()
     return redirect('orders_view')  # adjust to your list view
 
+# previuos
 def order_prev_status(request, pk):
     order = get_object_or_404(orders, pk=pk)
     current_ref = order.status
@@ -1077,3 +1120,22 @@ def order_prev_status(request, pk):
         order.status = prev_status
         order.save()
     return redirect('orders_view')
+
+@csrf_exempt
+def update_order_status(request):
+    if request.method == "POST":
+        order_id = request.POST.get("order_id")
+        status_id = request.POST.get("status_id")
+
+        try:
+            order = orders.objects.get(id=order_id)
+            status = references.objects.get(id=status_id)
+            order.status = status
+            order.save()
+            return JsonResponse({"success": True, "message": "Status updated"})
+        except orders.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Order not found"})
+        except references.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Invalid status"})
+
+    return JsonResponse({"success": False, "message": "Invalid request"})

@@ -47,7 +47,7 @@ urlpatterns = [
     
     # producement
     path('producement' , views.producement_view , name="producement_view"),
-    # path('producement/create' , views.producement_create , name='producement_create'),
+    path('producement/create' , views.producement_create , name='producement_create'),
     path('producement/create/kroy' , lambda request: views.producement_create(request, ProducementKroyForms), name='producement_create_kroy'),
     path('producement/create/lazir' , lambda request: views.producement_create(request, ProducementLazirForms), name='producement_create_lazir'),
     path('producement/create/zakatop' , lambda request: views.producement_create(request, ProducementZakatopForms), name='producement_create_zakatop'),
@@ -93,6 +93,8 @@ urlpatterns = [
     # previous
     path('order/<int:pk>/prev/', views.order_prev_status, name='order_prev_status'),
 
+    #order status
+    path('update-order-status/', views.update_order_status, name='update_order_status'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
