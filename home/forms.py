@@ -253,7 +253,7 @@ class producement_forms(forms.ModelForm):
 class staff_payments_forms(forms.ModelForm):
     class Meta:
         model  = models.staff_payments
-        fields = ['staff_id', 'date', 'amount']
+        fields = ['staff_id', 'date', 'amount', 'description']
         
         widgets = {
             'staff_id':forms.Select(attrs={"class":"form-select"}),    
@@ -261,7 +261,8 @@ class staff_payments_forms(forms.ModelForm):
                 attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
                 format='%d %m %Y'
             ),
-            'amount':forms.NumberInput(attrs={"class":"form-control"})    
+            'amount':forms.NumberInput(attrs={"class":"form-control"}),
+            'description':forms.Textarea(attrs={'class':'form-control'})   
         }
 
     def __init__(self, *args, **kwargs):

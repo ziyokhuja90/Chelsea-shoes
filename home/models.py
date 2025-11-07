@@ -1,7 +1,7 @@
 from django.db import models
 from enum import Enum
 from django.utils.timezone import now
-
+from config import system_variables
 
 class ReferenceType(Enum):
     STATUS = 1 # System
@@ -43,7 +43,7 @@ class shoe_model(models.Model):
     name = models.CharField(max_length=255 , verbose_name="oyoq kiyim nomi")
     code = models.CharField(max_length=255 , verbose_name="oyoq kiyim kodi" ,unique=True)
     image = models.ImageField(upload_to="media/" , verbose_name="oyoq kiyim rasmi")
-    description = models.TextField(verbose_name="oyoq kiyim tavsifi")
+    description = models.TextField(verbose_name=system_variables.DESCRIPTION)
     IsDeleted = models.BooleanField(default=False)
 
     class Meta:
@@ -78,6 +78,7 @@ class client_payments(models.Model):
         )
     date = models.DateField(verbose_name="tulov sanasi")
     amount = models.DecimalField(verbose_name="miqdori" , max_digits=20 , decimal_places=2)
+    description = models.TextField(verbose_name=system_variables.DESCRIPTION, null=True, blank=True)
     IsDeleted = models.BooleanField(default=False)
 
     class Meta:
@@ -201,6 +202,7 @@ class staff_payments(models.Model):
     )
     date = models.DateField(verbose_name="tulov sanasi")
     amount = models.DecimalField(verbose_name="miqdori", max_digits=20 , decimal_places=2)
+    description = models.TextField(verbose_name=system_variables.DESCRIPTION, null=True, blank=True)
     IsDeleted = models.BooleanField(default=False)
 
     class Meta:
