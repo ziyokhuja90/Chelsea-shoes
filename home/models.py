@@ -62,6 +62,7 @@ class clients(models.Model):
         related_name="currency_reference_client"
     )
     balance = models.DecimalField(max_digits=20 , decimal_places=2, default=0, null=True, blank=True)
+    is_system = models.BooleanField(default=False)
     IsDeleted = models.BooleanField(default=False)
     class Meta:
         db_table = "clients"
