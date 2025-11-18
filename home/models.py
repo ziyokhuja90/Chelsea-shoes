@@ -88,7 +88,7 @@ class client_payments(models.Model):
     def __str__(self):
         return f"{self.client_id} -- {self.amount}"
 
-class orders(models.Model):
+class Orders(models.Model):
     client_id = models.ForeignKey(
         clients,
         on_delete=models.CASCADE,
@@ -115,7 +115,7 @@ class orders(models.Model):
 
 class Order_details(models.Model):
     order_id = models.ForeignKey(
-        orders,
+        Orders,
         models.CASCADE,
         related_name="order_id_orders",
         verbose_name="Buyurtma"                                           
@@ -255,7 +255,7 @@ class producement(models.Model):
     )
     price = models.DecimalField(verbose_name="ish narxi" , max_digits=20 , decimal_places=2)
     order_id = models.ForeignKey(
-        orders,
+        Orders,
         models.CASCADE,
         related_name="orders_producement",
         verbose_name="ish buyurtmasi",

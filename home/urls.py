@@ -38,6 +38,8 @@ urlpatterns = [
     path('clients/update/<int:pk>' , views.clients_update , name="clients_update"),
     path('clients/delete/<int:pk>' , views.clients_delete , name="clients_delete"),
     
+    # client_payments
+    path('client/payments/create', views.client_payment_create, name="client_payment_create"),
     # ordars
     path("orders" , views.orders_view , name="orders_view"),
     path("orders/create" , views.orders_create , name="orders_create"),

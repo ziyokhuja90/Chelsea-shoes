@@ -245,6 +245,12 @@ def staff_delete(request, pk):
 def clients_view(request):
     clients_list = clients.objects.filter(IsDeleted=False).order_by('id')
     currencys = references.objects.filter(type=ReferenceType.CURRENCY.value, IsDeleted=False).order_by("id")
+    payments = client_payments.objects.filter(IsDeleted=False).order_by('id')
+    orders = Orders.objects.filter(status__value=system_variables.COMPLETED, IsDeleted=False).order_by('id')
+    details = Order_details.objects.filter(
+        order_id__status__value=system_variables.COMPLETED,
+        order_id__client_id__is_system=False, 
+        IsDeleted=False).order_by('id')
 
     full_name, gender, profession, phone = request.GET.get("full_name",None),request.GET.get("currency",None),request.GET.get("address",None),request.GET.get("phone",None)
 
@@ -252,10 +258,12 @@ def clients_view(request):
         clients_list = clients_list.filter(name__icontains=full_name, currency__value__icontains=gender, address__icontains=profession, phone_number__icontains=phone, IsDeleted=False).order_by('id')
 
 
-
     context = {
         "clients_list":clients_list,
-        "currencys":currencys
+        "currencys":currencys,
+        "payments":payments,
+        "orders":orders,
+        "details":details
     }
     return render(request , "clients/clients.html" , context=context)
 
@@ -307,7 +315,7 @@ def orders_view(request):
     completed_statuses = ["BAJARILDI", "Bekor qilindi","Qabul qilindi"]
     status = references.objects.filter(type=ReferenceType.STATUS.value)
     # Annotate orders with a custom sorting field: '0' for active, '1' for completed
-    orders_list = orders.objects.filter(IsDeleted=False).annotate(
+    orders_list = Orders.objects.filter(IsDeleted=False).annotate(
         status__value=Case(
             When(status__value__in=active_statuses, then=0),  # Active statuses come first
             When(status__value__in=completed_statuses, then=1),  # Completed statuses come last
@@ -341,7 +349,7 @@ def orders_create(request):
     return render(request, "orders/orders_create.html", context=context)
 
 def order_read(request, pk):
-    order_item = orders.objects.get(pk=pk)
+    order_item = Orders.objects.get(pk=pk)
     details = Order_details.objects.filter(order_id=order_item.pk, IsDeleted=False)
 
     context ={
@@ -351,7 +359,7 @@ def order_read(request, pk):
     return render(request , "orders/order_read.html" , context=context)
 
 def orders_update(request, pk):
-    order_item = orders.objects.get(pk=pk)
+    order_item = Orders.objects.get(pk=pk)
     
     if request.method == "POST":
         form = orders_forms(request.POST , instance=order_item)
@@ -367,7 +375,7 @@ def orders_update(request, pk):
     return render(request, 'update.html', context=context)
 
 def orders_delete(request, pk):
-    order_item = orders.objects.get(pk=pk)
+    order_item = Orders.objects.get(pk=pk)
     order_item.IsDeleted = True
     order_item.save()
     return redirect('orders_view')
@@ -385,7 +393,7 @@ def producement_view(request):
     leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value)
     sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value)
     statuses = references.objects.filter(IsDeleted=False, type=ReferenceType.STATUS.value)
-    order_list = orders.objects.filter(IsDeleted=False)
+    order_list = Orders.objects.filter(IsDeleted=False)
 
 
     staff_id, model, color, leather, sole, status, order = request.GET.get('staff_id', None), request.GET.get('shoe_model_id',None),request.GET.get('color_id',None),request.GET.get('leather_type',None),request.GET.get('solo_type',None),request.GET.get('status',None),request.GET.get('order',None) 
@@ -1020,7 +1028,7 @@ def sales_delete(request, pk):
 
 # order_details
 def order_detail_create(request, pk):
-    order = orders.objects.get(pk=pk)
+    order = Orders.objects.get(pk=pk)
     if request.method == "POST":
         forms = orderDetails_forms(request.POST)
         if forms.is_valid():
@@ -1095,7 +1103,7 @@ def warehouse_view(request):
 
 # next
 def order_next_status(request, pk):
-    order = get_object_or_404(orders, pk=pk)
+    order = get_object_or_404(Orders, pk=pk)
     current_ref = order.status
     next_status = references.objects.filter(
         IsDeleted=False,
@@ -1109,7 +1117,7 @@ def order_next_status(request, pk):
 
 # previuos
 def order_prev_status(request, pk):
-    order = get_object_or_404(orders, pk=pk)
+    order = get_object_or_404(Orders, pk=pk)
     current_ref = order.status
     prev_status = references.objects.filter(
         IsDeleted=False,
@@ -1128,14 +1136,30 @@ def update_order_status(request):
         status_id = request.POST.get("status_id")
 
         try:
-            order = orders.objects.get(id=order_id)
+            order = Orders.objects.get(id=order_id)
             status = references.objects.get(id=status_id)
             order.status = status
             order.save()
             return JsonResponse({"success": True, "message": "Status updated"})
-        except orders.DoesNotExist:
+        except Orders.DoesNotExist:
             return JsonResponse({"success": False, "message": "Order not found"})
         except references.DoesNotExist:
             return JsonResponse({"success": False, "message": "Invalid status"})
 
     return JsonResponse({"success": False, "message": "Invalid request"})
+
+# client_payments
+
+def client_payment_create(request):
+    if request.method == "POST":
+        forms = Client_payments_forms(request.POST)
+        if forms.is_valid():
+            forms.save()
+            return redirect('clients_view')
+    else:
+        forms = Client_payments_forms()
+    
+    context = {
+        "forms":forms
+    }
+    return render(request, 'staff/staff_payment_create.html', context=context)

@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save, post_delete, post_migrate
 from django.dispatch import receiver
-from .models import producement, staff, staff_payments, Order_details, orders, Warehouse, references, ReferenceType, clients
+from .models import producement, staff, staff_payments, Order_details, Orders, Warehouse, references, ReferenceType, clients
 from config import system_variables
 
 
@@ -40,7 +40,7 @@ def update_staff_balance_on_payment(sender, instance, **kwargs):
 
 @receiver([post_save, post_delete], sender=Order_details)
 def update_order_total_amount(sender, instance, **kwargs):
-    order = orders.objects.get(pk=instance.order_id.pk)
+    order = Orders.objects.get(pk=instance.order_id.pk)
     details = Order_details.objects.filter(order_id=order)
     total_amount = 0
 
@@ -51,7 +51,7 @@ def update_order_total_amount(sender, instance, **kwargs):
     order.save()
 
 
-@receiver([post_save, post_delete], sender=orders)
+@receiver([post_save, post_delete], sender=Orders)
 def details_to_warehouse(sender, instance, **kwargs):
     print(f"--------------------------------------- {instance.status.value } ----------------------------------------------")
     if instance.status.value == system_variables.COMPLETED and instance.client_id.name == system_variables.WAREHOUSE.upper():

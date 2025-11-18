@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load filter %}
 
 {% block content %}
 <div class="container">
@@ -125,6 +126,145 @@
         </tbody>
       </table>
     </div>
+  </div>
+</div>
+
+
+<div class="container mt-4">
+  <!-- Card Wrapper -->
+  <div class="card shadow-sm">
+      <!-- Card Header with Balance -->
+      <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"></h5>
+          <h5>{{BALANCE|title}}: 
+            {% if balance >= 0 %}
+            <span class="text-success">{{ balance }}</span>
+            {% else %}
+            <span class="text-danger">{{ balance }}</span>
+            {% endif %}
+        </h5>
+      </div>
+
+      <!-- Card Body with Tabs -->
+      <div class="card-body">
+          <!-- Tabs Navigation -->
+          <ul class="nav nav-tabs" id="staffTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab" aria-controls="payments" aria-selected="true">
+                    {{PAYMENTS_LIST}}
+                  </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="work-tab" data-bs-toggle="tab" data-bs-target="#work" type="button" role="tab" aria-controls="work" aria-selected="false">
+                      {{ORDERS}}
+                  </button> 
+              </li>
+          </ul>
+
+          <!-- Tabs Content -->
+          <div class="tab-content mt-3" id="staffTabsContent">
+              <!-- Staff Payments Tab -->
+              <div class="tab-pane fade show active" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h5>{{PAYMENTS_LIST}}</h5>
+                      <!-- Add Payment Button -->
+                      <a class="btn btn-primary" href="{% url 'client_payment_create'  %}">
+                           {{PAY}}
+                      </a>
+                  </div>
+                  <table class="table table-hover">
+                      <thead class="table-light">
+                          <tr>
+                              <th>{{ID}}</th>
+                              <th>{{CLIENT}}</th>
+                              <th>{{SUM}}</th>
+                              <th>{{DATE}}</th>
+                              <th>{{ACTIONS}}</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for payment in payments %}
+                          <tr>
+                              <td>{{ payment.id }}</td>
+                              <td>{{ payment.client_id }}</td>
+                              <td>{{ payment.amount }}</td>
+                              <td>{{ payment.date|date:"Y.m.d" }}</td>
+                              <td>
+                                  <a class="btn btn-sm btn-warning text-white" href="{% url "staff_payment_update" payment.id %}">
+                                    <i class="bx bx-edit-alt "></i>
+                                </a>
+                                  <a class="btn btn-sm btn-danger"  href="#"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#deleteModal"
+                                  data-delete-url="{% url "staff_payment_delete" payment.id %}"> 
+                
+                                      <i class="bx bx-trash "></i>
+                                  </a>
+                              </td>
+                          </tr>
+                          {% empty %}
+                          <tr>
+                              <td colspan="5" class="text-center">{{PAYMENTS}} {{NO_DATA}}</td>
+                          </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+
+              <!-- Staff Work Tab -->
+              <div class="tab-pane fade" id="work" role="tabpanel" aria-labelledby="work-tab">
+                  <table class="table table-hover  ">
+                      <thead class="table-light">
+                          <tr>
+                              <th>{{ID}}</th>
+                              <th>{{CLIENT}}</th>
+                              <th>{{MODEL}}</th>
+                              <th>{{PRICE}}</th>
+                              <th>{{QUANTITY}}</th>
+                              <th>{{TOTAL}}</th>
+                              <th>{{STATUS}}</th>
+                              <th>{{ACTIONS}}</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for detail in details %}
+                          <tr>
+                              <td>{{ detail.id }}</td>
+                              <td>{{ detail.order_id.client_id}}</td>
+                              <td>{{ detail.model_id }}</td>
+                              <td>{{ detail.price }}</td>
+                              <td>{{ detail.quantity }}</td>
+                              <td>
+                                  <p>{{ detail.price|multiply:detail.quantity }}</p>
+
+                              </td>
+                              <td>
+                                      {{ detail.order_id.status }}
+                              </td>
+                              <td>
+                                 <a class="btn btn-sm btn-warning" href="">
+                                     <i class="bx bx-edit-alt text-white"></i>
+                                 </a>
+
+                                  <a class="btn btn-sm btn-danger"  href="#"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#deleteModal"
+                                  data-delete-url="">
+                
+                                      <i class="bx bx-trash "></i>
+                                  </a>
+                              </td>
+                          </tr>
+                          {% empty %}
+                          <tr>
+                              <td colspan="6" class="text-center">{{WORKS}} {{NO_DATA}}</td>
+                          </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
   </div>
 </div>
 {% endblock content %}

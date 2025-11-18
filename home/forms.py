@@ -104,7 +104,7 @@ class clients_forms(forms.ModelForm):
 
 class orders_forms(forms.ModelForm):
     class Meta:
-        model = models.orders
+        model = models.Orders
         fields = ['client_id' , 'date' , 'complete_date' , 'status']
         
         widgets = {
@@ -221,7 +221,7 @@ class producement_forms(forms.ModelForm):
         self.fields['solo_type'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
         self.fields['lining_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LINING_TYPE.value)
-        self.fields['order_id'].queryset = models.orders.objects.filter(IsDeleted=False)
+        self.fields['order_id'].queryset = models.Orders.objects.filter(IsDeleted=False)
         self.fields['staff_id'].queryset = models.staff.objects.filter(IsDeleted=False)
 
 
@@ -294,7 +294,7 @@ class staff_payments_read_forms(forms.ModelForm):
 
 class DefaultProducementForms(forms.Form):
     order_id = forms.ModelChoiceField(
-        queryset=models.orders.objects.filter(IsDeleted=False),
+        queryset=models.Orders.objects.filter(IsDeleted=False),
         empty_label= system_variables.EMPTY_LABEL,
         label=system_variables.ORDER,
         widget=forms.Select(
@@ -565,5 +565,27 @@ class SalesForm(forms.ModelForm):
 
         self.fields['warehouse'].queryset = models.Warehouse.objects.filter(IsDeleted=False)
         self.fields['client'].queryset = models.clients.objects.filter(IsDeleted=False)
+        self.fields['date'].initial = now()
+        self.fields['date'].input_formats = ['%d %m %Y']
+
+
+class Client_payments_forms(forms.ModelForm):
+    class Meta:
+        model  = models.client_payments
+        fields = ['client_id', 'date', 'amount', 'description']
+        
+        widgets = {
+            'client_id':forms.Select(attrs={"class":"form-select"}),    
+            'date': forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
+                format='%d %m %Y'
+            ),
+            'amount':forms.NumberInput(attrs={"class":"form-control"}),
+            'description':forms.Textarea(attrs={'class':'form-control'})   
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.fields['date'].initial = now()
         self.fields['date'].input_formats = ['%d %m %Y']
