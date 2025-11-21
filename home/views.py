@@ -257,13 +257,15 @@ def clients_view(request):
     if full_name or gender or profession or phone:
         clients_list = clients_list.filter(name__icontains=full_name, currency__value__icontains=gender, address__icontains=profession, phone_number__icontains=phone, IsDeleted=False).order_by('id')
 
+    total_balance = sum(i.balance for i in clients_list)
 
     context = {
         "clients_list":clients_list,
         "currencys":currencys,
         "payments":payments,
         "orders":orders,
-        "details":details
+        "details":details,
+        "balance":total_balance
     }
     return render(request , "clients/clients.html" , context=context)
 
@@ -810,7 +812,7 @@ def producement_update(request, pk, ProducementForms):
     details_json = json.dumps(details_list)
 
     if request.method == "POST":
-        form = ProducementForms(request.POST)
+        form = ProducementForms(request.POST, instance=producement_item)
         if form.is_valid():
             # Update manually
             sole_type_id = form.cleaned_data['order_detail_id'].sole_type_id
@@ -1162,4 +1164,26 @@ def client_payment_create(request):
     context = {
         "forms":forms
     }
-    return render(request, 'staff/staff_payment_create.html', context=context)
+    return render(request, 'clients/client_payment_update.html', context=context)
+
+
+def client_payment_update(request, pk):
+    client_payment_item = client_payments.objects.get(pk=pk)
+    if request.method == "POST":
+        forms = Client_payments_forms(request.POST, instance=client_payment_item)
+        if forms.is_valid():
+            forms.save()
+            return redirect('clients_view')
+    else:
+        forms = Client_payments_forms(instance=client_payment_item)
+    
+    context = {
+        "forms":forms
+    }
+    return render(request, 'clients/client_payment_update.html', context=context)
+
+def client_payment_delete(request, pk):
+    payment = client_payments.objects.get(pk=pk)
+    payment.IsDeleted = True
+    payment.save()
+    return redirect('clients_view')

@@ -22,7 +22,6 @@
                         value="{{ request.GET.full_name }}"
                     >
                 </div>
-        
                 <!-- Gender -->
                 <div class="col-md-2">
                     <label for="currency" class="form-label">{{CURRENCY}}</label>
@@ -38,7 +37,6 @@
                         {% endfor %}
                     </select>
                 </div>
-        
                 <!-- Profession -->
                 <div class="col-md-3">
                     <label for="address" class="form-label">{{LOCATION}}</label>
@@ -69,6 +67,7 @@
         
   </div>
 
+  {% comment %} table {% endcomment %}
 <div class="card mt-3">
   <div class="d-flex justify-content-between align-items-center p-3">
     
@@ -84,6 +83,7 @@
             <th>{{PHONE_NUMBER}}</th>
             <th>{{LOCATION}}</th>
             <th>{{CURRENCY}}</th>
+            <th>{{BALANCE}}</th>
             <th>{{ACTIONS}}</th>
           </tr>
         </thead>
@@ -101,8 +101,17 @@
             <td>
                 {{client.currency}}
             </td>
+                {% if client.balance >= 0 %}
+                <td class="text-success">
+                    {{client.balance}}
+                </td>
+                {% else %}
+                <td class="text-danger">
+                    {{client.balance}}
+                </td>
+            {% endif %}
+
             <td>
-                  
                   <a class="btn btn-sm btn-warning" href="{% url "clients_update" client.id %}"><i class="bx bx-edit-alt text-white"></i></a>
                   <a
                   class="btn btn-sm btn-danger"
@@ -129,7 +138,7 @@
   </div>
 </div>
 
-
+{% comment %} payments {% endcomment %}
 <div class="container mt-4">
   <!-- Card Wrapper -->
   <div class="card shadow-sm">
@@ -190,13 +199,13 @@
                               <td>{{ payment.amount }}</td>
                               <td>{{ payment.date|date:"Y.m.d" }}</td>
                               <td>
-                                  <a class="btn btn-sm btn-warning text-white" href="{% url "staff_payment_update" payment.id %}">
+                                  <a class="btn btn-sm btn-warning text-white" href="{% url "client_payment_update" payment.id %}">
                                     <i class="bx bx-edit-alt "></i>
                                 </a>
                                   <a class="btn btn-sm btn-danger"  href="#"
                                   data-bs-toggle="modal"
                                   data-bs-target="#deleteModal"
-                                  data-delete-url="{% url "staff_payment_delete" payment.id %}"> 
+                                  data-delete-url="{% url "client_payment_delete" payment.id %}"> 
                 
                                       <i class="bx bx-trash "></i>
                                   </a>

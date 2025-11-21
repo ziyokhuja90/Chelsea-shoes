@@ -40,6 +40,8 @@ urlpatterns = [
     
     # client_payments
     path('client/payments/create', views.client_payment_create, name="client_payment_create"),
+    path('client/payments/update/<int:pk>', views.client_payment_update, name="client_payment_update"),
+    path('client/payments/delete/<int:pk>', views.client_payment_delete, name="client_payment_delete"),
     # ordars
     path("orders" , views.orders_view , name="orders_view"),
     path("orders/create" , views.orders_create , name="orders_create"),

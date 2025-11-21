@@ -408,6 +408,7 @@ class DefaultProducementForms(forms.Form):
     )
     
     def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop('instance', None)
         super().__init__(*args, **kwargs)
 
         self.fields['order_id'].label_from_instance = lambda obj: (
@@ -435,7 +436,12 @@ class DefaultProducementForms(forms.Form):
         quantity = cleaned_data.get('quantity')
         staff_id = cleaned_data.get('staff_id')
 
+
+
         if order_detail and quantity is not None:
+            # if updating will not calculate the already stored data
+            if self.instance:
+                quantity -= self.instance.quantity
             # Save for potential use
             self.order_detail_instance = order_detail
 
@@ -447,7 +453,7 @@ class DefaultProducementForms(forms.Form):
             ).aggregate(total=Sum('quantity'))['total'] or 0
 
             self.existing_quantity = total_produced
-
+            
             remaining_quantity = order_detail.quantity - total_produced
 
             if quantity > remaining_quantity:

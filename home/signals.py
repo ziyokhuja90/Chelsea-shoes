@@ -1,8 +1,33 @@
 from django.db.models.signals import post_save, post_delete, post_migrate
 from django.dispatch import receiver
-from .models import producement, staff, staff_payments, Order_details, Orders, Warehouse, references, ReferenceType, clients
+from .models import producement, staff, staff_payments, Order_details, Orders, Warehouse, references, ReferenceType, clients, client_payments
 from config import system_variables
 
+@receiver([post_delete, post_save], sender=producement)
+def update_order_status_on_producement(sender, instance, **kwargs):
+    order_id = instance.order_id
+    print(order_id)
+    print(order_id.date)
+
+
+@receiver([post_delete, post_save], sender=Orders)
+@receiver([post_delete, post_save], sender=client_payments)
+def update_client_balance_on_orders(sender, instance, **kwargs):
+    
+    client_member = instance.client_id
+
+    completed_orders = Orders.objects.filter(
+        client_id=client_member,
+        status__value=system_variables.COMPLETED,
+        IsDeleted=False
+    )
+    payments = client_payments.objects.filter(client_id=client_member, IsDeleted=False)
+
+    total_orders = sum(o.total_amount for o in completed_orders)
+    total_payments = sum(p.amount for p in payments)
+
+    client_member.balance = total_payments - total_orders
+    client_member.save()
 
 @receiver(post_save, sender=producement)
 @receiver(post_delete, sender=producement)
@@ -11,7 +36,7 @@ def update_staff_balance_on_producement(sender, instance, **kwargs):
     staff_member = instance.staff_id
 
     completed_productions = producement.objects.filter(
-        staff_id=staff_member, status__value="BAJARILDI", IsDeleted=False
+        staff_id=staff_member, status__value=system_variables.COMPLETED, IsDeleted=False
     )
     total_price = sum(p.price * p.quantity for p in completed_productions)
 
@@ -28,7 +53,7 @@ def update_staff_balance_on_payment(sender, instance, **kwargs):
     staff_member = instance.staff_id
 
     completed_productions = producement.objects.filter(
-        staff_id=staff_member, status__value="BAJARILDI", IsDeleted=False
+        staff_id=staff_member, status__value=system_variables, IsDeleted=False
     )
     total_price = sum(p.price * p.quantity for p in completed_productions)
 
@@ -53,9 +78,7 @@ def update_order_total_amount(sender, instance, **kwargs):
 
 @receiver([post_save, post_delete], sender=Orders)
 def details_to_warehouse(sender, instance, **kwargs):
-    print(f"--------------------------------------- {instance.status.value } ----------------------------------------------")
     if instance.status.value == system_variables.COMPLETED and instance.client_id.name == system_variables.WAREHOUSE.upper():
-        print(f"--------------------------------------- {instance.status.value } ----------------------------------------------")
         order_details = Order_details.objects.filter(order_id=instance, IsDeleted=False)
 
         for detail in order_details:
