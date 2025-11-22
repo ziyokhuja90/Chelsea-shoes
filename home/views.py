@@ -313,8 +313,8 @@ def clients_delete(request, pk):
 # orders
 def orders_view(request):
     # Define the statuses that are "active" or need attention
-    active_statuses = ["Jarayonda", "YARATILDI"]
-    completed_statuses = ["BAJARILDI", "Bekor qilindi","Qabul qilindi"]
+    active_statuses = [system_variables.CREATED, system_variables.ACTIVE]
+    completed_statuses = [system_variables.COMPLETED, system_variables.CANCELED]
     status = references.objects.filter(type=ReferenceType.STATUS.value)
     # Annotate orders with a custom sorting field: '0' for active, '1' for completed
     orders_list = Orders.objects.filter(IsDeleted=False).annotate(

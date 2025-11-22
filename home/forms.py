@@ -437,7 +437,6 @@ class DefaultProducementForms(forms.Form):
         staff_id = cleaned_data.get('staff_id')
 
 
-
         if order_detail and quantity is not None:
             # if updating will not calculate the already stored data
             if self.instance:

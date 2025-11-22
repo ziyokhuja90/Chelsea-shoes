@@ -6,8 +6,11 @@ from config import system_variables
 @receiver([post_delete, post_save], sender=producement)
 def update_order_status_on_producement(sender, instance, **kwargs):
     order_id = instance.order_id
-    print(order_id)
-    print(order_id.date)
+    if order_id.status.value == system_variables.CREATED:
+        pending = references.objects.get(value=system_variables.ACTIVE)
+        order_id.status = pending
+        order_id.save()
+
 
 
 @receiver([post_delete, post_save], sender=Orders)
