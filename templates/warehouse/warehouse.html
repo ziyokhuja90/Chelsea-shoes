@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block content %}
 <div class="container">
@@ -121,8 +122,8 @@
                     <td>{{ forloop.counter }}</td>
                     <td>{{ warehouse.model_id }}</td>
                     <td>{{ warehouse.quantity }}</td>
-                    <td>{{ warehouse.price }}</td>
-                    <td>{{ warehouse.total_amount }}</td>
+                    <td>{{ warehouse.price|floatformat:2|intcomma }}</td>
+                    <td>{{ warehouse.total_amount|floatformat:2|intcomma }}</td>
                     <td>{{ warehouse.color_id }}</td>
                     <td>{{ warehouse.leather_type }}</td>
                     <td>{{ warehouse.sole_type_id}}</td>

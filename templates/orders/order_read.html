@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block content %}
 <div class="container mt-5">
@@ -28,7 +29,7 @@
                             <strong>{{STATUS}}:</strong> {{ order.status }}
                         </li>
                         <li class="list-group-item">    
-                            <strong>{{TOTAL_PRICE}}:</strong> {{ order.total_amount }}
+                            <strong>{{TOTAL_PRICE}}:</strong> {{ order.total_amount|floatformat:2|intcomma }}
                         </li>
                     </ul>
                 </div>
@@ -62,8 +63,8 @@
                             <td>{{ forloop.counter }}</td>
                             <td>{{ detail.model_id }}</td>
                             <td>{{ detail.quantity }}</td>
-                            <td>{{ detail.price }} {{order.client_id.currency}}</td>
-                            <td>{{ detail.total_amount }} {{order.client_id.currency}}</td>
+                            <td>{{ detail.price|floatformat:2|intcomma }} {{order.client_id.currency}}</td>
+                            <td>{{ detail.total_amount|floatformat:2|intcomma }} {{order.client_id.currency}}</td>
                             <td>{{ detail.color_id }}</td>
                             <td>{{ detail.leather_type }}</td>
                             <td>{{ detail.sole_type_id }}</td>

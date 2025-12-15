@@ -15,3 +15,11 @@ def multiply(value, arg):
 def format_phone(value):
     phone_str = str(value).zfill(9)
     return f"({phone_str[:2]}) {phone_str[2:5]}-{phone_str[5:7]}-{phone_str[7:]}"
+
+
+@register.simple_tag
+def inc_counter(counter):
+    try:
+        return counter + 1
+    except:
+        return 1

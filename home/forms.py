@@ -271,6 +271,8 @@ class staff_payments_forms(forms.ModelForm):
         self.fields['date'].initial = now()
         self.fields['date'].input_formats = ['%d %m %Y']
 
+        self.fields['staff_id'].queryset = models.staff.objects.filter(IsDeleted=False)
+
 class staff_payments_read_forms(forms.ModelForm):
     class Meta:
         model = models.staff_payments
@@ -594,3 +596,5 @@ class Client_payments_forms(forms.ModelForm):
 
         self.fields['date'].initial = now()
         self.fields['date'].input_formats = ['%d %m %Y']
+
+        self.fields['client_id'].queryset = models.clients.objects.filter(IsDeleted=False)

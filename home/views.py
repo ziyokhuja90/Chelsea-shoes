@@ -150,6 +150,7 @@ def shoe_model_update(request, pk):
     forms = shoe_model_forms(instance=shoe_model_item)
     context = {
         "forms":forms,
+        "shoe_model_item":shoe_model_item,
         "back_url_name":"home"
     }
     return render(request , 'update.html', context=context)
@@ -225,13 +226,17 @@ def staff_update(request, pk):
     if request.method == "POST":
         forms = staff_forms(request.POST , instance=staff_item)
         if forms.is_valid():
-            forms.save()
+            new_staff = forms.save(commit=False)
+            phone = phone_to_int(new_staff.phone_number)
+            new_staff.phone_number = phone
+            new_staff.save()
+
             return redirect('staff_view')
     
     forms = staff_forms(instance=staff_item)
     context = {
         "forms":forms,
-        "url_back_name":"staff_view"
+        "back_url_name":"staff_view"
     }
     return render(request , "update.html" , context=context)
 
@@ -300,7 +305,7 @@ def clients_update(request, pk):
     forms = clients_forms(instance=client_item)
     context = {
         "forms":forms,
-        "url_back_name":"clients_view"
+        "back_url_name":"clients_view"
     }
     return render(request , "update.html" , context=context)
 
@@ -312,6 +317,7 @@ def clients_delete(request, pk):
 
 # orders
 def orders_view(request):
+    completed_id = references.objects.get(value=system_variables.COMPLETED)
     # Define the statuses that are "active" or need attention
     active_statuses = [system_variables.CREATED, system_variables.ACTIVE]
     completed_statuses = [system_variables.COMPLETED, system_variables.CANCELED]
@@ -331,7 +337,8 @@ def orders_view(request):
 
     context = {
         "orders_list": page_obj,
-        "statuses":status
+        "statuses":status,
+        "completed_status_id":completed_id.pk
     }
     return render(request, "orders/orders.html", context=context)
 
@@ -389,13 +396,13 @@ def producement_view(request):
     producement_list = producement.objects.filter(~Q(order_id__client_id__name=system_variables.WAREHOUSE.upper()), IsDeleted=False).order_by('id')
     producement_sklat_list = producement.objects.filter(order_id__client_id__name=system_variables.WAREHOUSE.upper(), IsDeleted=False).order_by('id')
     
-    staff_list = staff.objects.filter(IsDeleted=False)
-    shoe_models = shoe_model.objects.filter(IsDeleted=False)
-    colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value)
-    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value)
-    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value)
-    statuses = references.objects.filter(IsDeleted=False, type=ReferenceType.STATUS.value)
-    order_list = Orders.objects.filter(IsDeleted=False)
+    staff_list = staff.objects.filter(IsDeleted=False).order_by('id')
+    shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
+    colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value).order_by('id')
+    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value).order_by('id')
+    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value).order_by('id')
+    statuses = references.objects.filter(IsDeleted=False, type=ReferenceType.STATUS.value).order_by('id')
+    order_list = Orders.objects.filter(IsDeleted=False).order_by('id')
 
 
     staff_id, model, color, leather, sole, status, order = request.GET.get('staff_id', None), request.GET.get('shoe_model_id',None),request.GET.get('color_id',None),request.GET.get('leather_type',None),request.GET.get('solo_type',None),request.GET.get('status',None),request.GET.get('order',None) 
@@ -463,7 +470,7 @@ def producement_create(request, ProducementForms):
         'color_id','leather_type','sole_type_id',
         "lining_type_id"
 
-    )
+    ).order_by('id')
 
     # Convert QuerySet to a list and handle Decimal fields
     details_list = []
@@ -963,11 +970,11 @@ def sales_view(request):
     sold_items = Sales.objects.filter(**valid_filters).order_by('id')
 
     # For dropdowns
-    shoe_models = shoe_model.objects.filter(IsDeleted=False)
-    colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value)
-    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value)
-    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value)
-    client_list = clients.objects.filter(IsDeleted=False)
+    shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
+    colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value).order_by('id')
+    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value).order_by('id')
+    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value).order_by('id')
+    client_list = clients.objects.filter(IsDeleted=False).order_by('id')
 
     context = {
         "sold_items": sold_items,
@@ -1094,9 +1101,53 @@ def order_detail_delete(request, pk):
 
 # warehouse
 def warehouse_view(request):
-    warehouse_items = Warehouse.objects.filter(IsDeleted=False).order_by('id')
+
+    staff_id   = request.GET.get('staff_id')
+    model_id   = request.GET.get('shoe_model_id')
+    color_id   = request.GET.get('color_id')
+    leather_id = request.GET.get('leather_type')
+    sole_id    = request.GET.get('solo_type')
+    status     = request.GET.get('status')
+    order_id   = request.GET.get('order')
+    
+    filters = {
+        'staff_id': staff_id,           # adjust field if needed
+        'model_id': model_id,      # FK from Warehouse
+        'color_id': color_id,
+        'leather_type_id': leather_id,
+        'sole_type_id': sole_id,
+        'status': status,                          # if Sales has status
+        'order_id': order_id,                      # if exists
+        'IsDeleted': False,
+    }
+    valid_filters = {key: int(value) for key, value in filters.items() if value not in [None, '']}
+
+    
+    # warehouse_items = Warehouse.objects.filter(IsDeleted=False).order_by('id')
+
+    warehouse_items = Warehouse.objects.filter(**valid_filters).order_by('id')
+
+    # For dropdowns
+    shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
+    colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value).order_by('id')
+    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value).order_by('id')
+    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value).order_by('id')
+    client_list = clients.objects.filter(IsDeleted=False).order_by('id')
+
     context = {
-        "warehouse_items": warehouse_items
+        "warehouse_items": warehouse_items,
+        "shoe_models": shoe_models,
+        "colors": colors,
+        "leather_types": leather_types,
+        "sole_types": sole_types,
+        "clients": client_list,
+        "shoe_model_id": model_id,
+        "color_id": color_id,
+        "leather_type": leather_id,
+        "solo_type": sole_id,
+        "status": status,
+        "order": order_id,
+        "staff_id": staff_id,
     }
     return render(request, 'warehouse/warehouse.html', context=context)
 

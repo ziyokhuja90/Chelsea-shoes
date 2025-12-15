@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block content %}
 
@@ -135,8 +136,8 @@
                             <strong>{{LINING}}:</strong> {{ sold_item.warehouse.lining_type_id }}
                         </td>
                         <td>{{ sold_item.quantity }}</td>
-                        <td>{{ sold_item.price }}</td>
-                        <td>{{ sold_item.total_price }}</td>
+                        <td>{{ sold_item.price|floatformat:2|intcomma }}</td>
+                        <td>{{ sold_item.total_price|floatformat:2|intcomma }}</td>
                         <td>
                             <a class="btn btn-sm btn-warning" href="{% url "sale_update" sold_item.id %}"><i class="bx bx-edit-alt text-white"></i></a>
                             <a class="btn btn-sm btn-danger" href="#"

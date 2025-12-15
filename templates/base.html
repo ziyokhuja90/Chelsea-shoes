@@ -91,6 +91,26 @@
       </div>
     </div>
     
+        <!-- Status Complete Confirmation Modal -->
+    <div class="modal fade" id="completeModal" tabindex="-1" aria-labelledby="completeModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="completeModalLabel">{{COMPLETE_CONFIRMATION_TITLE}}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {{COMPLETE_CONFIRMATION_INFO}}
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="confirmCompleteBtn" class="btn btn-danger">{{COMPLETE_CONFIRMATION_BUTTON}}</button>
+            <a id="confirmCompleteLink" href="#" class="btn btn-danger" style="display: none;">{{COMPLETE_CONFIRMATION_BUTTON}}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
 
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
@@ -358,6 +378,44 @@
         });
       });
     </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const deleteModal = document.getElementById("completeModal");
+        const confirmDeleteBtn = document.getElementById("completeDeleteBtn");
+        const confirmDeleteLink = document.getElementById("completeDeleteLink");
+        let formToSubmit = null;
+    
+        // Handle form-based delete buttons
+        document.querySelectorAll('button[data-bs-target="#completeModal"]').forEach((button) => {
+          button.addEventListener("click", function () {
+            formToSubmit = this.closest("form"); // Capture the form
+            confirmDeleteBtn.style.display = "inline-block"; // Show the form button
+            confirmDeleteLink.style.display = "none"; // Hide the link button
+          });
+        });
+    
+        // Handle link-based delete buttons
+        document.querySelectorAll('a[data-bs-target="#completeModal"]').forEach((link) => {
+          link.addEventListener("click", function () {
+            const deleteUrl = this.getAttribute("data-complete-url"); // Capture the URL
+            confirmDeleteLink.setAttribute("href", deleteUrl); // Set the URL on the modal button
+            confirmDeleteBtn.style.display = "none"; // Hide the form button
+            confirmDeleteLink.style.display = "inline-block"; // Show the link button
+            formToSubmit = null; // Reset form submission
+          });
+        });
+    
+        // Submit the form when the "Yes, Delete" button is clicked for forms
+        confirmDeleteBtn.addEventListener("click", function () {
+          if (formToSubmit) {
+            formToSubmit.submit();
+          }
+        });
+      });
+    </script>
+
+
     <script>
           // Select all inputs with the class "uppercase-input"
     const inputs = document.querySelectorAll('.uppercase-input');

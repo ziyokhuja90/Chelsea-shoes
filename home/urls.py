@@ -69,7 +69,7 @@ urlpatterns = [
     path('producement/update/kosib/<int:pk>', lambda request, pk: views.producement_update(request, pk, ProducementKosibForms), name='producement_update_kosib'),
     path('producement/update/upakovkachi/<int:pk>', lambda request, pk: views.producement_update(request, pk, ProducementUpakovkachiForms), name='producement_update_upakovkachi'),
 
-    path('producement/delete/<int:pk>', views.producement_delete , name="producement_delete"),
+    path('producement/delete/<int:pk>', views.producement_delete, name="producement_delete"),
     
     # staff_payment
     path("staff_payment/create", views.staff_payment_create, name="staff_payment_create"),

@@ -3,6 +3,15 @@ from django.dispatch import receiver
 from .models import producement, staff, staff_payments, Order_details, Orders, Warehouse, references, ReferenceType, clients, client_payments
 from config import system_variables
 
+
+@receiver(post_save, sender=Orders)
+def update_producement_on_order_status(sender, instance, **kwargs):
+    if instance.status.value == system_variables.CANCELED:
+        producement_list = producement.objects.filter(order_id=instance)
+        for i in producement_list:
+            i.status = references.objects.get(value=system_variables.CANCELED)
+            i.save()    
+
 @receiver([post_delete, post_save], sender=producement)
 def update_order_status_on_producement(sender, instance, **kwargs):
     order_id = instance.order_id
@@ -105,27 +114,27 @@ def details_to_warehouse(sender, instance, **kwargs):
 def create_system_data(sender, **kwargs):
     if sender.name == "home":
         # gender
-        references.objects.get_or_create(type=ReferenceType.GENDER.value, value="ERKAK", IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.GENDER.value, value="AYOL", IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.GENDER.value, value=system_variables.MALE, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.GENDER.value, value=system_variables.FEMALE, IsSystem=True)
         # status
-        references.objects.get_or_create(type=ReferenceType.STATUS.value, value="YARATILDI", IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.STATUS.value, value="JARAYONDA", IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.STATUS.value, value="YAKUNLANDI", IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.STATUS.value, value="BEKOR QILINDI", IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.CREATED, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.ACTIVE, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.COMPLETED, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.CANCELED, IsSystem=True)
         # profession
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value="KROY", IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value="LAZIR", IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value="ZAKATOP", IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value="TUQUV", IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value="KOSIB", IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.KROY, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.LAZIR, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.ZAKATOP, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.TUQUVCHI, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.KOSIB, IsSystem=True)
         # quantity_type
-        references.objects.get_or_create(type=ReferenceType.QUANTITY_TYPE.value, value="JUFT", IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.QUANTITY_TYPE.value, value=system_variables.COUPLE, IsSystem=True)
         # currency
-        references.objects.get_or_create(type=ReferenceType.CURRENCY.value, value="USD", IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.CURRENCY.value, value="UZS", IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.CURRENCY.value, value=system_variables.USD, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.CURRENCY.value, value=system_variables.UZS, IsSystem=True)
 
         # sklad
         
         # clients.objects.get_or_create(name="SKLAD", phone_number=905647676, address="SKLAD", currency=references.objects.get(value="USD"), is_system=True)
-        clients.objects.get_or_create(name="SKLAD", phone_number=905647676, address="SKLAD", currency=references.objects.get(value="UZS"), is_system=True)
+        clients.objects.get_or_create(name=system_variables.WAREHOUSE.upper(), phone_number=905647676, address=system_variables.WAREHOUSE.upper(), currency=references.objects.get(value=system_variables.UZS), is_system=True)
 

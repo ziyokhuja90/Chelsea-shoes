@@ -19,7 +19,11 @@
                           <div class="dropdown-menu">
                               <a class="dropdown-item" href="{% url 'shoe_model_read' shoe_model.id %}"><i class="bx bx-show me-1"></i> {{READ}}</a>
                               <a class="dropdown-item" href="{% url 'shoe_model_update' shoe_model.id %}"><i class="bx bx-edit-alt me-1"></i> {{UPDATE}}</a>
-                              <a class="dropdown-item" href="{% url 'shoe_model_delete' shoe_model.id %}"><i class="bx bx-trash me-1"></i> {{DELETE}}</a>
+                              <a class="dropdown-item"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                data-delete-url="{% url 'shoe_model_delete' shoe_model.id %}"
+                                href="#"><i class="bx bx-trash me-1"></i> {{DELETE}}</a>
                           </div>
                       </div>
                   </div>

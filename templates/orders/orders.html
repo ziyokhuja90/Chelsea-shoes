@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block content %}
 <div class="container">
@@ -121,7 +122,7 @@
           <tr>
             <td><strong>{{ forloop.counter }}</strong></td>
             <td>{{ order.client_id }}</td>
-            <td>{{ order.total_amount }} {{order.client_id.currency}}</td>
+            <td>{{ order.total_amount|floatformat:2|intcomma }} {{order.client_id.currency}}</td>
             <td>{{ order.complete_date|date:"d.m.Y" }}</td>
             <!-- <td class="text-center">
               <a href="{% url 'order_prev_status' order.id %}" class="btn btn-sm btn-outline-secondary p-1">
@@ -134,12 +135,14 @@
             </td>
             -->
               <td class="text-center">
-                <select 
-                  name="status" 
-                  class="form-select form-select-sm d-inline w-auto text-center"
-                  data-order-id="{{ order.id }}"
-                  onchange="updateOrderStatus(this)"
-                >
+                  <select 
+                    name="status" 
+                    class="form-select form-select-sm d-inline w-auto text-center"
+                    data-order-id="{{ order.id }}"
+                    onchange="updateOrderStatus(this)"
+                    onfocus="previousStatus = this.value"
+                  >
+
                   {% for s in statuses %}
                     <option value="{{ s.id }}" {% if s.id == order.status.id %}selected{% endif %}>
                       {{ s.value }}
@@ -149,6 +152,7 @@
               </td>
               
               <td> 
+                
                 <a class="btn btn-sm btn-info" href="{% url "order_read" order.id %}"> <i class="bx  bx-show "></i></a>
                 <a class="btn btn-sm btn-warning" href="{% url "orders_update" order.id %}"> <i class="bx bx-edit-alt text-white"></i></a>
                 <a class="btn btn-sm btn-danger"
@@ -243,6 +247,59 @@
     const orderId = select.getAttribute("data-order-id");
     const statusId = select.value;
 
+    // COMPLETED id (pass from Django)
+    const COMPLETED_ID = "{{ completed_status_id }}";
+
+    // If user picks Completed → show modal FIRST
+    if (statusId === COMPLETED_ID) {
+      const modal = new bootstrap.Modal(document.getElementById("completeModal"));
+      modal.show();
+
+      // When confirm button is clicked
+      document.getElementById("confirmCompleteBtn").onclick = function () {
+
+        // Actually update via AJAX
+        fetch("{% url 'update_order_status' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCSRFToken(),
+          },
+          body: new URLSearchParams({
+            order_id: orderId,
+            status_id: statusId,
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            select.classList.add("border-success");
+            setTimeout(() => select.classList.remove("border-success"), 800);
+          } else {
+            alert(data.message || "Failed to update status");
+            select.value = previousStatus; // rollback
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          select.value = previousStatus; // rollback on error
+        });
+        
+        modal.hide();
+      };
+
+      // If modal closed without confirming → revert
+      document.getElementById("completeModal")
+        .addEventListener("hidden.bs.modal", function () {
+          if (select.value === COMPLETED_ID) {
+            select.value = previousStatus;
+          }
+        });
+
+      return; // STOP normal flow
+    }
+
+    // Normal status change (not Completed)
     fetch("{% url 'update_order_status' %}", {
       method: "POST",
       headers: {
@@ -253,19 +310,9 @@
         order_id: orderId,
         status_id: statusId,
       }),
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Optional: Add a visual success effect
-        select.classList.add("border-success");
-        setTimeout(() => select.classList.remove("border-success"), 800);
-      } else {
-        alert(data.message || "Failed to update status");
-      }
-    })
-    .catch(error => console.error("Error:", error));
+    });
   }
+
 </script>
 
 {% endblock content %}

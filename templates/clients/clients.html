@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% load filter %}
 
 {% block content %}
@@ -103,25 +104,28 @@
             </td>
                 {% if client.balance >= 0 %}
                 <td class="text-success">
-                    {{client.balance}}
+                    {{client.balance|floatformat:2|intcomma}}
                 </td>
                 {% else %}
                 <td class="text-danger">
-                    {{client.balance}}
+                    {{client.balance|floatformat:2|intcomma}}
                 </td>
             {% endif %}
 
             <td>
-                  <a class="btn btn-sm btn-warning" href="{% url "clients_update" client.id %}"><i class="bx bx-edit-alt text-white"></i></a>
-                  <a
-                  class="btn btn-sm btn-danger"
-                  href="#"
-                  data-bs-toggle="modal"
-                  data-bs-target="#deleteModal"
-                  data-delete-url="{% url 'clients_delete' client.id %}"
+                {% if client.is_system == True %}
+                {% else %}
+                <a class="btn btn-sm btn-warning" href="{% url "clients_update" client.id %}"><i class="bx bx-edit-alt text-white"></i></a>
+                <a
+                class="btn btn-sm btn-danger"
+                href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteModal"
+                data-delete-url="{% url 'clients_delete' client.id %}"
                 >
-                  <i class="bx bx-trash"></i>
-                </a>
+                <i class="bx bx-trash"></i> 
+            </a>
+            {% endif %}
                 
             </td>
           </tr>
@@ -147,9 +151,9 @@
           <h5 class="mb-0"></h5>
           <h5>{{BALANCE|title}}: 
             {% if balance >= 0 %}
-            <span class="text-success">{{ balance }}</span>
+            <span class="text-success">{{ balance|floatformat:2|intcomma }}</span>
             {% else %}
-            <span class="text-danger">{{ balance }}</span>
+            <span class="text-danger">{{ balance|floatformat:2|intcomma }}</span>
             {% endif %}
         </h5>
       </div>
@@ -196,7 +200,7 @@
                           <tr>
                               <td>{{ payment.id }}</td>
                               <td>{{ payment.client_id }}</td>
-                              <td>{{ payment.amount }}</td>
+                              <td>{{ payment.amount|floatformat:2|intcomma }}</td>
                               <td>{{ payment.date|date:"Y.m.d" }}</td>
                               <td>
                                   <a class="btn btn-sm btn-warning text-white" href="{% url "client_payment_update" payment.id %}">
@@ -241,10 +245,10 @@
                               <td>{{ detail.id }}</td>
                               <td>{{ detail.order_id.client_id}}</td>
                               <td>{{ detail.model_id }}</td>
-                              <td>{{ detail.price }}</td>
+                              <td>{{ detail.price|floatformat:2|intcomma }}</td>
                               <td>{{ detail.quantity }}</td>
                               <td>
-                                  <p>{{ detail.price|multiply:detail.quantity }}</p>
+                                  <p>{{ detail.price|multiply:detail.quantity|floatformat:2|intcomma }}</p>
 
                               </td>
                               <td>

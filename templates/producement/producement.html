@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+{% load filter %}
+{% load humanize %}
+
+
 
 {% block content %}
 <div class="container">
@@ -200,7 +204,7 @@
                     {% with 0 as counter %}
                         {% for producement in producement_list %}
                             {% if producement.staff_id.profession.id == profession.id %}
-                                {% with counter|add:"1" as counter %}
+                                {% inc_counter counter as counter %}
                                     <tr>
                                         <td>{{ counter }}</td>
                                         <td>{{ producement.staff_id }}</td>
@@ -216,17 +220,17 @@
                                             <strong>{{DATE}}:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
                                         </td>
                                         <td>{{ producement.quantity }}</td>
-                                        <td>{{ producement.price }}</td>
+                                        <td>{{ producement.price|floatformat:2|intcomma }}</td>
                                         <td>
                                             <span class="badge text-secondary">
                                                 {{ producement.status }}
                                             </span>
                                         </td>
-                                        <td class="d-flex flex-column gap-1 align-items-center">
+                                        <td class="d-flex flex-column gap-2 align-items-center ">
                                             <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">
                                                 <i class="bx bx-show"></i>
                                             </a>
-
+                                            
                                             <a class="btn btn-sm btn-warning text-white"
                                             {% if profession.order == 1 %}
                                                href="{% url 'producement_update_kroy' producement.id %}"
@@ -241,7 +245,6 @@
                                             {% elif profession.order == 6 %}
                                                href="{% url 'producement_update_upakovkachi' producement.id %}"
                                             {% endif %} 
-
                                              >
                                                 <i class="bx bx-edit-alt"></i>
                                             </a>
@@ -250,7 +253,6 @@
                                             </a>
                                         </td>
                                     </tr>
-                                {% endwith %}
                             {% endif %}
                         {% endfor %}
                     {% endwith %}

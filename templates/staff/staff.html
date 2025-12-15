@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load filter %}
-
+{% load humanize %}
 
 {% block content %}
 <div class="container">
@@ -120,11 +120,11 @@
             </td>
             {% if staff.balance >= 0 %}
             <td class="text-success">
-                {{staff.balance}}
+                {{staff.balance|floatformat:2|intcomma}}
             </td>
             {% else %}
             <td class="text-danger">
-                {{staff.balance}}
+                {{staff.balance|floatformat:2|intcomma}}
             </td>
             {% endif %}
             
@@ -156,9 +156,9 @@
           <h5 class="mb-0"></h5>
           <h5>{{BALANCE|title}}: 
             {% if balance >= 0 %}
-            <span class="text-success">{{ balance }}</span>
+            <span class="text-success">{{ balance|floatformat:2|intcomma }}</span>
             {% else %}
-            <span class="text-danger">{{ balance }}</span>
+            <span class="text-danger">{{ balance|floatformat:2|intcomma }}</span>
             {% endif %}
         </h5>
       </div>
@@ -205,7 +205,7 @@
                           <tr>
                               <td>{{ payment.id }}</td>
                               <td>{{ payment.staff_id }}</td>
-                              <td>{{ payment.amount }}</td>
+                              <td>{{ payment.amount|floatformat:2|intcomma }} </td>
                               <td>{{ payment.date|date:"Y.m.d" }}</td>
                               <td>
                                   <a class="btn btn-sm btn-warning text-white" href="{% url "staff_payment_update" payment.id %}">
