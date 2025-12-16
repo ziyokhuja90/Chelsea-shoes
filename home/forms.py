@@ -276,14 +276,15 @@ class staff_payments_forms(forms.ModelForm):
 class staff_payments_read_forms(forms.ModelForm):
     class Meta:
         model = models.staff_payments
-        fields = ['date', 'amount']
+        fields = ['date', 'amount', 'description']
         
         widgets = {
             'date': forms.DateInput(
                 attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
                 format='%d %m %Y'
             ),
-            'amount':forms.NumberInput(attrs={"class":"form-control"})
+            'amount':forms.NumberInput(attrs={"class":"form-control"}),
+            'description':forms.Textarea(attrs={"class":"form-control"})
         }
 
     def __init__(self, *args, **kwargs):

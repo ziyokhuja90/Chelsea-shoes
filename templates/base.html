@@ -144,43 +144,35 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item {% if request.resolver_match.url_name == 'sale' %}active{% endif %}">
-              <a href="{% url 'sale' %}" class="menu-link text-decoration-none">
+
+
+            <li class="menu-item {% if request.resolver_match.url_name == 'clients_view' %}active{% endif %}">
+              <a href="{% url "clients_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
-                <i class="menu-icon tf-icons bx bx-cart-alt"></i>
+                  <i class="menu-icon tf-icons bx bx-group"></i>
                   <span class="fw-bolder">
-                    {{SELL}}
+                    {{CLIENTS}}
+                  </span>
+                </div>
+              </a>
+            </li>
+
+            <li class="menu-item {% if request.resolver_match.url_name == 'orders_view' %}active{% endif %}">
+              <a href="{% url "orders_view" %}" class="menu-link text-decoration-none">
+                <div data-i18n="Basic ">
+                  <i class="menu-icon tf-icons bx bx-receipt"></i>
+                  <span class="fw-bolder">
+                    {{ORDERS}}
                   </span>
                   
                 </div>
               </a>
-            </li>
-            <li class="menu-item {% if request.resolver_match.url_name == 'warehouse' %}active{% endif %}">
-              <a href="{% url 'warehouse' %}" class="menu-link text-decoration-none">
-                <div data-i18n="Basic ">
-                <i class="menu-icon tf-icons bx bx-buildings"></i>
-                  <span class="fw-bolder">
-                    {{WAREHOUSE}}
-                  </span>
-                  
-                </div>
-              </a>
-            </li>
-            <li class="menu-item {% if request.resolver_match.url_name == 'income' %}active{% endif %}">
-              <a href="" class="menu-link text-decoration-none">
-                <div data-i18n="Basic ">
-                <i class="menu-icon tf-icons bx bx-money"></i>
-                  <span class="fw-bolder">
-                    {{INCOME}}
-                  </span>
-                  
-                </div>
-              </a>
-            </li>
+            </li> 
+
             <li class="menu-item {% if request.resolver_match.url_name == 'staff_view' %}active{% endif %}">
               <a href="{% url "staff_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
-                <i class="menu-icon tf-icons bx bx-briefcase"></i>
+                  <i class="menu-icon tf-icons bx bx-briefcase"></i>
                   <span class="fw-bolder">
                     {{STAFFS}}
                   </span>
@@ -188,19 +180,7 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item">
-              <a href="" class="menu-link text-decoration-none">
-                <div data-i18n="Basic ">
-                  <i class="menu-icon tf-icons bx bx-credit-card"></i>
-
-
-                  <span class="fw-bolder">
-                    {{DEBTS}}
-                  </span>
-                  
-                </div>
-              </a>
-            </li>
+            
             <li class="menu-item {% if request.resolver_match.url_name == 'producement_view' %}active{% endif %}">
               <a href="{% url "producement_view" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
@@ -212,38 +192,37 @@
                 </div>
               </a>
             </li>
-            <li class="menu-item {% if request.resolver_match.url_name == 'clients_view' %}active{% endif %}">
-              <a href="{% url "clients_view" %}" class="menu-link text-decoration-none">
+
+            
+            
+            <li class="menu-item {% if request.resolver_match.url_name == 'warehouse' %}active{% endif %}">
+              <a href="{% url 'warehouse' %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
-                  <i class="menu-icon tf-icons bx bx-group"></i>
-                  <span class="fw-bolder">
-                    {{CLIENTS}}
-                  </span>
+                <i class="menu-icon tf-icons bx bx-buildings"></i>
+                <span class="fw-bolder">
+                  {{WAREHOUSE}}
+                </span>
+                
                 </div>
               </a>
             </li>
-            <li class="menu-item">
-              <a href="" class="menu-link text-decoration-none">
+            
+            <li class="menu-item {% if request.resolver_match.url_name == 'sale' %}active{% endif %}">
+              <a href="{% url 'sale' %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
-                  <i class="menu-icon tf-icons bx bx-wallet"></i>
+                <i class="menu-icon tf-icons bx bx-cart-alt"></i>
                   <span class="fw-bolder">
-                    {{EXPENSES}}
-                  </span>
-                  
-                </div>
-              </a>
-            </li>
-            <li class="menu-item {% if request.resolver_match.url_name == 'orders_view' %}active{% endif %}">
-              <a href="{% url "orders_view" %}" class="menu-link text-decoration-none">
-                <div data-i18n="Basic ">
-                  <i class="menu-icon tf-icons bx bx-receipt"></i>
-                  <span class="fw-bolder">
-                    {{ORDERS}}
+                    {{SELL}}
                   </span>
                   
                 </div>
               </a>
             </li>
+
+
+
+
+            
             <li class="menu-item {% if request.resolver_match.url_name == 'reference' %}active{% endif %}">
               <a href="{% url "reference" %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
@@ -254,6 +233,57 @@
                 </div>
               </a>
             </li>
+            
+
+            <li class="menu-item disabled">
+              <a href="#"
+                class="menu-link text-decoration-none disabled"
+                tabindex="-1"
+                aria-disabled="true"
+                onclick="return false;">
+
+                <div data-i18n="Basic">
+                  <i class="menu-icon tf-icons bx bx-money"></i>
+                  <span class="fw-bolder">
+                    {{ INCOME }}
+                  </span>
+                </div>
+              </a>
+            </li>
+
+            
+            <li class="menu-item disabled">
+              <a href="#"
+                class="menu-link text-decoration-none disabled"
+                tabindex="-1"
+                aria-disabled="true"
+                onclick="return false;">
+                
+                <div data-i18n="Basic">
+                  <i class="menu-icon tf-icons bx bx-credit-card"></i>
+                  <span class="fw-bolder">
+                    {{ DEBTS }}
+                  </span>
+                </div>
+              </a>
+            </li>
+            
+            <li class="menu-item disabled">
+              <a href="#"
+                class="menu-link text-decoration-none disabled"
+                tabindex="-1"
+                aria-disabled="true"
+                onclick="return false;">
+
+                <div data-i18n="Basic">
+                  <i class="menu-icon tf-icons bx bx-wallet"></i>
+                  <span class="fw-bolder">
+                    {{ EXPENSES }}
+                  </span>
+                </div>
+              </a>
+            </li>
+
 
           </ul>
         </aside>
