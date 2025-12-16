@@ -331,6 +331,13 @@ def orders_view(request):
         )
         ).order_by('status__value', 'complete_date')  # Sort by status first, then deadline
 
+    shoe_models = models.shoe_model.objects.filter(IsDeleted = False)
+    colors = models.references.objects.filter(
+        type=models.ReferenceType.COLOR.value,
+        IsDeleted=False
+        )
+    
+
     paginator = Paginator(orders_list, 10)  # Paginate by 10 items per page
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
@@ -338,7 +345,10 @@ def orders_view(request):
     context = {
         "orders_list": page_obj,
         "statuses":status,
-        "completed_status_id":completed_id.pk
+        "completed_status_id":completed_id.pk,
+
+        "shoe_models":shoe_models,
+        "colors":colors
     }
     return render(request, "orders/orders.html", context=context)
 

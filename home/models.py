@@ -13,6 +13,7 @@ class ReferenceType(Enum):
     CURRENCY = 7 # System
     SOLO_TYPE = 8
     LINING_TYPE = 9
+    TOQA = 10
     
 class StatusType(Enum):
     Created = 0
@@ -159,6 +160,13 @@ class Order_details(models.Model):
         related_name="lining_type_orders"
 
     )
+    toqa = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name="toqa_details",
+        null=True,
+        blank=True
+    )
     IsDeleted = models.BooleanField(default=False)
     
     class Meta:
@@ -282,6 +290,13 @@ class producement(models.Model):
         on_delete=models.CASCADE,
         related_name="lining_type_producement"
 
+    )
+    toqa_id = models.ForeignKey(
+        to=references,
+        on_delete=models.CASCADE,
+        related_name="toqa_producement",
+        null=True,
+        blank=True
     )
     producement_id = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='parent_producement')
     IsDeleted = models.BooleanField(default=False)
