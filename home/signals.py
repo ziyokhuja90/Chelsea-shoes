@@ -55,6 +55,8 @@ def update_staff_balance_on_producement(sender, instance, **kwargs):
     payments = staff_payments.objects.filter(staff_id=staff_member, IsDeleted=False)
     total_payments = sum(p.amount for p in payments)
 
+
+
     staff_member.balance = total_price - total_payments
     staff_member.save()
 
@@ -65,7 +67,7 @@ def update_staff_balance_on_payment(sender, instance, **kwargs):
     staff_member = instance.staff_id
 
     completed_productions = producement.objects.filter(
-        staff_id=staff_member, status__value=system_variables, IsDeleted=False
+        staff_id=staff_member, status__value=system_variables.COMPLETED, IsDeleted=False
     )
     total_price = sum(p.price * p.quantity for p in completed_productions)
 
@@ -127,6 +129,7 @@ def create_system_data(sender, **kwargs):
         references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.ZAKATOP, IsSystem=True)
         references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.TUQUVCHI, IsSystem=True)
         references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.KOSIB, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.QADOQLOVCHI, IsSystem=True)
         # quantity_type
         references.objects.get_or_create(type=ReferenceType.QUANTITY_TYPE.value, value=system_variables.COUPLE, IsSystem=True)
         # currency

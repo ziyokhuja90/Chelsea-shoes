@@ -8,6 +8,7 @@ from config import system_variables
 from django.db.models import Sum, Q, F
 from collections import OrderedDict
 
+
 class shoe_model_forms(forms.ModelForm):
     class Meta:
         model = models.shoe_model
@@ -127,6 +128,19 @@ class orders_forms(forms.ModelForm):
 
         self.fields['status'].initial = models.references.objects.get(value=system_variables.CREATED)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get('date')
+        complete_date = cleaned_data.get('complete_date')
+
+        if date and complete_date and complete_date < date:
+            self.add_error(
+                'complete_date',
+                system_variables.ORDER_DATE_VALIDATION
+            )
+
+        return cleaned_data
 
 class orderDetails_forms(forms.ModelForm):
     class Meta:
@@ -134,18 +148,19 @@ class orderDetails_forms(forms.ModelForm):
         fields = [ 
             'model_id', 'quantity', 'quantity_type_id',
             'price',  'color_id', 'leather_type', 
-            'lining_type_id','sole_type_id'
+            'lining_type_id','sole_type_id', 'toqa'
             ]
 
         widgets = {
             'model_id':forms.Select(attrs={"class":"form-control"}),
-            'quantity':forms.NumberInput(attrs={"class":"form-control"}),
+            'quantity':forms.NumberInput(attrs={"class":"form-control", "min":0}),
             'quantity_type_id':forms.Select(attrs={"class":"form-control"}),
-            'price':forms.NumberInput(attrs={"class":"form-control"}),
+            'price':forms.NumberInput(attrs={"class":"form-control", "min":0}),
             'color_id':forms.Select(attrs={"class":"form-control"}),
             'leather_type':forms.Select(attrs={"class":"form-control"}),
             'sole_type_id':forms.Select(attrs={"class":"form-control"}),
             'lining_type_id':forms.Select(attrs={"class":"form-control"}),
+            'toqa':forms.Select(attrs={"class":"form-control"}),
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -156,6 +171,7 @@ class orderDetails_forms(forms.ModelForm):
         self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
         self.fields['lining_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LINING_TYPE.value, IsDeleted=False)
         self.fields['sole_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
+        self.fields['toqa'].queryset = models.references.objects.filter(type=models.ReferenceType.TOQA.value, IsDeleted=False)
 
         if 'IsDeleted' in self.fields:
             del self.fields['IsDeleted']
@@ -196,9 +212,9 @@ class producement_forms(forms.ModelForm):
             "color_id": forms.Select(attrs={"class": "form-control"}),
             "leather_type": forms.Select(attrs={"class": "form-control"}),
             "solo_type": forms.Select(attrs={"class": "form-control"}),
-            "quantity": forms.NumberInput(attrs={"class": "form-control"}),
+            "quantity": forms.NumberInput(attrs={"class": "form-control", "min":0}),
             "quantity_type_id": forms.Select(attrs={"class": "form-control"}),
-            "price": forms.NumberInput(attrs={"class": "form-control"}),
+            "price": forms.NumberInput(attrs={"class": "form-control", "min":0}),
             "order_id": forms.Select(attrs={"class": "form-control"}),
             "order_detail_id": forms.Select(attrs={"class": "form-control"}),
             "status": forms.Select(attrs={"class": "form-control"}),
@@ -261,7 +277,7 @@ class staff_payments_forms(forms.ModelForm):
                 attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
                 format='%d %m %Y'
             ),
-            'amount':forms.NumberInput(attrs={"class":"form-control"}),
+            'amount':forms.NumberInput(attrs={"class":"form-control", "min":0}),
             'description':forms.Textarea(attrs={'class':'form-control'})   
         }
 
@@ -283,7 +299,7 @@ class staff_payments_read_forms(forms.ModelForm):
                 attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
                 format='%d %m %Y'
             ),
-            'amount':forms.NumberInput(attrs={"class":"form-control"}),
+            'amount':forms.NumberInput(attrs={"class":"form-control", "min":0}),
             'description':forms.Textarea(attrs={"class":"form-control"})
         }
 
@@ -546,7 +562,7 @@ class ProducementKosibForms(DefaultProducementForms):
     
 class ProducementUpakovkachiForms(DefaultProducementForms):
     staff_id = forms.ModelChoiceField(
-        queryset=models.staff.objects.filter(profession__value=system_variables.UPAKOVKACHI ,IsDeleted=False), 
+        queryset=models.staff.objects.filter(profession__value=system_variables.QADOQLOVCHI ,IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,
         label=system_variables.STAFF,
         widget=forms.Select(
@@ -588,7 +604,7 @@ class Client_payments_forms(forms.ModelForm):
                 attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
                 format='%d %m %Y'
             ),
-            'amount':forms.NumberInput(attrs={"class":"form-control"}),
+            'amount':forms.NumberInput(attrs={"class":"form-control", "min":0}),
             'description':forms.Textarea(attrs={'class':'form-control'})   
         }
 

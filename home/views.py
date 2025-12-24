@@ -7,7 +7,7 @@ from django.http.response import HttpResponse
 from .forms import *
 from django.forms import modelformset_factory
 from django.core.paginator import Paginator
-from django.db.models import Case, When, Q
+from django.db.models import Case, When, Q, IntegerField
 
 # Create your views here.
 import json
@@ -49,22 +49,22 @@ def login_view(request):
 
 def home(request):
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
-    finished_producements = producement.objects.filter(status__value='BAJARILDI', IsDeleted=False)
-    quantity_producements = dict()
-    for item in finished_producements:
-        if item.shoe_model_id.name not in quantity_producements:
-            quantity_producements[item.shoe_model_id.name] = {"quantity":[item.quantity]}
-        else:
-            quantity_producements[item.shoe_model_id.name]["quantity"].append(item.quantity)
+    # finished_producements = producement.objects.filter(status__value='BAJARILDI', IsDeleted=False)
+    # quantity_producements = dict()
+    # for item in finished_producements:
+    #     if item.shoe_model_id.name not in quantity_producements:
+    #         quantity_producements[item.shoe_model_id.name] = {"quantity":[item.quantity]}
+    #     else:
+    #         quantity_producements[item.shoe_model_id.name]["quantity"].append(item.quantity)
         
-        quantity_producements[item.shoe_model_id.name]["total"] = sum(quantity_producements[item.shoe_model_id.name]["quantity"])
+    #     quantity_producements[item.shoe_model_id.name]["total"] = sum(quantity_producements[item.shoe_model_id.name]["quantity"])
 
   
         
-    quantity_producements_json = json.dumps(quantity_producements)
+    # quantity_producements_json = json.dumps(quantity_producements)
     context ={
         "shoe_models":shoe_models,
-        "quantity_producements":quantity_producements_json,
+        # "quantity_producements":quantity_producements_json,
     }
     
     return render(request , "index.html" , context=context)
@@ -191,7 +191,7 @@ def staff_view(request):
 
 def staff_read(request, pk):
     staff_item = staff.objects.get(pk=pk, IsDeleted=False)
-    payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('date')
+    payment_list = staff_payments.objects.filter(staff_id=staff_item, IsDeleted=False).order_by('date')
     pruducements = producement.objects.filter(staff_id=staff_item, status__value="Bajarildi").order_by('date')
     context = {
         "staff":staff_item,
@@ -316,41 +316,107 @@ def clients_delete(request, pk):
     return redirect('clients_view')
 
 # orders
+
 def orders_view(request):
     completed_id = references.objects.get(value=system_variables.COMPLETED)
-    # Define the statuses that are "active" or need attention
-    active_statuses = [system_variables.CREATED, system_variables.ACTIVE]
-    completed_statuses = [system_variables.COMPLETED, system_variables.CANCELED]
-    status = references.objects.filter(type=ReferenceType.STATUS.value)
-    # Annotate orders with a custom sorting field: '0' for active, '1' for completed
-    orders_list = Orders.objects.filter(IsDeleted=False).annotate(
-        status__value=Case(
-            When(status__value__in=active_statuses, then=0),  # Active statuses come first
-            When(status__value__in=completed_statuses, then=1),  # Completed statuses come last
-            default=1  # Any other status defaults to completed
-        )
-        ).order_by('status__value', 'complete_date')  # Sort by status first, then deadline
 
-    shoe_models = models.shoe_model.objects.filter(IsDeleted = False)
+    active_statuses = [
+        system_variables.CREATED,
+        system_variables.ACTIVE
+    ]
+    completed_statuses = [
+        system_variables.COMPLETED,
+        system_variables.CANCELED
+    ]
+
+    statuses = references.objects.filter(type=ReferenceType.STATUS.value)
+
+    # ===== BASE QUERY =====
+    orders = Orders.objects.filter(IsDeleted=False).annotate(
+        status_order=Case(
+            When(status__value__in=active_statuses, then=0),
+            When(status__value__in=completed_statuses, then=1),
+            default=1,
+            output_field=IntegerField()
+        )
+    )
+
+    # ===== GET FILTERS =====
+    shoe_model_id = request.GET.get('shoe_model_id')
+    color_id = request.GET.get('color_id')
+    leather_type_id = request.GET.get('leather_type')
+    sole_type_id = request.GET.get('solo_type')
+    client_id = request.GET.get('client')
+    status_id = request.GET.get('status')
+
+    # ===== ORDER LEVEL FILTERS =====
+    if client_id:
+        orders = orders.filter(client_id=client_id)
+
+    if status_id:
+        orders = orders.filter(status=status_id)
+
+    # ===== ORDER DETAILS FILTERS =====
+    if shoe_model_id:
+        orders = orders.filter(order_id_orders__model_id=shoe_model_id)
+
+    if color_id:
+        orders = orders.filter(order_id_orders__color_id=color_id)
+
+    if leather_type_id:
+        orders = orders.filter(order_id_orders__leather_type=leather_type_id)
+
+    if sole_type_id:
+        orders = orders.filter(order_id_orders__sole_type_id=sole_type_id)
+
+    orders = orders.distinct().order_by('status_order', 'complete_date')
+
+    # ===== DROPDOWNS =====
+    shoe_models = models.shoe_model.objects.filter(IsDeleted=False)
     colors = models.references.objects.filter(
         type=models.ReferenceType.COLOR.value,
         IsDeleted=False
-        )
-    
+    )
+    leather_types = models.references.objects.filter(
+        type=models.ReferenceType.LEATHER_TYPE.value,
+        IsDeleted=False
+    )
+    sole_types = models.references.objects.filter(
+        type=models.ReferenceType.SOLO_TYPE.value,
+        IsDeleted=False
+    )
+    clients = models.clients.objects.filter(
+        is_system=False,
+        IsDeleted=False
+    )
 
-    paginator = Paginator(orders_list, 10)  # Paginate by 10 items per page
+    # ===== PAGINATION =====
+    paginator = Paginator(orders, 10)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
     context = {
         "orders_list": page_obj,
-        "statuses":status,
-        "completed_status_id":completed_id.pk,
+        "statuses": statuses,
+        "completed_status_id": completed_id.pk,
 
-        "shoe_models":shoe_models,
-        "colors":colors
+        "shoe_models": shoe_models,
+        "colors": colors,
+        "leather_types": leather_types,
+        "sole_types": sole_types,
+        "clients": clients,
+
+        # selected values
+        "shoe_model_id": int(shoe_model_id) if shoe_model_id else None,
+        "color_id": int(color_id) if color_id else None,
+        "leather_type": int(leather_type_id) if leather_type_id else None,
+        "solo_type": int(sole_type_id) if sole_type_id else None,
+        "client_id": int(client_id) if client_id else None,
+        "status_id": int(status_id) if status_id else None,
     }
-    return render(request, "orders/orders.html", context=context)
+
+    return render(request, "orders/orders.html", context)
+
 
 def orders_create(request):
     if request.method == "POST":
@@ -1210,6 +1276,30 @@ def update_order_status(request):
             return JsonResponse({"success": False, "message": "Invalid status"})
 
     return JsonResponse({"success": False, "message": "Invalid request"})
+
+
+@csrf_exempt
+def update_producement_status(request):
+    if request.method == "POST":
+        producement_id = request.POST.get("producement_id")
+        status_id = request.POST.get("status_id")
+        try:
+            producement = models.producement.objects.get(id=producement_id)
+            status = references.objects.get(id=status_id)
+            producement.status = status
+            producement.save()
+            print("--------------------------------------------")
+            print(producement_id, status_id)
+            print("--------------------------------------------")
+            print("--------------------------------------------")
+            return JsonResponse({"success": True, "message": "Status updated"})
+        except Orders.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Producement not found"})
+        except references.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Invalid status"})
+
+    return JsonResponse({"success": False, "message": "Invalid request"})
+
 
 # client_payments
 

@@ -221,11 +221,26 @@
                                         </td>
                                         <td>{{ producement.quantity }}</td>
                                         <td>{{ producement.price|floatformat:2|intcomma }}</td>
-                                        <td>
-                                            <span class="badge text-secondary">
-                                                {{ producement.status }}
-                                            </span>
-                                        </td>
+
+
+                <td class="text-center">
+                    <select 
+                    name="status" 
+                    class="form-select form-select-sm d-inline w-auto text-center"
+                    data-producement-id="{{  producement.id }}"
+                    onchange="updateProducementStatus(this)"
+                    onfocus="previousStatus = this.value"
+                  >
+
+                  {% for s in statuses %}
+                    <option value="{{ s.id }}" {% if s.id == producement.status.id %}selected{% endif %}>
+                      {{ s.value }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </td>
+
+
                                         <td class="d-flex flex-column gap-2 align-items-center ">
                                             <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">
                                                 <i class="bx bx-show"></i>
@@ -335,11 +350,15 @@
                                     </td>
                                     <td>{{ producement.quantity }}</td>
                                     <td>{{ producement.price }}</td>
+                                    
+                                    
                                     <td>
                                         <span class="badge text-secondary">
                                             {{ producement.status }}
                                         </span>
                                     </td>
+
+
                                     <td class="d-flex flex-column gap-1 align-items-center">
                                         <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">
                                             <i class="bx bx-show "></i>
@@ -453,6 +472,42 @@
   });
 </script>
 
+<script>
+  function getCSRFToken() {
+    const cookieValue = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)');
+    return cookieValue ? cookieValue.pop() : '';
+  }
 
+function updateProducementStatus(select) {
+  const producement_id = select.getAttribute("data-producement-id");
+  const statusId = select.value;
+
+  fetch("{% url 'update_producement_status' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-CSRFToken": getCSRFToken(),
+    },
+    body: new URLSearchParams({
+      producement_id: producement_id,
+      status_id: statusId,
+    }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        select.classList.add("border-success");
+        setTimeout(() => select.classList.remove("border-success"), 800);
+      } else {
+        alert(data.message || "Failed to update status");
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+    });
+}
+
+
+</script>
 
 {% endblock content %}

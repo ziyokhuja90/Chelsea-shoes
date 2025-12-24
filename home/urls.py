@@ -99,6 +99,7 @@ urlpatterns = [
 
     #order status
     path('update-order-status/', views.update_order_status, name='update_order_status'),
+    path('update-producement-status/', views.update_producement_status, name='update_producement_status'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -104,11 +104,11 @@
             </td>
                 {% if client.balance >= 0 %}
                 <td class="text-success">
-                    {{client.balance|floatformat:2|intcomma}}
+                    {{client.balance|floatformat:2|intcomma}} {{client.currency}}
                 </td>
                 {% else %}
                 <td class="text-danger">
-                    {{client.balance|floatformat:2|intcomma}}
+                    {{client.balance|floatformat:2|intcomma}} {{client.currency}}
                 </td>
             {% endif %}
 

@@ -112,6 +112,7 @@
             <th>{{ID}}</th>
             <th>{{CLIENT}}</th>
             <th>{{TOTAL_PRICE}}</th>
+            <th>{{CREATED_AT}}</th>
             <th>{{DEADLINE}}</th>
             <th class="text-center">{{STATUS}}</th>
             <th>{{ACTIONS}}</th>
@@ -123,6 +124,7 @@
             <td><strong>{{ forloop.counter }}</strong></td>
             <td>{{ order.client_id }}</td>
             <td>{{ order.total_amount|floatformat:2|intcomma }} {{order.client_id.currency}}</td>
+            <td>{{ order.date|date:"d.m.Y" }}</td>
             <td>{{ order.complete_date|date:"d.m.Y" }}</td>
             <!-- <td class="text-center">
               <a href="{% url 'order_prev_status' order.id %}" class="btn btn-sm btn-outline-secondary p-1">
@@ -132,8 +134,7 @@
               <a href="{% url 'order_next_status' order.id %}" class="btn btn-sm btn-outline-primary p-1">
                 <i class='bx bx-chevron-right'></i>
               </a>
-            </td>
-            -->
+            </td>-->
               <td class="text-center">
                   <select 
                     name="status" 
@@ -243,75 +244,35 @@
     return cookieValue ? cookieValue.pop() : '';
   }
 
-  function updateOrderStatus(select) {
-    const orderId = select.getAttribute("data-order-id");
-    const statusId = select.value;
+function updateOrderStatus(select) {
+  const orderId = select.getAttribute("data-order-id");
+  const statusId = select.value;
 
-    // COMPLETED id (pass from Django)
-    const COMPLETED_ID = "{{ completed_status_id }}";
-
-    // If user picks Completed → show modal FIRST
-    if (statusId === COMPLETED_ID) {
-      const modal = new bootstrap.Modal(document.getElementById("completeModal"));
-      modal.show();
-
-      // When confirm button is clicked
-      document.getElementById("confirmCompleteBtn").onclick = function () {
-
-        // Actually update via AJAX
-        fetch("{% url 'update_order_status' %}", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": getCSRFToken(),
-          },
-          body: new URLSearchParams({
-            order_id: orderId,
-            status_id: statusId,
-          }),
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            select.classList.add("border-success");
-            setTimeout(() => select.classList.remove("border-success"), 800);
-          } else {
-            alert(data.message || "Failed to update status");
-            select.value = previousStatus; // rollback
-          }
-        })
-        .catch(error => {
-          console.error("Error:", error);
-          select.value = previousStatus; // rollback on error
-        });
-        
-        modal.hide();
-      };
-
-      // If modal closed without confirming → revert
-      document.getElementById("completeModal")
-        .addEventListener("hidden.bs.modal", function () {
-          if (select.value === COMPLETED_ID) {
-            select.value = previousStatus;
-          }
-        });
-
-      return; // STOP normal flow
-    }
-
-    // Normal status change (not Completed)
-    fetch("{% url 'update_order_status' %}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRFToken": getCSRFToken(),
-      },
-      body: new URLSearchParams({
-        order_id: orderId,
-        status_id: statusId,
-      }),
+  fetch("{% url 'update_order_status' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-CSRFToken": getCSRFToken(),
+    },
+    body: new URLSearchParams({
+      order_id: orderId,
+      status_id: statusId,
+    }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        select.classList.add("border-success");
+        setTimeout(() => select.classList.remove("border-success"), 800);
+      } else {
+        alert(data.message || "Failed to update status");
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
     });
-  }
+}
+
 
 </script>
 
