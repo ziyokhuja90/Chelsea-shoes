@@ -222,24 +222,22 @@
                                         <td>{{ producement.quantity }}</td>
                                         <td>{{ producement.price|floatformat:2|intcomma }}</td>
 
+                                        <td class="text-center">
+                                            <select 
+                                            name="status" 
+                                            class="form-select form-select-sm d-inline w-auto text-center"
+                                            data-producement-id="{{  producement.id }}"
+                                            onchange="updateProducementStatus(this)"
+                                            onfocus="previousStatus = this.value"
+                                          >
 
-                <td class="text-center">
-                    <select 
-                    name="status" 
-                    class="form-select form-select-sm d-inline w-auto text-center"
-                    data-producement-id="{{  producement.id }}"
-                    onchange="updateProducementStatus(this)"
-                    onfocus="previousStatus = this.value"
-                  >
-
-                  {% for s in statuses %}
-                    <option value="{{ s.id }}" {% if s.id == producement.status.id %}selected{% endif %}>
-                      {{ s.value }}
-                    </option>
-                  {% endfor %}
-                </select>
-              </td>
-
+                                          {% for s in statuses %}
+                                            <option value="{{ s.id }}" {% if s.id == producement.status.id %}selected{% endif %}>
+                                              {{ s.value }}
+                                            </option>
+                                          {% endfor %}
+                                        </select>
+                                      </td>
 
                                         <td class="d-flex flex-column gap-2 align-items-center ">
                                             <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">

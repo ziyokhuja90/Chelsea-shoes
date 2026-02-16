@@ -116,20 +116,20 @@ def details_to_warehouse(sender, instance, **kwargs):
 def create_system_data(sender, **kwargs):
     if sender.name == "home":
         # gender
-        references.objects.get_or_create(type=ReferenceType.GENDER.value, value=system_variables.MALE, IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.GENDER.value, value=system_variables.FEMALE, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.GENDER.value, value=system_variables.MALE, IsSystem=True, order=1)
+        references.objects.get_or_create(type=ReferenceType.GENDER.value, value=system_variables.FEMALE, IsSystem=True, order=2)
         # status
-        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.CREATED, IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.ACTIVE, IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.COMPLETED, IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.CANCELED, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.CREATED, IsSystem=True, order=1)
+        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.ACTIVE, IsSystem=True, order=2)
+        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.COMPLETED, IsSystem=True, order=3)
+        references.objects.get_or_create(type=ReferenceType.STATUS.value, value=system_variables.CANCELED, IsSystem=True, order=4)
         # profession
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.KROY, IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.LAZIR, IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.ZAKATOP, IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.TUQUVCHI, IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.KOSIB, IsSystem=True)
-        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.QADOQLOVCHI, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.KROY, IsSystem=True, order=1)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.LAZIR, IsSystem=True, order=2)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.ZAKATOP, IsSystem=True, order=3)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.TUQUVCHI, IsSystem=True, order=4)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.KOSIB, IsSystem=True, order=5)
+        references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.QADOQLOVCHI, IsSystem=True, order=6)
         # quantity_type
         references.objects.get_or_create(type=ReferenceType.QUANTITY_TYPE.value, value=system_variables.COUPLE, IsSystem=True)
         # currency
@@ -140,4 +140,138 @@ def create_system_data(sender, **kwargs):
         
         # clients.objects.get_or_create(name="SKLAD", phone_number=905647676, address="SKLAD", currency=references.objects.get(value="USD"), is_system=True)
         clients.objects.get_or_create(name=system_variables.WAREHOUSE.upper(), phone_number=905647676, address=system_variables.WAREHOUSE.upper(), currency=references.objects.get(value=system_variables.UZS), is_system=True)
+
+
+        # Material_types
+        # material types (system)
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.LEATHER,
+        IsSystem=True,
+        order=1
+    )
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.SOLE,
+        IsSystem=True,
+        order=2
+    )
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.LINING,
+        IsSystem=True,
+        order=3
+    )
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.GLUE,
+        IsSystem=True,
+        order=4
+    )
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.TEXTILE,
+        IsSystem=True,
+        order=5
+    )
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.THREAD,
+        IsSystem=True,
+        order=6
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.MIX,
+        IsSystem=True,
+        order=7
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.BOX,
+        IsSystem=True,
+        order=8
+    )
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.BUCKLE,
+        IsSystem=True,
+        order=9
+    )
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.ELASTIC,
+        IsSystem=True,
+        order=10
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.RIVET,
+        IsSystem=True,
+        order=11
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.CARDBOARD,
+        IsSystem=True,
+        order=12
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.CLOTH,
+        IsSystem=True,
+        order=13
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.VISOR,
+        IsSystem=True,
+        order=14
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.PAPER,
+        IsSystem=True,
+        order=15
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.STRETCH,
+        IsSystem=True,
+        order=16
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.FUR,
+        IsSystem=True,
+        order=17
+    )
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.ZIPPER,
+        IsSystem=True,
+        order=18
+    )
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.SPONGE,
+        IsSystem=True,
+        order=19
+    )
+
+    references.objects.get_or_create(
+        type=ReferenceType.MATERIAL_TYPE.value,
+        value=system_variables.VELCRO,
+        IsSystem=True,
+        order=20
+    )
 

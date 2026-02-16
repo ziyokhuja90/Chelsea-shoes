@@ -13,3 +13,4 @@ admin.site.register(Order_details)
 admin.site.register(Orders)
 admin.site.register(Sales)
 admin.site.register(Warehouse)
+

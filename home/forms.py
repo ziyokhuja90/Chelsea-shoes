@@ -147,47 +147,47 @@ class orderDetails_forms(forms.ModelForm):
         model = models.Order_details
         fields = [ 
             'model_id', 'quantity', 'quantity_type_id',
-            'price',  'color_id', 'leather_type', 
-            'lining_type_id','sole_type_id', 'toqa'
+            # 'price',  'color_id', 'leather_type', 
+            # 'lining_type_id','sole_type_id', 'toqa'
             ]
 
-        widgets = {
-            'model_id':forms.Select(attrs={"class":"form-control"}),
-            'quantity':forms.NumberInput(attrs={"class":"form-control", "min":0}),
-            'quantity_type_id':forms.Select(attrs={"class":"form-control"}),
-            'price':forms.NumberInput(attrs={"class":"form-control", "min":0}),
-            'color_id':forms.Select(attrs={"class":"form-control"}),
-            'leather_type':forms.Select(attrs={"class":"form-control"}),
-            'sole_type_id':forms.Select(attrs={"class":"form-control"}),
-            'lining_type_id':forms.Select(attrs={"class":"form-control"}),
-            'toqa':forms.Select(attrs={"class":"form-control"}),
-        }
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        # widgets = {
+        #     'model_id':forms.Select(attrs={"class":"form-control"}),
+        #     'quantity':forms.NumberInput(attrs={"class":"form-control", "min":0}),
+        #     'quantity_type_id':forms.Select(attrs={"class":"form-control"}),
+        #     'price':forms.NumberInput(attrs={"class":"form-control", "min":0}),
+        #     'color_id':forms.Select(attrs={"class":"form-control"}),
+        #     'leather_type':forms.Select(attrs={"class":"form-control"}),
+        #     'sole_type_id':forms.Select(attrs={"class":"form-control"}),
+        #     'lining_type_id':forms.Select(attrs={"class":"form-control"}),
+        #     'toqa':forms.Select(attrs={"class":"form-control"}),
+        # }
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
 
-        self.fields['model_id'].queryset = models.shoe_model.objects.filter(IsDeleted=False)
-        self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
-        self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
-        self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
-        self.fields['lining_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LINING_TYPE.value, IsDeleted=False)
-        self.fields['sole_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
-        self.fields['toqa'].queryset = models.references.objects.filter(type=models.ReferenceType.TOQA.value, IsDeleted=False)
+    #     self.fields['model_id'].queryset = models.shoe_model.objects.filter(IsDeleted=False)
+    #     self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
+    #     self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
+    #     self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
+    #     self.fields['lining_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LINING_TYPE.value, IsDeleted=False)
+    #     self.fields['sole_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
+    #     self.fields['toqa'].queryset = models.references.objects.filter(type=models.ReferenceType.TOQA.value, IsDeleted=False)
 
-        if 'IsDeleted' in self.fields:
-            del self.fields['IsDeleted']
+    #     if 'IsDeleted' in self.fields:
+    #         del self.fields['IsDeleted']
 
 
-        if self.instance and self.instance.pk and self.instance.color_id:
-            self.fields['color_id'].queryset = (
-                    self.fields['color_id'].queryset | models.references.objects.filter(
-                pk=self.instance.color_id.pk)
-            ).distinct()
+    #     if self.instance and self.instance.pk and self.instance.color_id:
+    #         self.fields['color_id'].queryset = (
+    #                 self.fields['color_id'].queryset | models.references.objects.filter(
+    #             pk=self.instance.color_id.pk)
+    #         ).distinct()
 
-        if self.instance and self.instance.pk and self.instance.leather_type:
-            self.fields['leather_type'].queryset = (
-                    self.fields['leather_type'].queryset | models.references.objects.filter(
-                pk=self.instance.leather_type.pk)
-            ).distinct()
+    #     if self.instance and self.instance.pk and self.instance.leather_type:
+    #         self.fields['leather_type'].queryset = (
+    #                 self.fields['leather_type'].queryset | models.references.objects.filter(
+    #             pk=self.instance.leather_type.pk)
+    #         ).distinct()
 
 
 
@@ -197,10 +197,8 @@ class producement_forms(forms.ModelForm):
         model = models.producement
         fields = [
             'order_id','order_detail_id', 'shoe_model_id', 
-            'date','color_id', 'leather_type', 
-            'solo_type','quantity', 'quantity_type_id', 
-            'price','staff_id', 'status', 
-            'lining_type_id'
+            'date','quantity', 'quantity_type_id', 
+            'price','staff_id', 'status',
         ]
         widgets = {
             "staff_id": forms.Select(attrs={'class': 'form-control'}),
@@ -209,16 +207,12 @@ class producement_forms(forms.ModelForm):
                 attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
                 format='%d %m %Y'
             ),
-            "color_id": forms.Select(attrs={"class": "form-control"}),
-            "leather_type": forms.Select(attrs={"class": "form-control"}),
-            "solo_type": forms.Select(attrs={"class": "form-control"}),
             "quantity": forms.NumberInput(attrs={"class": "form-control", "min":0}),
             "quantity_type_id": forms.Select(attrs={"class": "form-control"}),
             "price": forms.NumberInput(attrs={"class": "form-control", "min":0}),
             "order_id": forms.Select(attrs={"class": "form-control"}),
             "order_detail_id": forms.Select(attrs={"class": "form-control"}),
             "status": forms.Select(attrs={"class": "form-control"}),
-            "lining_type_id": forms.Select(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -233,38 +227,10 @@ class producement_forms(forms.ModelForm):
         self.fields['shoe_model_id'].queryset = models.shoe_model.objects.filter(IsDeleted=False)
         self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
         self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
-        self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
-        self.fields['solo_type'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
-        self.fields['lining_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LINING_TYPE.value)
         self.fields['order_id'].queryset = models.Orders.objects.filter(IsDeleted=False)
         self.fields['staff_id'].queryset = models.staff.objects.filter(IsDeleted=False)
 
-
-
-        if self.instance and self.instance.pk and self.instance.color_id:
-            self.fields['color_id'].queryset = (
-                    self.fields['color_id'].queryset | models.references.objects.filter(
-                pk=self.instance.color_id.pk)
-            ).distinct()
-
-        if self.instance and self.instance.pk and self.instance.leather_type:
-            self.fields['leather_type'].queryset = (
-                    self.fields['leather_type'].queryset | models.references.objects.filter(
-                pk=self.instance.leather_type.pk)
-            ).distinct()
-
-        if self.instance and self.instance.pk and self.instance.solo_type:
-            self.fields['solo_type'].queryset = (
-                    self.fields['solo_type'].queryset | models.references.objects.filter(
-                pk=self.instance.solo_type.pk)
-            ).distinct()
-
-        if self.instance and self.instance.pk and self.instance.lining_type_id:
-            self.fields['lining_type_id'].queryset = (
-                    self.fields['lining_type_id'].queryset | models.references.objects.filter(
-                pk=self.instance.lining_type_id.pk)
-            ).distinct()
 
 class staff_payments_forms(forms.ModelForm):
     class Meta:
@@ -350,29 +316,6 @@ class DefaultProducementForms(forms.Form):
         )
     )
 
-    leather_type = forms.ModelChoiceField(
-        queryset=models.references.objects.filter(
-            type=models.ReferenceType.LEATHER_TYPE.value,
-            IsDeleted=False
-        ),
-        empty_label= system_variables.EMPTY_LABEL,
-        label=system_variables.LEATHER_TYPE,
-        widget=forms.Select(
-            attrs={'class':"form-select"}
-        )
-    )
-
-    lining_type_id = forms.ModelChoiceField(
-        queryset=models.references.objects.filter(
-            type=models.ReferenceType.LINING_TYPE.value,
-            IsDeleted=False
-        ),
-        empty_label= system_variables.EMPTY_LABEL,
-        label=system_variables.LINING,
-        widget=forms.Select(
-            attrs={'class':"form-select"}
-        )
-    )
 
     quantity = forms.IntegerField(
         min_value=0,
@@ -547,15 +490,6 @@ class ProducementKosibForms(DefaultProducementForms):
         queryset=models.staff.objects.filter(profession__value=system_variables.KOSIB ,IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,
         label=system_variables.STAFF,
-        widget=forms.Select(
-            attrs={'class':"form-select"}
-        ))
-    sole_type_id = forms.ModelChoiceField(
-        queryset=models.references.objects.filter(
-            type=models.ReferenceType.SOLO_TYPE.value,
-            IsDeleted=False),
-        empty_label= system_variables.EMPTY_LABEL ,
-        label=system_variables.SOLE_TYPE,
         widget=forms.Select(
             attrs={'class':"form-select"}
         ))

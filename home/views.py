@@ -8,7 +8,7 @@ from .forms import *
 from django.forms import modelformset_factory
 from django.core.paginator import Paginator
 from django.db.models import Case, When, Q, IntegerField
-
+from collections import defaultdict
 # Create your views here.
 import json
 
@@ -18,6 +18,76 @@ from datetime import datetime
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
+SYSTEM_REFERENCE_TYPES = {
+    ReferenceType.STATUS,
+    ReferenceType.GENDER,
+    ReferenceType.QUANTITY_TYPE,
+    ReferenceType.CURRENCY,
+    ReferenceType.MATERIAL_TYPE,
+    ReferenceType.STOCK_MOVEMENT_TYPE,
+    ReferenceType.PROFESSION,
+}
+
+NON_SYSTEM_REFERENCE_TYPES = [
+    ReferenceType.COLOR,
+
+    ReferenceType.LEATHER_VARIANT,
+    ReferenceType.SOLE_VARIANT,
+    ReferenceType.LINING_VARIANT,
+    ReferenceType.GLUE_VARIANT,
+    ReferenceType.TEXTILE_VARIANT,
+
+    ReferenceType.THREAD_VARIANT,
+    ReferenceType.MIX_VARIANT,
+    ReferenceType.BOX_VARIANT,
+    ReferenceType.BUCKLE_VARIANT,
+    ReferenceType.ELASTIC_VARIANT,
+    ReferenceType.RIVET_VARIANT,
+    ReferenceType.CARDBOARD_VARIANT,
+    ReferenceType.CLOTH_VARIANT,
+    ReferenceType.VISOR_VARIANT,
+    ReferenceType.PAPER_VARIANT,
+    ReferenceType.STRETCH_VARIANT,
+    ReferenceType.FUR_VARIANT,
+    ReferenceType.ZIPPER_VARIANT,
+    ReferenceType.SPONGE_VARIANT,
+    ReferenceType.VELCRO_VARIANT,
+]
+
+
+REFERENCE_TYPE_UI_KEY = {
+    ReferenceType.STATUS: "STATUS",
+    ReferenceType.GENDER: "GENDER",
+    ReferenceType.COLOR: "COLOR",
+    ReferenceType.PROFESSION: "PROFESSION",
+    ReferenceType.QUANTITY_TYPE: "QUANTITY_TYPE",
+    ReferenceType.CURRENCY: "CURRENCY",
+    ReferenceType.MATERIAL_TYPE: "MATERIAL_TYPE",
+
+    ReferenceType.LEATHER_VARIANT: "LEATHER_TYPE",
+    ReferenceType.SOLE_VARIANT: "SOLE_TYPE",
+    ReferenceType.LINING_VARIANT: "LINING",
+    ReferenceType.GLUE_VARIANT: "GLUE",
+    ReferenceType.TEXTILE_VARIANT: "TEXTILE",   
+
+    ReferenceType.THREAD_VARIANT: "THREAD",
+    ReferenceType.MIX_VARIANT: "MIX",
+    ReferenceType.BOX_VARIANT: "BOX",
+    ReferenceType.BUCKLE_VARIANT: "BUCKLE",
+    ReferenceType.ELASTIC_VARIANT: "ELASTIC",
+    ReferenceType.RIVET_VARIANT: "RIVET",
+    ReferenceType.CARDBOARD_VARIANT: "CARDBOARD",
+    ReferenceType.CLOTH_VARIANT: "CLOTH",
+    ReferenceType.VISOR_VARIANT: "VISOR",
+    ReferenceType.PAPER_VARIANT: "PAPER",
+    ReferenceType.STRETCH_VARIANT: "STRETCH",
+    ReferenceType.FUR_VARIANT: "FUR",
+    ReferenceType.ZIPPER_VARIANT: "ZIPPER",
+    ReferenceType.SPONGE_VARIANT: "SPONGE",
+    ReferenceType.VELCRO_VARIANT: "VELCRO",
+}
+
 
 
 def phone_to_int(phone_str):
@@ -69,30 +139,97 @@ def home(request):
     
     return render(request , "index.html" , context=context)
 
-# reference
-def reference_view(request):
-    if request.method == "POST":
-        type = request.POST.get("type")
-        value = request.POST.get("value")
-        if type == "--------":
-            pass
-        else:
-            if references.objects.filter(type=int(type), value=value).exists() and references.objects.filter(type=int(type), value=value.upper() ,IsDeleted=False):
-                pass
-            else:
-                if ReferenceType(int(type)) in ReferenceType:
-                    print(True)
-                new_entry = references(type=int(type) , value=value.upper())
-                new_entry.save()
 
-            
-    reference_models = references.objects.filter(IsDeleted=False).order_by('order')
+
+def reference_view(request):
+    # ==========================
+    # POST: create reference
+    # ==========================
+    if request.method == "POST":
+        type_str = request.POST.get("type")
+        value = request.POST.get("value", "").strip().upper()
+
+        # basic validation
+        if not type_str or not value:
+            return redirect("reference")
+
+        try:
+            ref_type = ReferenceType(int(type_str))
+        except ValueError:
+            # invalid enum value
+            return redirect("reference")
+
+        # 🚫 block system reference creation
+        if ref_type in SYSTEM_REFERENCE_TYPES:
+            return redirect("reference")
+
+        # 🚫 block types not allowed for manual creation
+        if ref_type not in NON_SYSTEM_REFERENCE_TYPES:
+            return redirect("reference")
+
+        # prevent duplicates (case-insensitive handled by upper())
+        exists = references.objects.filter(
+            type=ref_type.value,
+            value=value,
+            IsDeleted=False
+        ).exists()
+
+        if not exists:
+            references.objects.create(
+                type=ref_type.value,
+                value=value,
+                IsDeleted=False
+            )
+
+        return redirect("reference")
+
+    # ==========================
+    # GET: load & prepare data
+    # ==========================
+    reference_qs = references.objects.filter(IsDeleted=False).order_by("order", "value")
+
+    grouped = []
 
     
+    for rt in ReferenceType:
+        items = reference_qs.filter(type=rt.value)
+        if items.exists():
+            ui_key = REFERENCE_TYPE_UI_KEY.get(rt)
+            print("------------------------------")
+            print(f"Processing reference type: {rt} with UI key: {ui_key}")
+            print("------------------------------")
+            # 🔥 THIS is the important line
+            ui_label = getattr(system_variables, ui_key, rt.name)
+
+            grouped.append({
+                "type": rt,
+                "label": ui_label,   # already Uzbek
+                "items": items,
+                "is_system": rt in SYSTEM_REFERENCE_TYPES,
+            })
+
+
+    # map type -> human label (template-safe)
+    allowed_create_types_resolved = []
+
+    for rt in NON_SYSTEM_REFERENCE_TYPES:
+        ui_key = REFERENCE_TYPE_UI_KEY.get(rt)
+        ui_label = getattr(system_variables, ui_key, rt.name)
+
+        allowed_create_types_resolved.append({
+            "value": rt.value,
+            "label": ui_label
+        })
+
     context = {
-        "reference": reference_models,
+        "grouped_references": grouped,
+        "allowed_create_types": allowed_create_types_resolved,  
+        "system_types": {rt.value for rt in SYSTEM_REFERENCE_TYPES},
     }
-    return render(request , "references.html", context=context)
+
+    return render(request, "references.html", context)
+
+
 
 def update_reference(request, pk):
     if request.method == "POST":

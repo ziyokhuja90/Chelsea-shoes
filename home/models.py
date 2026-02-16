@@ -4,16 +4,46 @@ from django.utils.timezone import now
 from config import system_variables
 
 class ReferenceType(Enum):
-    STATUS = 1 # System
-    GENDER = 2 # System
+    STATUS = 1               # system
+    GENDER = 2               # system
     COLOR = 3
-    LEATHER_TYPE = 4
-    PROFESSION = 5
-    QUANTITY_TYPE = 6 # System
-    CURRENCY = 7 # System
-    SOLO_TYPE = 8
-    LINING_TYPE = 9
-    TOQA = 10
+    PROFESSION = 4           # system
+    QUANTITY_TYPE = 5        # system
+    CURRENCY = 6             # system
+
+    MODEL = 10
+    MODEL_PART = 11
+
+    MATERIAL_TYPE = 20       # system
+    STOCK_MOVEMENT_TYPE = 21 # system
+
+    # VARIANT TYPES (not materials!)
+
+    LEATHER_VARIANT      = 30   # Teri
+    SOLE_VARIANT         = 31   # Taglik (poshna / tag qismi)
+    LINING_VARIANT       = 32   # Ichki qoplama (astarlik)
+    GLUE_VARIANT         = 33   # Kley
+    TEXTILE_VARIANT      = 34   # Matо / Tekstil
+
+    THREAD_VARIANT       = 35   # Ip
+    MIX_VARIANT          = 36   # Mix 
+    BOX_VARIANT          = 37   # Quti (korobka)
+    BUCKLE_VARIANT       = 38   # To‘qa
+    ELASTIC_VARIANT      = 39   # Rezina
+    RIVET_VARIANT        = 40   # Piston
+    CARDBOARD_VARIANT    = 41   # Karton
+    CLOTH_VARIANT        = 42   # Latta
+    VISOR_VARIANT        = 43   # Ko‘zoynak soyaboni / Koziryok
+    PAPER_VARIANT        = 44   # Qog‘oz
+    STRETCH_VARIANT      = 45   # Cho‘ziluvchan mato
+    FUR_VARIANT          = 46   # Mo‘yna
+    ZIPPER_VARIANT       = 47   # Zamok
+    SPONGE_VARIANT       = 48   # Gubka
+    VELCRO_VARIANT       = 49   # Lipuchka (Velkro)
+
+
+
+
     
 class StatusType(Enum):
     Created = 0
@@ -44,7 +74,7 @@ class shoe_model(models.Model):
     name = models.CharField(max_length=255 , verbose_name="oyoq kiyim nomi")
     code = models.CharField(max_length=255 , verbose_name="oyoq kiyim kodi" ,unique=True)
     image = models.ImageField(upload_to="media/" , verbose_name="oyoq kiyim rasmi")
-    description = models.TextField(verbose_name=system_variables.DESCRIPTION)
+    description = models.TextField(verbose_name=system_variables.DESCRIPTION, null=True, blank=True)
     IsDeleted = models.BooleanField(default=False)
 
     class Meta:
@@ -88,6 +118,59 @@ class client_payments(models.Model):
         
     def __str__(self):
         return f"{self.client_id} -- {self.amount}"
+
+
+class Model_part_definition(models.Model):
+    model_id = models.ForeignKey(shoe_model, on_delete=models.CASCADE, related_name="model_part_definition_shoe_model")
+    part_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="part_ref_id")
+    material_type_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="material_type_ref_id")
+    is_required = models.BooleanField()
+    unit_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="unit_ref_id")
+    quantity_per_pair = models.FloatField()
+    waste_percent = models.FloatField()
+
+    class Meta: 
+        db_table = "model_part_definition"
+
+class Material_stock(models.Model):
+    material_type_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="material_type_ref_id_stock")
+    variant_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="variant_ref_id_stock")
+    color_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="color_ref_id_stock")
+    unit_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="unit_ref_id_stock")
+    stock_quantity = models.IntegerField()
+    reserved_quantity = models.IntegerField()
+    available_quantity = models.IntegerField()
+    updated_at = models.DateField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    class Meta: 
+        db_table = "material_stock"
+
+class Supplier(models.Model):
+    pass
+
+class Purchase(models.Model):
+    supplier_id = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name="supplier_id")
+    purchase_date = models.DateField()
+    total_amount = models.FloatField()
+    status = models.ForeignKey(references, on_delete=models.CASCADE, related_name="purchase_status")
+    created_at = models.DateField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    class Meta: 
+        db_table = "purchase"
+
+class Purchase_item(models.Model):
+    purchase_id = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="purchase_id")
+    material_id = models.ForeignKey(Material_stock, on_delete=models.CASCADE, related_name="material_id_purchase_item")
+    quantity = models.IntegerField()
+    price = models.FloatField()
+    amount = models.FloatField()
+    is_deleted = models.BooleanField(default=False)
+    
+    class Meta: 
+        db_table = "purchase_item"
+
 
 class Orders(models.Model):
     client_id = models.ForeignKey(
@@ -136,37 +219,7 @@ class Order_details(models.Model):
     )
     price = models.DecimalField(verbose_name="buyurtma narxi" , max_digits=20 , decimal_places=2)
     total_amount = models.DecimalField(verbose_name="buyurtma jami narxi" , max_digits=20 , decimal_places=2)
-    color_id = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="color_id_orders",
-        verbose_name="buyurtma rangi"
-    )
 
-    leather_type = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="leather_type_Orders",
-        verbose_name="terisi"    
-    )
-    sole_type_id = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name='sole_type_orders'                
-    )
-    lining_type_id = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="lining_type_orders"
-
-    )
-    toqa = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="toqa_details",
-        null=True,
-        blank=True
-    )
     IsDeleted = models.BooleanField(default=False)
     
     class Meta:
@@ -174,6 +227,59 @@ class Order_details(models.Model):
         
     def __str__(self):
         return f"{self.model_id} -- {self.IsDeleted}"
+
+
+class Stock_movement(models.Model):
+    material = models.ForeignKey(
+        Material_stock,
+        on_delete=models.CASCADE,
+        related_name="stock_movements"
+    )
+    quantity = models.IntegerField()
+    movement_type = models.ForeignKey(
+        references,
+        on_delete=models.CASCADE,
+        related_name="stock_movements"
+    )
+    order = models.ForeignKey(
+        Orders,
+        on_delete=models.CASCADE,
+        related_name="stock_movements"
+    )
+    purchase = models.ForeignKey(
+        Purchase,
+        on_delete=models.CASCADE,
+        related_name="stock_movements"
+    )
+    created_at = models.DateField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta: 
+        db_table = "stock_movement"
+
+class Order_detail_parts(models.Model):
+    order_detail = models.ForeignKey(
+        Order_details,
+        on_delete=models.CASCADE,
+        related_name="parts"
+    )
+    model_part_definition = models.ForeignKey(
+        Model_part_definition,
+        on_delete=models.CASCADE,
+        related_name="order_parts"
+    )
+    material_stock = models.ForeignKey(
+        Material_stock,
+        on_delete=models.CASCADE,
+        related_name="order_parts"
+    )
+    quantity_required = models.IntegerField()
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "order_detail_parts"
+
+
 
 
 class staff(models.Model):
@@ -234,26 +340,7 @@ class producement(models.Model):
         verbose_name="ish modeli"
     )
     date = models.DateField(verbose_name="ish qo'shilgan sanasi")
-    color_id = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="color_id_producement",
-        verbose_name="ish rangi"
-    )
-    leather_type = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="leather_type_reference",
-        verbose_name="terisi"    
-    )
-    solo_type = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="solo_type_reference",
-        verbose_name="tagliki",
-        null=True,
-        blank=True 
-    )
+    
     quantity = models.IntegerField(verbose_name="ish miqdori")
     quantity_type_id = models.ForeignKey(
         to=references,
@@ -284,21 +371,6 @@ class producement(models.Model):
         null=True,
         blank=True
     )
-    
-    lining_type_id = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="lining_type_producement"
-
-    )
-    toqa_id = models.ForeignKey(
-        to=references,
-        on_delete=models.CASCADE,
-        related_name="toqa_producement",
-        null=True,
-        blank=True
-    )
-    producement_id = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='parent_producement')
     IsDeleted = models.BooleanField(default=False)
 
     class Meta:
@@ -418,5 +490,5 @@ class Sales(models.Model):
         db_table = "sales"
     
     def __str__(self):
-        return f"{self.model_id} - {self.quantity} - {self.total_price}"
+        return f"{self.quantity} - {self.total_price}"
 
