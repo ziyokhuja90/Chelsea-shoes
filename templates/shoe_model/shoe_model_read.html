@@ -94,7 +94,7 @@
 
                             <td>
                                 <a class="btn btn-sm btn-warning"
-                                   href="">
+                                   href="{% url 'model_part_update' part.pk %}">
                                     <i class="bx bx-edit-alt text-white"></i>
                                 </a>
 
@@ -102,7 +102,7 @@
                                    href="#"
                                    data-bs-toggle="modal"
                                    data-bs-target="#deleteModal"
-                                   data-delete-url="">
+                                   data-delete-url="{% url 'model_part_delete' part.pk %}">
                                     <i class="bx bx-trash"></i>
                                 </a>
                             </td>

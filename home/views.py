@@ -1503,3 +1503,25 @@ def model_part_create(request, pk):
     }
 
     return render(request, "model_part/model_part_create.html", context=context)
+
+def model_part_update(request, pk):
+    part = get_object_or_404(models.Model_part_definition, pk=pk)
+    if request.method == "POST":
+        forms = Model_part_definition_forms(request.POST, instance=part)
+        if forms.is_valid():
+            forms.save()
+            return redirect("shoe_model_read", part.model_id.pk)
+    else:
+        forms = Model_part_definition_forms(instance=part)
+
+    context = {
+        "forms": forms,
+        "part": part,
+    }
+    return render(request, "model_part/model_part_update.html", context=context)
+
+def model_part_delete(request, pk):
+    part = get_object_or_404(models.Model_part_definition, pk=pk)
+    part.is_deleted = True
+    part.save()
+    return redirect("shoe_model_read", part.model_id.pk)

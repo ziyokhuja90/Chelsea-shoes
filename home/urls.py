@@ -93,6 +93,8 @@ urlpatterns = [
 
     # model_parts
     path('model_part/create/<int:pk>/', views.model_part_create, name='model_part_create'),
+    path('model_part/update/<int:pk>/', views.model_part_update, name='model_part_update'),
+    path('model_part/delete/<int:pk>/', views.model_part_delete, name='model_part_delete'),
 
     # next
     path('order/<int:pk>/next/', views.order_next_status, name='order_next_status'),
