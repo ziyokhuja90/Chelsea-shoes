@@ -31,6 +31,8 @@ SYSTEM_REFERENCE_TYPES = {
 
 NON_SYSTEM_REFERENCE_TYPES = [
     ReferenceType.COLOR,
+    ReferenceType.MODEL,
+    ReferenceType.MODEL_PART,
 
     ReferenceType.LEATHER_VARIANT,
     ReferenceType.SOLE_VARIANT,
@@ -58,6 +60,8 @@ NON_SYSTEM_REFERENCE_TYPES = [
 
 REFERENCE_TYPE_UI_KEY = {
     ReferenceType.STATUS: "STATUS",
+    ReferenceType.MODEL: "MODEL",
+    ReferenceType.MODEL_PART: "MODEL_PART",
     ReferenceType.GENDER: "GENDER",
     ReferenceType.COLOR: "COLOR",
     ReferenceType.PROFESSION: "PROFESSION",
@@ -267,11 +271,11 @@ def shoe_model_create(request):
 
 def shoe_model_read(request , pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
-    producement_list = producement.objects.filter(status__value="Bajarildi", shoe_model_id=shoe_model_item)
+    model_part_definations = models.Model_part_definition.objects.filter(model_id=shoe_model_item, is_deleted=False).order_by('id')
     
     context = {
-        "producement_list":producement_list,
-        "shoe_model_item":shoe_model_item
+        "shoe_model_item":shoe_model_item,
+        "model_part_definations":model_part_definations,
     }
     return render(request , 'shoe_model/shoe_model_read.html' , context=context)  
 
@@ -515,11 +519,11 @@ def orders_view(request):
         IsDeleted=False
     )
     leather_types = models.references.objects.filter(
-        type=models.ReferenceType.LEATHER_TYPE.value,
+        type=models.ReferenceType.LEATHER_VARIANT.value,
         IsDeleted=False
     )
     sole_types = models.references.objects.filter(
-        type=models.ReferenceType.SOLO_TYPE.value,
+        type=models.ReferenceType.SOLE_VARIANT.value,
         IsDeleted=False
     )
     clients = models.clients.objects.filter(
@@ -1115,7 +1119,6 @@ def staff_payment_read_create(request, pk):
     if request.method == "POST":
         forms = staff_payments_read_forms(request.POST)
 
-        print("-----------------------00---------------------")
         if forms.is_valid():
             staff_p = forms.save(commit=False)
             staff_p.staff_id = staff_item
@@ -1364,9 +1367,6 @@ def warehouse_view(request):
     }
     return render(request, 'warehouse/warehouse.html', context=context)
 
-
-
-
 # next
 def order_next_status(request, pk):
     order = get_object_or_404(Orders, pk=pk)
@@ -1437,9 +1437,7 @@ def update_producement_status(request):
 
     return JsonResponse({"success": False, "message": "Invalid request"})
 
-
 # client_payments
-
 def client_payment_create(request):
     if request.method == "POST":
         forms = Client_payments_forms(request.POST)
@@ -1453,7 +1451,6 @@ def client_payment_create(request):
         "forms":forms
     }
     return render(request, 'clients/client_payment_update.html', context=context)
-
 
 def client_payment_update(request, pk):
     client_payment_item = client_payments.objects.get(pk=pk)
@@ -1475,3 +1472,34 @@ def client_payment_delete(request, pk):
     payment.IsDeleted = True
     payment.save()
     return redirect('clients_view')
+
+
+# model_parts
+def model_part_create(request, pk):
+    # 1) Get the parent shoe model
+    model = get_object_or_404(shoe_model, pk=pk)
+
+    # 2) Handle POST
+    if request.method == "POST":
+        forms = Model_part_definition_forms(request.POST)
+
+        if forms.is_valid():
+            part = forms.save(commit=False)
+
+            # Assign parent model automatically
+            part.model_id = model
+
+            part.save()
+            # Redirect back to shoe model detail page
+            return redirect("shoe_model_read", model.pk)
+
+    else:
+        # 3) Handle GET
+        forms = Model_part_definition_forms()
+
+    context = {
+        "forms": forms,
+        "model": model,
+    }
+
+    return render(request, "model_part/model_part_create.html", context=context)

@@ -1,11 +1,11 @@
 from django import forms
-from . import models
 from django.utils.timezone import now
 from datetime import datetime
-
 from django.forms.widgets import DateInput
-from config import system_variables
 from django.db.models import Sum, Q, F
+
+from config import system_variables
+from . import models
 from collections import OrderedDict
 
 
@@ -549,3 +549,25 @@ class Client_payments_forms(forms.ModelForm):
         self.fields['date'].input_formats = ['%d %m %Y']
 
         self.fields['client_id'].queryset = models.clients.objects.filter(IsDeleted=False)
+
+
+class Model_part_definition_forms(forms.ModelForm):
+    class Meta:
+        model = models.Model_part_definition
+        fields = ['part_ref_id', 'material_type_ref_id', 'is_required', 'unit_ref_id', 'quantity_per_pair', 'waste_percent']
+
+        widgets = {
+            'part_ref_id': forms.Select(attrs={'class': 'form-control'}),
+            'material_type_ref_id': forms.Select(attrs={'class': 'form-control'}),
+            'is_required': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'unit_ref_id': forms.Select(attrs={'class': 'form-control'}),
+            'quantity_per_pair': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'waste_percent': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 100}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['part_ref_id'].queryset = models.references.objects.filter(type=models.ReferenceType.MODEL_PART.value, IsDeleted=False)
+        self.fields['material_type_ref_id'].queryset = models.references.objects.filter(type=models.ReferenceType.MATERIAL_TYPE.value, IsDeleted=False)
+        self.fields['unit_ref_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value, IsDeleted=False)

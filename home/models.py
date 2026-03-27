@@ -71,9 +71,9 @@ class references(models.Model):
         return self.value
 
 class shoe_model(models.Model):
-    name = models.CharField(max_length=255 , verbose_name="oyoq kiyim nomi")
-    code = models.CharField(max_length=255 , verbose_name="oyoq kiyim kodi" ,unique=True)
-    image = models.ImageField(upload_to="media/" , verbose_name="oyoq kiyim rasmi")
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=255,unique=True)
+    image = models.ImageField(upload_to="media/")
     description = models.TextField(verbose_name=system_variables.DESCRIPTION, null=True, blank=True)
     IsDeleted = models.BooleanField(default=False)
 
@@ -108,8 +108,8 @@ class client_payments(models.Model):
         verbose_name="xaridor",
         related_name="client_id_clients"
         )
-    date = models.DateField(verbose_name="tulov sanasi")
-    amount = models.DecimalField(verbose_name="miqdori" , max_digits=20 , decimal_places=2)
+    date = models.DateField()
+    amount = models.DecimalField(max_digits=20 , decimal_places=2)
     description = models.TextField(verbose_name=system_variables.DESCRIPTION, null=True, blank=True)
     IsDeleted = models.BooleanField(default=False)
 
@@ -126,8 +126,9 @@ class Model_part_definition(models.Model):
     material_type_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="material_type_ref_id")
     is_required = models.BooleanField()
     unit_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="unit_ref_id")
-    quantity_per_pair = models.FloatField()
-    waste_percent = models.FloatField()
+    quantity_per_pair = models.DecimalField(max_digits=10, decimal_places=2)
+    waste_percent = models.DecimalField(max_digits=10, decimal_places=2)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta: 
         db_table = "model_part_definition"
@@ -152,7 +153,7 @@ class Supplier(models.Model):
 class Purchase(models.Model):
     supplier_id = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name="supplier_id")
     purchase_date = models.DateField()
-    total_amount = models.FloatField()
+    total_amount = models.DecimalField(max_digits=20, decimal_places=2)
     status = models.ForeignKey(references, on_delete=models.CASCADE, related_name="purchase_status")
     created_at = models.DateField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
@@ -164,8 +165,8 @@ class Purchase_item(models.Model):
     purchase_id = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="purchase_id")
     material_id = models.ForeignKey(Material_stock, on_delete=models.CASCADE, related_name="material_id_purchase_item")
     quantity = models.IntegerField()
-    price = models.FloatField()
-    amount = models.FloatField()
+    price = models.DecimalField(max_digits=20, decimal_places=2)
+    amount = models.DecimalField(max_digits=20, decimal_places=2)
     is_deleted = models.BooleanField(default=False)
     
     class Meta: 

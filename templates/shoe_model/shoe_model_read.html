@@ -1,68 +1,151 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block content %}
-<div class="container">
-    <div class="card mt-3">
-        <div class="d-flex justify-content-between align-items-center p-3">
-            <h5 class="card-header p-0 bg-white border-0">
-                {{shoe_model_item.code}}
+<div class="container mt-5">
+    <h2 class="mb-4">{{ SHOE_MODEL_DETAILS }}</h2>
+
+    <div class="card shadow-lg">
+        <!-- Shoe Model Summary -->
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0 text-white">
+                {{ SHOE_MODEL }} {{ ID }}: {{ shoe_model_item.id }}
             </h5>
         </div>
 
-        <div class="table-responsive text-nowrap">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>{{ID}}</th>
-                        <th>{{STAFF}}</th>
-                        <th>{{MODEL}}</th>
-                        <th>{{ORDER}}</th>
-                        <th>{{QUANTITY}}</th>
-                        <th>{{PRICE}}</th>
-                        <th>{{STATUS}}</th>
-                        <th>{{ACTIONS}}</th>
-                    </tr>
-                </thead>
-                <tbody class="table-border-bottom-0">   
-                    {% for producement in producement_list %}
-                    <tr>
-                        <td><strong>{{ producement.id }}</strong></td>
-                        <td>{{ producement.staff_id }}</td>
-                        <td>{{ producement.shoe_model_id }}</td>
-                        <td>{{ producement.order_id }}</td>
-                        <td>{{ producement.quantity }}</td>
-                        <td>{{ producement.price }}</td>
-                        <td>
-                            <span class="badge 
-                                {% if producement.status.value == 'Bajarildi' %} bg-success
-                                {% elif producement.status.value == 'Faol' %} bg-warning
-                                {% else %} bg-secondary
-                                {% endif %}">   
-                                {{ producement.status }}
-                            </span>
-                        </td>
-                        <td>
+        <div class="card-body">
+            <div class="row">
+                <!-- Main Details -->
+                <div class="">
+                    <h6 class="text-muted">{{ MAIN_DETAILS }}</h6>
 
-                                <a class="btn btn-sm btn-info" href="{% url "producement_read" producement.id %}?next=shoe_model_read">
-                                    <i class="bx bx-show "></i>
-                                </a>
-                                <a class="btn btn-sm btn-warning" href="{% url "producement_update" producement.id %}?next=shoe_model_read">
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item">
+                            <strong>{{ SHOE_MODEL }}:</strong> {{ shoe_model_item.name }}
+                        </li>
+
+                        <li class="list-group-item">
+                            <strong>{{ CODE }}:</strong> {{ shoe_model_item.code }}
+                        </li>
+
+                        <li class="list-group-item">
+                            <strong>{{ DESCRIPTION }}:</strong> {{ shoe_model_item.description }}
+                        </li>
+
+                        <li class="list-group-item">
+                            <strong>{{ DATE }}:</strong>
+                            {{ shoe_model_item.created_at|date:"Y-m-d" }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Model Parts Table -->
+            <div class="d-flex align-items-center justify-content-between">
+                <h6 class="text-muted">{{ MODEL_PARTS }}</h6>
+
+                <a href="{% url 'model_part_create' shoe_model_item.pk %}"
+                   class="btn btn-primary">
+                    {{ PART }} {{ ADD }}
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>{{ MODEL_PART }}</th>
+                            <th>{{ MATERIAL_TYPE }}</th>
+                            <th>{{ QUANTITY_TYPE }}</th>
+                            <th>{{ QUANTITY }}</th>
+                            <th>{{ WASTE_PERCENT }}</th>
+                            <th>{{ REQUIRED }}</th>
+                            <th>{{ ACTIONS }}</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for part in model_part_definations %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+
+                            <td>{{ part.part_ref_id }}</td>
+
+                            <td>{{ part.material_type_ref_id }}</td>
+
+                            <td>{{ part.unit_ref_id }}</td>
+
+                            <td>
+                                {{ part.quantity_per_pair|floatformat:2|intcomma }}
+                            </td>
+
+                            <td>
+                                {{ part.waste_percent|floatformat:2 }} %
+                            </td>
+
+                            <td>
+                                {% if part.is_required %}
+                                    <span class="badge bg-success">Yes</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <a class="btn btn-sm btn-warning"
+                                   href="">
                                     <i class="bx bx-edit-alt text-white"></i>
                                 </a>
-                                <a class="btn btn-sm btn-danger" href="{% url "producement_delete" producement.id %}">
-                                    <i class="bx bx-trash "></i>
+
+                                <a class="btn btn-sm btn-danger"
+                                   href="#"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#deleteModal"
+                                   data-delete-url="">
+                                    <i class="bx bx-trash"></i>
                                 </a>
-                             
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center">{{PRODUCEMENT}} {{NO_DATA}}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                {{ NO_PARTS_FOUND }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-3 d-flex justify-content-end gap-2">
+                <a href=""
+                   class="btn btn-warning text-white">
+                    <i class="bx bx-edit-alt"></i>
+                    {{ UPDATE }}
+                </a>
+
+                <button
+                    type="button"
+                    class="btn btn-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteModal"
+                    data-delete-url="">
+
+                    <i class="bx bx-trash"></i>
+                    {{ DELETE }}
+                </button>
+
+                <a href=""
+                   class="btn btn-secondary">
+
+                    <i class="bx bx-arrow-back"></i>
+                    {{ BACK }}
+                </a>
+            </div>
         </div>
     </div>
 </div>
+
 {% endblock content %}

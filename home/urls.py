@@ -91,6 +91,9 @@ urlpatterns = [
     # warehouse
     path("warehouse/", views.warehouse_view, name="warehouse"),
 
+    # model_parts
+    path('model_part/create/<int:pk>/', views.model_part_create, name='model_part_create'),
+
     # next
     path('order/<int:pk>/next/', views.order_next_status, name='order_next_status'),
     
@@ -100,6 +103,8 @@ urlpatterns = [
     #order status
     path('update-order-status/', views.update_order_status, name='update_order_status'),
     path('update-producement-status/', views.update_producement_status, name='update_producement_status'),
+
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

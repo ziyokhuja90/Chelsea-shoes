@@ -46,7 +46,8 @@ DESCRIPTION = "Tavsif"
 LOCATION = "Manzili"
 PHONE_NUMBER = "Telefon raqami"
 CHOOSE = "Tanlang..."
-
+REQUIRED = "Majburiy"
+WASTE_PERCENT = "Qoldiq foizi"
 
 # ============================
 # MENU / NAVIGATION
@@ -112,9 +113,11 @@ SUM = "Summa"
 # SHOES / MODELS
 # ============================
 SHOE = "Oyoq kiyim"
+CODE = "Kodi"
 SHOE_MODEL = "Oyoq kiyim modeli"
 SHOE_MODELS = "Oyoq kiyim modellari"
 MODEL = "Model"
+MODEL_PART = "Model qismi"
 PRICE = "Narxi"
 QUANTITY = "Miqdori"
 TOTAL_QUANTITY = "Umumiy miqdori"
