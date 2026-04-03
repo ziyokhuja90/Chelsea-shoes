@@ -11,18 +11,26 @@
             <form method="post">
                 {% csrf_token %}
                 
-                <div class="row g-3">
-                    {% for field in forms %}
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                            <div class="text-danger small">{{ field.errors }}</div>
-                            {% endif %}
-                        </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>{{ forms.model_id.label }}</label>
+                        {{ forms.model_id }}
                     </div>
-                    {% endfor %}
+
+                    <div class="col-md-3">
+                        <label>{{ forms.quantity.label }}</label>
+                        {{ forms.quantity }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>{{ forms.quantity_type_id.label }}</label>
+                        {{ forms.quantity_type_id }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>{{ forms.price.label }}</label>
+                        {{ forms.price }}
+                    </div>
                 </div>
                 
                 <div class="d-flex gap-3 align-items-center justify-content-end mt-4">
@@ -32,6 +40,135 @@
             </form>
         </div>
     </div>
+
+    <div id="parts-container" class="mt-4">
+        <!-- Bu yerga modelga tegishli qismlar yuklanadi -->
+    </div>
 </div>
+
+
+<script>
+
+function renderParts(parts) {
+
+    const container =
+        document.getElementById("parts-container");
+
+    let html = `
+        <div class="card mt-3">
+            <div class="card-header fw-bold">
+                Model qismlari
+            </div>
+            <div class="card-body">
+    `;
+
+    parts.forEach(part => {
+
+        // VARIANT OPTIONS
+
+        let variantOptions =
+            `<option value="">Tanlang</option>`;
+
+        part.variants.forEach(v => {
+
+            variantOptions += `
+                <option value="${v.id}">
+                    ${v.value}
+                </option>
+            `;
+
+        });
+
+        // COLOR OPTIONS
+
+        let colorOptions =
+            `<option value="">Ixtiyoriy</option>`;
+
+        part.colors.forEach(c => {
+
+            colorOptions += `
+                <option value="${c.id}">
+                    ${c.value}
+                </option>
+            `;
+
+        });
+
+        html += `
+            <div class="row mb-2 align-items-center">
+
+                <div class="col-md-3">
+
+                    ${part.part_name}
+
+                    <input
+                        type="hidden"
+                        name="parts[${part.id}][model_part_definition_id]"
+                        value="${part.id}"
+                    >
+
+                </div>
+
+                <div class="col-md-3">
+                    ${part.material_type}
+                </div>
+
+                <div class="col-md-3">
+
+                    <select
+                        name="parts[${part.id}][material_variant_id]"
+                        class="form-control"
+                    >
+                        ${variantOptions}
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <select
+                        name="parts[${part.id}][color_id]"
+                        class="form-control"
+                    >
+                        ${colorOptions}
+                    </select>
+
+                </div>
+
+            </div>
+        `;
+
+    });
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = html;
+
+}
+
+
+function loadParts(modelId) {
+
+    if (!modelId) return;
+
+    fetch(`/orders/get-model-parts/${modelId}`)
+        .then(response => response.json())
+        .then(data => {
+
+            console.log(data);
+
+            // keyin shu yerda form render qilasan
+            // masalan:
+            renderParts(data);
+
+        })
+        .catch(error => console.error(error));
+
+}
+
+</script>
 
 {% endblock content %}

@@ -92,6 +92,29 @@ REFERENCE_TYPE_UI_KEY = {
     ReferenceType.VELCRO_VARIANT: "VELCRO",
 }
 
+REFERENCE_MATERIAL_TYPE_VALUE_REFENRECE_TYPE_VALUE = {
+    system_variables.LEATHER: ReferenceType.LEATHER_VARIANT.value,
+    system_variables.SOLE: ReferenceType.SOLE_VARIANT.value,
+    system_variables.LINING: ReferenceType.LINING_VARIANT.value,
+    system_variables.GLUE: ReferenceType.GLUE_VARIANT.value,
+    system_variables.TEXTILE: ReferenceType.TEXTILE_VARIANT.value,
+    system_variables.THREAD: ReferenceType.THREAD_VARIANT.value,
+    system_variables.MIX: ReferenceType.MIX_VARIANT.value,
+    system_variables.BOX: ReferenceType.BOX_VARIANT.value,
+    system_variables.BUCKLE: ReferenceType.BUCKLE_VARIANT.value,
+    system_variables.ELASTIC: ReferenceType.ELASTIC_VARIANT.value,
+    system_variables.RIVET: ReferenceType.RIVET_VARIANT.value,
+    system_variables.CARDBOARD: ReferenceType.CARDBOARD_VARIANT.value,
+    system_variables.CLOTH: ReferenceType.CLOTH_VARIANT.value,
+    system_variables.VISOR: ReferenceType.VISOR_VARIANT.value,
+    system_variables.PAPER: ReferenceType.PAPER_VARIANT.value,
+    system_variables.STRETCH: ReferenceType.STRETCH_VARIANT.value,
+    system_variables.FUR: ReferenceType.FUR_VARIANT.value,
+    system_variables.ZIPPER: ReferenceType.ZIPPER_VARIANT.value,
+    system_variables.SPONGE: ReferenceType.SPONGE_VARIANT.value,
+    system_variables.VELCRO: ReferenceType.VELCRO_VARIANT.value,    
+}
+
 
 
 def phone_to_int(phone_str):
@@ -1285,6 +1308,7 @@ def order_detail_create(request, pk):
     else:
         forms = orderDetails_forms()
     
+
     context = {
         "forms":forms,
         "pk":pk
@@ -1525,3 +1549,76 @@ def model_part_delete(request, pk):
     part.is_deleted = True
     part.save()
     return redirect("shoe_model_read", part.model_id.pk)
+
+
+
+def get_model_parts(request, pk):
+
+    parts = Model_part_definition.objects.filter(
+        model_id=pk,
+        is_deleted=False
+    ).select_related(
+        "part_ref_id",
+        "material_type_ref_id"
+    ).order_by('id')
+
+    data = []
+
+    for part in parts:
+
+        material_value = part.material_type_ref_id.value if part.material_type_ref_id else None
+
+        material_type_item = references.objects.get(id=part.material_type_ref_id_id)
+        
+
+        # variantlar
+        reference_type_enum_value = None
+        for i in REFERENCE_MATERIAL_TYPE_VALUE_REFENRECE_TYPE_VALUE:
+            if i == material_value:
+                reference_type_enum_value = REFERENCE_MATERIAL_TYPE_VALUE_REFENRECE_TYPE_VALUE[i]
+                break
+        
+        print("reference_type_enum_value: ", reference_type_enum_value)
+
+        variants = list(
+            references.objects.filter(
+                type=reference_type_enum_value,
+                IsDeleted=False
+            ).values(
+                "id",
+                "value"
+            )
+        )
+        print("material_type_ref_id_id: ", part.material_type_ref_id_id)
+
+        print("variants: ", variants)
+
+        # ranglar
+        colors = list(
+            references.objects.filter(
+                type=ReferenceType.COLOR.value,
+                IsDeleted=False
+            ).values(
+                "id",
+                "value"
+            )
+        )
+
+        data.append({
+
+            "id": part.id,
+
+            "part_name":
+                part.part_ref_id.value,
+
+            "material_type":
+                material_value,
+
+            "variants":
+                variants,
+
+            "colors":
+                colors,
+        })
+
+    return JsonResponse(data, safe=False)

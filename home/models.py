@@ -42,9 +42,6 @@ class ReferenceType(Enum):
     VELCRO_VARIANT       = 49   # Lipuchka (Velkro)
 
 
-
-
-    
 class StatusType(Enum):
     Created = 0
     Active = 1
@@ -119,7 +116,6 @@ class client_payments(models.Model):
     def __str__(self):
         return f"{self.client_id} -- {self.amount}"
 
-
 class Model_part_definition(models.Model):
     model_id = models.ForeignKey(shoe_model, on_delete=models.CASCADE, related_name="model_part_definition_shoe_model")
     part_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="part_ref_id")
@@ -172,7 +168,6 @@ class Purchase_item(models.Model):
     class Meta: 
         db_table = "purchase_item"
 
-
 class Orders(models.Model):
     client_id = models.ForeignKey(
         clients,
@@ -202,24 +197,22 @@ class Order_details(models.Model):
     order_id = models.ForeignKey(
         Orders,
         models.CASCADE,
-        related_name="order_id_orders",
-        verbose_name="Buyurtma"                                           
+        related_name="order_id_orders"                                        
     )
     model_id = models.ForeignKey(
         to=shoe_model,
         on_delete=models.CASCADE,
-        related_name="model_id_orders",
-        verbose_name="buyurtma modeli"
+        related_name="model_id_orders"
     )
-    quantity = models.IntegerField(verbose_name="buyurtma miqdori")
+    quantity = models.IntegerField()
     quantity_type_id = models.ForeignKey(
         to=references,
         on_delete=models.CASCADE,
         related_name="quantity_type_orders",
         verbose_name="buyurtma miqdor turi"
     )
-    price = models.DecimalField(verbose_name="buyurtma narxi" , max_digits=20 , decimal_places=2)
-    total_amount = models.DecimalField(verbose_name="buyurtma jami narxi" , max_digits=20 , decimal_places=2)
+    price = models.DecimalField(max_digits=20 , decimal_places=2)
+    total_amount = models.DecimalField(max_digits=20 , decimal_places=2)
 
     IsDeleted = models.BooleanField(default=False)
     
@@ -279,9 +272,6 @@ class Order_detail_parts(models.Model):
 
     class Meta:
         db_table = "order_detail_parts"
-
-
-
 
 class staff(models.Model):
     full_name = models.CharField(max_length=255 , verbose_name="xodim ismi")

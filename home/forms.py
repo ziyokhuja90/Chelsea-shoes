@@ -146,35 +146,23 @@ class orderDetails_forms(forms.ModelForm):
     class Meta:
         model = models.Order_details
         fields = [ 
-            'model_id', 'quantity', 'quantity_type_id',
-            # 'price',  'color_id', 'leather_type', 
-            # 'lining_type_id','sole_type_id', 'toqa'
+            'model_id', 'quantity', 'quantity_type_id', 'price'
             ]
 
-        # widgets = {
-        #     'model_id':forms.Select(attrs={"class":"form-control"}),
-        #     'quantity':forms.NumberInput(attrs={"class":"form-control", "min":0}),
-        #     'quantity_type_id':forms.Select(attrs={"class":"form-control"}),
-        #     'price':forms.NumberInput(attrs={"class":"form-control", "min":0}),
-        #     'color_id':forms.Select(attrs={"class":"form-control"}),
-        #     'leather_type':forms.Select(attrs={"class":"form-control"}),
-        #     'sole_type_id':forms.Select(attrs={"class":"form-control"}),
-        #     'lining_type_id':forms.Select(attrs={"class":"form-control"}),
-        #     'toqa':forms.Select(attrs={"class":"form-control"}),
-        # }
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
+        widgets = {
+            'model_id':forms.Select(attrs={
+                "class":"form-control",
+                "onchange": "loadParts(this.value)"
+                }),
+            'quantity':forms.NumberInput(attrs={"class":"form-control", "min":0}),
+            'quantity_type_id':forms.Select(attrs={"class":"form-control"}),
+            'price':forms.NumberInput(attrs={"class":"form-control", "min":0}),
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    #     self.fields['model_id'].queryset = models.shoe_model.objects.filter(IsDeleted=False)
-    #     self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
-    #     self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
-    #     self.fields['leather_type'].queryset = models.references.objects.filter(type=models.ReferenceType.LEATHER_TYPE.value, IsDeleted=False)
-    #     self.fields['lining_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.LINING_TYPE.value, IsDeleted=False)
-    #     self.fields['sole_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.SOLO_TYPE.value, IsDeleted=False)
-    #     self.fields['toqa'].queryset = models.references.objects.filter(type=models.ReferenceType.TOQA.value, IsDeleted=False)
+        self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
 
-    #     if 'IsDeleted' in self.fields:
-    #         del self.fields['IsDeleted']
 
 
     #     if self.instance and self.instance.pk and self.instance.color_id:

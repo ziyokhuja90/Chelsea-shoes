@@ -96,6 +96,8 @@ urlpatterns = [
     path('model_part/update/<int:pk>/', views.model_part_update, name='model_part_update'),
     path('model_part/delete/<int:pk>/', views.model_part_delete, name='model_part_delete'),
 
+    path("orders/get-model-parts/<int:pk>", views.get_model_parts, name="get_model_parts"),
+
     # next
     path('order/<int:pk>/next/', views.order_next_status, name='order_next_status'),
     
@@ -104,9 +106,7 @@ urlpatterns = [
 
     #order status
     path('update-order-status/', views.update_order_status, name='update_order_status'),
-    path('update-producement-status/', views.update_producement_status, name='update_producement_status'),
-
-
+    path('update-producement-status/', views.update_producement_status, name='update_producement_status')
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
