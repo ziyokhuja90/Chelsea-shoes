@@ -64,7 +64,7 @@ ORDERS = "Buyurtmalar"
 REFERENCE = "Ma'lumotnoma"
 WAREHOUSE = "Ombor"
 PRODUCEMENT = "Ishlab chiqarish"
-
+MATERIAL_STOCK = "MATERIAL_STOCK"
 
 # ============================
 # STATUS / STATES (SYSTEM)
@@ -131,6 +131,7 @@ QUANTITY_TYPE = "Miqdor turi"
 # MATERIALS / REFERENCES
 # ============================
 MATERIAL_TYPE = "Material turi"
+VARIANT_TYPE = "VARIANT_TYPE"
 COLOR = "Rangi"
 LEATHER = "Teri"
 SOLE = "Taglik"

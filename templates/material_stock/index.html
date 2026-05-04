@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <div class="container">
+
+        <h1>{{MATERIAL_STOCK}}</h1>
+        <div class="card">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{{MATERIAL_TYPE}}</th>
+                        <th>{{VARIANT_TYPE}}</th>
+                        <th>unit_ref_id</th>
+                        <th>stock_quantity</th>
+                        <th>Reserved quantity</th>
+                        <th>Available quantity</th>
+                        <th>Updated at</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in stocks %}
+                    <tr>
+                        <td>{{ stock.material_type_ref_id }}</td>
+                        <td>{{ stock.variant_ref_id }}</td>
+                        <td>{{ stock.unit_ref_id }}</td>
+                        <td>{{ stock.stock_quantity }}</td>
+                        <td>{{ stock.reserved_quantity }}</td>
+                        <td>{{ stock.available_quantity }}</td>
+                        <td>{{ stock.updated_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock content %}
+    

@@ -92,6 +92,7 @@ class clients(models.Model):
     balance = models.DecimalField(max_digits=20 , decimal_places=2, default=0, null=True, blank=True)
     is_system = models.BooleanField(default=False)
     IsDeleted = models.BooleanField(default=False)
+
     class Meta:
         db_table = "clients"
         
@@ -144,13 +145,28 @@ class Material_stock(models.Model):
         db_table = "material_stock"
 
 class Supplier(models.Model):
-    pass
+    name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+
+    balance = models.DecimalField(max_digits=20 , decimal_places=2, default=0, null=True, blank=True)
+
+    is_system = models.BooleanField(default=False)
+    IsDeleted = models.BooleanField(default=False)
+    
+    class Meta:
+        db_table = "supplier"
+        
+    def __str__(self):
+        return self.name
 
 class Purchase(models.Model):
     supplier_id = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name="supplier_id")
     purchase_date = models.DateField()
     total_amount = models.DecimalField(max_digits=20, decimal_places=2)
+    paid_amount = models.DecimalField(max_digits=20, decimal_places=2)    
     status = models.ForeignKey(references, on_delete=models.CASCADE, related_name="purchase_status")
+
     created_at = models.DateField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
@@ -262,6 +278,7 @@ class Order_detail_parts(models.Model):
         on_delete=models.CASCADE,
         related_name="order_parts"
     )
+    
     material_stock = models.ForeignKey(
         Material_stock,
         on_delete=models.CASCADE,

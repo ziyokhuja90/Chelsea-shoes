@@ -1275,45 +1275,146 @@ def sales_delete(request, pk):
 
 
 # order_details
+from django.db import transaction
+from django.contrib import messages
+from decimal import Decimal
+
+
 def order_detail_create(request, pk):
     order = Orders.objects.get(pk=pk)
+
     if request.method == "POST":
         forms = orderDetails_forms(request.POST)
+
         if forms.is_valid():
+            force_create = request.POST.get("force_create") == "true"
+
             new_order_detail = forms.save(commit=False)
+            new_order_detail.order_id = order
 
-            # Try to find an existing match
-            existing_detail = Order_details.objects.filter(
-            order_id=order,
-            model_id=new_order_detail.model_id,
-            leather_type=new_order_detail.leather_type,
-            color_id=new_order_detail.color_id,
-            lining_type_id=new_order_detail.lining_type_id,
-            price=new_order_detail.price,
-            sole_type_id=new_order_detail.sole_type_id
-            ).first()
+            new_order_detail.total_amount = (
+                new_order_detail.price * new_order_detail.quantity
+            )
 
-            if existing_detail:
-                # Update quantity
-                existing_detail.quantity += new_order_detail.quantity
-                existing_detail.total_amount = existing_detail.price * existing_detail.quantity
-                existing_detail.save()
-            else:
-                # Set order and total for new entry
-                new_order_detail.order_id = order
-                new_order_detail.total_amount = new_order_detail.price * new_order_detail.quantity
+            # -----------------------------
+            # PARTS DATA PARSE
+            # -----------------------------
+            parts_data = {}
+
+            for key, value in request.POST.items():
+                if key.startswith("parts["):
+                    part_id = key.split("[")[1].split("]")[0]
+                    field_name = key.split("[")[2].split("]")[0]
+
+                    if part_id not in parts_data:
+                        parts_data[part_id] = {}
+
+                    parts_data[part_id][field_name] = value
+
+            warnings = []
+            has_error = False
+
+            prepared_data = []  # 🔥 save qilishdan oldin yig‘amiz
+
+            # -----------------------------
+            # 1️⃣ ONLY CHECK (NO SAVE)
+            # -----------------------------
+            for part in parts_data.values():
+
+                model_part = Model_part_definition.objects.get(
+                    id=part["model_part_definition_id"]
+                )
+
+                order_qty = Decimal(new_order_detail.quantity)
+                per_pair = model_part.quantity_per_pair
+                waste = model_part.waste_percent
+
+                required = order_qty * per_pair * (1 + waste / 100)
+
+                try:
+                    stock = Material_stock.objects.get(
+                        material_type_ref_id=model_part.material_type_ref_id,
+                        variant_ref_id=part["material_variant_id"],
+                        color_ref_id=part["color_id"],
+                        is_deleted=False
+                    )
+                except Material_stock.DoesNotExist:
+                    messages.error(request, "Material stock topilmadi")
+                    return redirect('order_read', pk=pk)
+
+                if stock.available_quantity < required:
+                    warnings.append(
+                        f"{model_part.id} part uchun yetarli emas "
+                        f"(kerak: {required}, mavjud: {stock.available_quantity})"
+                    )
+                    has_error = True
+
+                # 🔥 keyin ishlatish uchun saqlab qo‘yamiz
+                prepared_data.append({
+                    "model_part": model_part,
+                    "stock": stock,
+                    "required": required
+                })
+
+            # -----------------------------
+            # 2️⃣ AGAR ERROR VA FORCE YO‘Q
+            # -----------------------------
+            if has_error and not force_create:
+                for w in warnings:
+                    messages.error(request, w)
+
+                messages.error(request, "Material yetarli emas. Baribir davom etasizmi?")
+
+                return render(request, 'orderDetails/detail_create.html', {
+                    "forms": forms,
+                    "force_needed": True
+                })
+
+            # -----------------------------
+            # 3️⃣ REAL SAVE
+            # -----------------------------
+            with transaction.atomic():
+
                 new_order_detail.save()
+
+                for item in prepared_data:
+                    stock = item["stock"]
+                    required = item["required"]
+                    model_part = item["model_part"]
+
+                    stock.reserved_quantity += required
+                    stock.available_quantity -= required
+                    stock.save()
+
+                    Order_detail_parts.objects.create(
+                        order_detail=new_order_detail,
+                        model_part_definition=model_part,
+                        material_stock=stock,
+                        quantity_required=required
+                    )
+
+            # -----------------------------
+            # WARNINGS (agar force bilan save bo‘lsa)
+            # -----------------------------
+            if warnings:
+                for w in warnings:
+                    messages.warning(request, w)
 
             return redirect('order_read', pk=pk)
     else:
+
         forms = orderDetails_forms()
-    
 
     context = {
-        "forms":forms,
-        "pk":pk
+        "forms": forms,
+        "pk": pk
     }
-    return render(request, "orderDetails/detail_create.html", context=context)
+
+    return render(
+        request,
+        "orderDetails/detail_create.html",
+        context=context
+    )
 
 def order_detail_update(request, pk):
     detail = Order_details.objects.get(pk=pk)
@@ -1550,8 +1651,6 @@ def model_part_delete(request, pk):
     part.save()
     return redirect("shoe_model_read", part.model_id.pk)
 
-
-
 def get_model_parts(request, pk):
 
     parts = Model_part_definition.objects.filter(
@@ -1622,3 +1721,11 @@ def get_model_parts(request, pk):
         })
 
     return JsonResponse(data, safe=False)
+
+# Material_stock
+def material_stock_view(request):
+    stocks = Material_stock.objects.filter(is_deleted=False).order_by('id')
+    context = {
+        "stocks": stocks
+    }
+    return render(request, 'material_stock/index.html', context=context)

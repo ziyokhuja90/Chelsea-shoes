@@ -91,27 +91,6 @@
       </div>
     </div>
     
-        {% comment %} <!-- Status Complete Confirmation Modal -->
-    <div class="modal fade" id="completeModal" tabindex="-1" aria-labelledby="completeModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="completeModalLabel">{{COMPLETE_CONFIRMATION_TITLE}}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            {{COMPLETE_CONFIRMATION_INFO}}
-          </div>
-          <div class="modal-footer">
-            <button type="button" id="confirmCompleteBtn" class="btn btn-danger">{{COMPLETE_CONFIRMATION_BUTTON}}</button>
-            <a id="confirmCompleteLink" href="#" class="btn btn-danger" style="display: none;">{{COMPLETE_CONFIRMATION_BUTTON}}</a>
-          </div>
-        </div>
-      </div>
-    </div> {% endcomment %}
-4
-
-
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
       <div class="layout-container">
@@ -193,8 +172,6 @@
               </a>
             </li>
 
-            
-            
             <li class="menu-item {% if request.resolver_match.url_name == 'warehouse' %}active{% endif %}">
               <a href="{% url 'warehouse' %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
@@ -218,10 +195,6 @@
                 </div>
               </a>
             </li>
-
-
-
-
             
             <li class="menu-item {% if request.resolver_match.url_name == 'reference' %}active{% endif %}">
               <a href="{% url "reference" %}" class="menu-link text-decoration-none">
@@ -229,6 +202,17 @@
                   <i class="menu-icon tf-icons bx bx-file"></i>
                   <span class="fw-bolder">
                     {{REFERENCE}}
+                  </span>
+                </div>
+              </a>
+            </li>
+
+            <li class="menu-item {% if request.resolver_match.url_name == 'material_stock_view' %}active{% endif %}">
+              <a href="{% url 'material_stock_view' %}" class="menu-link text-decoration-none">
+                <div data-i18n="Basic ">
+                  <i class="menu-icon tf-icons bx bx-file"></i>
+                  <span class="fw-bolder">
+                    {{MATERIAL_STOCK}}
                   </span>
                 </div>
               </a>
