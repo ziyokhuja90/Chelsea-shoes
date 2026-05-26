@@ -7,7 +7,7 @@ from django.http.response import HttpResponse
 from .forms import *
 from django.forms import modelformset_factory
 from django.core.paginator import Paginator
-from django.db.models import Case, When, Q, IntegerField
+from django.db.models import Case, When, Q, IntegerField, Prefetch
 from collections import defaultdict
 # Create your views here.
 import json
@@ -631,477 +631,282 @@ def orders_delete(request, pk):
     return redirect('orders_view')
 
 # producement
+PRODUCEMENT_PARTS_PREFETCH = Prefetch(
+    'order_detail_id__parts',
+    queryset=Order_detail_parts.objects.filter(is_deleted=False).select_related(
+        'material_stock__material_type_ref_id',
+        'material_stock__variant_ref_id',
+        'material_stock__color_ref_id',
+        'model_part_definition__part_ref_id',
+    ),
+)
+
+
+def _producement_queryset_base():
+    return producement.objects.filter(IsDeleted=False).select_related(
+        'staff_id',
+        'staff_id__profession',
+        'shoe_model_id',
+        'order_id',
+        'order_id__client_id',
+        'status',
+        'order_detail_id',
+        'quantity_type_id',
+    ).prefetch_related(PRODUCEMENT_PARTS_PREFETCH)
+
+
+def _serialize_order_details_for_producement():
+    details_list = []
+    details = Order_details.objects.filter(IsDeleted=False).select_related(
+        'model_id', 'order_id', 'quantity_type_id',
+    ).order_by('id')
+
+    for detail in details:
+        parts_summary = []
+        for part in detail.parts.filter(is_deleted=False).select_related(
+            'material_stock__variant_ref_id',
+            'material_stock__color_ref_id',
+            'material_stock__material_type_ref_id',
+            'model_part_definition__part_ref_id',
+        ):
+            stock = part.material_stock
+            parts_summary.append({
+                'part': str(part.model_part_definition.part_ref_id),
+                'material': str(stock.material_type_ref_id),
+                'variant': str(stock.variant_ref_id),
+                'color': str(stock.color_ref_id) if stock.color_ref_id else '',
+            })
+        details_list.append({
+            'id': detail.id,
+            'order_id': detail.order_id_id,
+            'model_id': detail.model_id_id,
+            'model_id__name': detail.model_id.name,
+            'quantity': detail.quantity,
+            'price': float(detail.price),
+            'quantity_type_id': detail.quantity_type_id_id,
+            'parts_summary': parts_summary,
+        })
+    return json.dumps(details_list)
+
+
+def _producement_data_from_form(form):
+    data = {
+        'order_id': form.cleaned_data['order_id'],
+        'shoe_model_id': form.cleaned_data['shoe_model_id'],
+        'staff_id': form.cleaned_data['staff_id'],
+        'quantity': form.cleaned_data['quantity'],
+        'quantity_type_id': form.cleaned_data['quantity_type_id'],
+        'price': form.cleaned_data['price'],
+        'status': form.cleaned_data['status'],
+        'date': form.cleaned_data['date'],
+    }
+    order_detail = form.cleaned_data.get('order_detail_id')
+    if order_detail:
+        data['order_detail_id'] = order_detail
+    return data
+
+
+def _producement_data_from_original(original, form):
+    return {
+        'staff_id': form.cleaned_data['staff_id'],
+        'shoe_model_id': original.shoe_model_id,
+        'date': form.cleaned_data['date'],
+        'quantity': form.cleaned_data['quantity'],
+        'quantity_type_id': form.cleaned_data['quantity_type_id'],
+        'price': form.cleaned_data['price'],
+        'order_id': original.order_id,
+        'status': form.cleaned_data['status'],
+        'order_detail_id': original.order_detail_id,
+    }
+
+
+def _create_chained_producement(form):
+    selected = form.cleaned_data.get('producement_id')
+    if not selected:
+        form.add_error('producement_id', 'Oldingi ishni tanlang')
+        return None
+    original = producement.objects.get(id=selected.id)
+    return producement.objects.create(**_producement_data_from_original(original, form))
+
+
 def producement_view(request):
     professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False).order_by("order")
 
-    producement_list = producement.objects.filter(~Q(order_id__client_id__name=system_variables.WAREHOUSE.upper()), IsDeleted=False).order_by('id')
-    producement_sklat_list = producement.objects.filter(order_id__client_id__name=system_variables.WAREHOUSE.upper(), IsDeleted=False).order_by('id')
-    
+    producement_list = _producement_queryset_base().filter(
+        ~Q(order_id__client_id__name=system_variables.WAREHOUSE.upper()),
+    ).order_by('id')
+    producement_sklat_list = _producement_queryset_base().filter(
+        order_id__client_id__name=system_variables.WAREHOUSE.upper(),
+    ).order_by('id')
+
     staff_list = staff.objects.filter(IsDeleted=False).order_by('id')
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
-    colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value).order_by('id')
-    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value).order_by('id')
-    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value).order_by('id')
     statuses = references.objects.filter(IsDeleted=False, type=ReferenceType.STATUS.value).order_by('id')
     order_list = Orders.objects.filter(IsDeleted=False).order_by('id')
 
+    staff_id = request.GET.get('staff_id')
+    model = request.GET.get('shoe_model_id')
+    status = request.GET.get('status')
+    order = request.GET.get('order')
 
-    staff_id, model, color, leather, sole, status, order = request.GET.get('staff_id', None), request.GET.get('shoe_model_id',None),request.GET.get('color_id',None),request.GET.get('leather_type',None),request.GET.get('solo_type',None),request.GET.get('status',None),request.GET.get('order',None) 
-
-    fields = [staff_id, model, color, leather, sole, status, order]
     valid_filters = {}
-    
-    if any(fields):
+    if any([staff_id, model, status, order]):
         filters = {
             'staff_id': staff_id,
             'shoe_model_id': model,
-            'color_id': color,
-            'leather_type': leather,
-            'solo_type': sole,
             'status': status,
             'order_id': order,
             'IsDeleted': False,
         }
         valid_filters = {key: int(value) for key, value in filters.items() if value not in [None, '']}
-        
-        producement_list = producement.objects.filter(
-            ~Q(order_id__client_id__name=system_variables.WAREHOUSE.upper(),), 
-            **valid_filters
 
-            ).order_by('id')
-        
-        producement_sklat_list = producement.objects.filter(
-            order_id__client_id__name=system_variables.WAREHOUSE.upper(),
-            **valid_filters
-        ).order_by('id')
+        producement_list = producement_list.filter(**valid_filters).order_by('id')
+        producement_sklat_list = producement_sklat_list.filter(**valid_filters).order_by('id')
 
+    paginator = Paginator(producement_list, 10)
+    page_obj = paginator.get_page(request.GET.get('page', 1))
 
-
-    paginator = Paginator(producement_list, 10)  # Paginate by 10 items per page
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
-
-    paginator_sklat = Paginator(producement_sklat_list, 10)  # Paginate by 10 items per page
-    page_number_sklat = request.GET.get('page_sklat', 1)
-    page_obj_sklat = paginator_sklat.get_page(page_number_sklat)
-
+    paginator_sklat = Paginator(producement_sklat_list, 10)
+    page_obj_sklat = paginator_sklat.get_page(request.GET.get('page_sklat', 1))
 
     active_tab = request.GET.get("active_tab", "#profession-1")
     context = {
-        "professions":professions,
-        "producement_list":page_obj,
-        "producement_sklat_list":page_obj_sklat,
-        "staff_list":staff_list,
-        "shoe_models":shoe_models,
-        "colors":colors,
-        "leather_types":leather_types,
-        "sole_types":sole_types,
-        "statuses":statuses,
-        "order_list":order_list,
+        "professions": professions,
+        "producement_list": page_obj,
+        "producement_sklat_list": page_obj_sklat,
+        "staff_list": staff_list,
+        "shoe_models": shoe_models,
+        "statuses": statuses,
+        "order_list": order_list,
         **valid_filters,
-        "active_tab": active_tab
-
+        "active_tab": active_tab,
     }
-    return render(request,'producement/producement.html' ,context=context)
+    return render(request, 'producement/producement.html', context=context)
 
 def producement_create(request, ProducementForms):
-    details = Order_details.objects.filter(IsDeleted=False).values(
-        'id', 'order_id', 'model_id', 'model_id__name',
-        'quantity', 'price', 'quantity_type_id',
-        'color_id','leather_type','sole_type_id',
-        "lining_type_id"
-
-    ).order_by('id')
-
-    # Convert QuerySet to a list and handle Decimal fields
-    details_list = []
-    for detail in details:
-        detail['price'] = float(detail['price'])  # Convert Decimal to float
-        details_list.append(detail)
-
-
-    details_json = json.dumps(details_list)
+    details_json = _serialize_order_details_for_producement()
     if request.method == "POST":
         forms = ProducementForms(request.POST)
         if forms.is_valid():
-            sole_type_id = forms.cleaned_data['order_detail_id'].sole_type_id
-            producment_data = {
-                'order_id': forms.cleaned_data['order_id'],
-                'order_detail_id': forms.cleaned_data['order_detail_id'],
-                'shoe_model_id': forms.cleaned_data['shoe_model_id'],
-                'staff_id': forms.cleaned_data['staff_id'],
-                'color_id': forms.cleaned_data['color_id'],
-                'leather_type': forms.cleaned_data['leather_type'],
-                'lining_type_id': forms.cleaned_data['lining_type_id'],
-                'quantity': forms.cleaned_data['quantity'],
-                'quantity_type_id': forms.cleaned_data['quantity_type_id'],
-                'solo_type':sole_type_id,
-                'price': forms.cleaned_data['price'],
-                'status': forms.cleaned_data['status'],
-                'date': forms.cleaned_data['date'],
-            }
-            producement.objects.create(**producment_data)
+            producement.objects.create(**_producement_data_from_form(forms))
             return redirect('producement_view')
     else:
         forms = ProducementForms()
-    context = {
-        "forms":forms,
-        "details":details_json,
-    }    
-    return render(request, "producement/producement_create.html", context=context)
+    return render(request, "producement/producement_create.html", {
+        "forms": forms,
+        "details": details_json,
+    })
+
 
 def producement_create_kroy(request):
-    details = Order_details.objects.filter(IsDeleted=False).values(
-        'id', 'order_id', 'model_id', 'model_id__name',
-        'quantity', 'price', 'quantity_type_id',
-        'color_id','leather_type','sole_type_id',
-        "lining_type_id"
+    return producement_create(request, ProducementKroyForms)
 
-    )
-    details_list = []
-    for detail in details:
-        detail['price'] = float(detail['price'])  # Convert Decimal to float
-        details_list.append(detail)
-
-
-    details_json = json.dumps(details_list)
-
-    if request.method == "POST":
-        forms = ProducementKroyForms(request.POST)
-        if forms.is_valid():
-            sole_type_id = forms.cleaned_data['order_detail_id'].sole_type_id
-            producment_data = {
-                'order_id': forms.cleaned_data['order_id'],
-                'shoe_model_id': forms.cleaned_data['shoe_model_id'],
-                'staff_id': forms.cleaned_data['staff_id'],
-                'color_id': forms.cleaned_data['color_id'],
-                'leather_type': forms.cleaned_data['leather_type'],
-                'lining_type_id': forms.cleaned_data['lining_type_id'],
-                'quantity': forms.cleaned_data['quantity'],
-                'quantity_type_id': forms.cleaned_data['quantity_type_id'],
-                'solo_type':sole_type_id,
-                'price': forms.cleaned_data['price'],
-                'status': forms.cleaned_data['status'],
-                'date': forms.cleaned_data['date'],
-            }
-            producement.objects.create(**producment_data)
-            return redirect('producement_view')
-    else:
-        forms = ProducementKroyForms()
-    context = {
-        "forms":forms,
-        "details":details_json,
-    }
-    return render(request, 'producement/producement_create.html', context=context)
 
 def producement_create_zakatop(request):
-    details = Order_details.objects.filter(IsDeleted=False).values(
-        'id', 'order_id', 'model_id', 'model_id__name',
-        'quantity', 'price', 'quantity_type_id',
-        'color_id','leather_type','sole_type_id',
-        "lining_type_id"
-    )
-
-    details_list = []
-    for detail in details:
-        detail['price'] = float(detail['price'])  # Convert Decimal to float
-        details_list.append(detail)
-
-
-    details_json = json.dumps(details_list)
+    details_json = _serialize_order_details_for_producement()
     if request.method == "POST":
         form = ProducementZakatopForms(request.POST)
         if form.is_valid():
-            # Get the selected producement_id
-            selected_producement_id = form.cleaned_data['producement_id']
-            try:
-                # Fetch the Producement object
-                original_producement = producement.objects.get(id=selected_producement_id.id)
-
-                # Create a new Producement object
-                new_producement = producement(
-                    staff_id=form.cleaned_data['staff_id'],
-                    shoe_model_id=original_producement.shoe_model_id,
-                    date=form.cleaned_data['date'],
-                    color_id=original_producement.color_id,
-                    leather_type=original_producement.leather_type,
-                    solo_type=original_producement.solo_type,
-                    quantity=form.cleaned_data['quantity'],
-                    quantity_type_id=form.cleaned_data['quantity_type_id'],
-                    price=form.cleaned_data['price'],
-                    order_id=original_producement.order_id,
-                    status=form.cleaned_data['status'],
-                    order_detail_id=original_producement.order_detail_id,
-                    lining_type_id=original_producement.lining_type_id,
-                    producement_id=original_producement,  # Link to original producement
-                    IsDeleted=False
-                )
-
-                # Save the new Producement object
-                new_producement.save()
-
-                # Redirect to a success page or display a success message
-                return redirect('producement_view')  # Replace with your success URL
-            except producement.DoesNotExist:
-                form.add_error('producement_id', 'Invalid Producement ID selected.')
+            if _create_chained_producement(form):
+                return redirect('producement_view')
     else:
         form = ProducementZakatopForms()
-    context = {
-        "forms":form
-    }
-    return render(request, 'producement/producement_create.html', context=context)
+    return render(request, 'producement/producement_create.html', {
+        "forms": form,
+        "details": details_json,
+    })
+
 
 def producement_create_lazir(request):
+    details_json = _serialize_order_details_for_producement()
     if request.method == "POST":
         form = ProducementLazirForms(request.POST)
         if form.is_valid():
-            # Get the selected producement_id
-            selected_producement_id = form.cleaned_data['producement_id']
-            try:
-                # Fetch the Producement object
-                original_producement = producement.objects.get(id=selected_producement_id.id)
-
-                # Create a new Producement object
-                new_producement = producement(
-                    staff_id=form.cleaned_data['staff_id'],
-                    shoe_model_id=original_producement.shoe_model_id,
-                    date=form.cleaned_data['date'],
-                    color_id=original_producement.color_id,
-                    leather_type=original_producement.leather_type,
-                    solo_type=original_producement.solo_type,
-                    quantity=form.cleaned_data['quantity'],
-                    quantity_type_id=form.cleaned_data['quantity_type_id'],
-                    price=form.cleaned_data['price'],
-                    order_id=original_producement.order_id,
-                    status=form.cleaned_data['status'],
-                    order_detail_id=original_producement.order_detail_id,
-                    lining_type_id=original_producement.lining_type_id,
-                    producement_id=original_producement,  # Link to original producement
-                    IsDeleted=False
-                )
-
-                # Save the new Producement object
-                new_producement.save()
-
-                # Redirect to a success page or display a success message
-                return redirect('producement_view')  # Replace with your success URL
-            except producement.DoesNotExist:
-                form.add_error('producement_id', 'Invalid Producement ID selected.')
-        else:
-            for field in form:
-                print(field.errors, "------------")
-            print(form.errors)
+            if _create_chained_producement(form):
+                return redirect('producement_view')
     else:
         form = ProducementLazirForms()
-    context = {
-        "forms":form
-    }
-    return render(request, 'producement/producement_create.html', context=context)
+    return render(request, 'producement/producement_create.html', {
+        "forms": form,
+        "details": details_json,
+    })
+
 
 def producement_create_tuquvchi(request):
+    details_json = _serialize_order_details_for_producement()
     if request.method == "POST":
         form = ProducementTuquvchiForms(request.POST)
         if form.is_valid():
-            # Get the selected producement_id
-            selected_producement_id = form.cleaned_data['producement_id']
-            try:
-                # Fetch the Producement object
-                original_producement = producement.objects.get(id=selected_producement_id.id)
-
-                # Create a new Producement object
-                new_producement = producement(
-                    staff_id=form.cleaned_data['staff_id'],
-                    shoe_model_id=original_producement.shoe_model_id,
-                    date=form.cleaned_data['date'],
-                    color_id=original_producement.color_id,
-                    leather_type=original_producement.leather_type,
-                    solo_type=original_producement.solo_type,
-                    quantity=form.cleaned_data['quantity'],
-                    quantity_type_id=form.cleaned_data['quantity_type_id'],
-                    price=form.cleaned_data['price'],
-                    order_id=original_producement.order_id,
-                    status=form.cleaned_data['status'],
-                    order_detail_id=original_producement.order_detail_id,
-                    lining_type_id=original_producement.lining_type_id,
-                    producement_id=original_producement,  # Link to original producement
-                    IsDeleted=False
-                )
-
-                # Save the new Producement object
-                new_producement.save()
-
-                # Redirect to a success page or display a success message
-                return redirect('producement_view')  # Replace with your success URL
-            except producement.DoesNotExist:
-                form.add_error('producement_id', 'Invalid Producement ID selected.')
+            if _create_chained_producement(form):
+                return redirect('producement_view')
     else:
         form = ProducementTuquvchiForms()
-    context = {
-        "forms":form
-    }
-    return render(request, 'producement/producement_create.html', context=context)
+    return render(request, 'producement/producement_create.html', {
+        "forms": form,
+        "details": details_json,
+    })
+
 
 def producement_create_kosib(request):
-    producement_list = producement.objects.filter(staff_id__profession__value=system_variables.TUQUVCHI ,IsDeleted=False).values(
-        'id', 'solo_type'
-    )
-    data = list(producement_list)
-    
-    # Convert the list to a JSON string
-    data_json = json.dumps(data)
-
+    details_json = _serialize_order_details_for_producement()
     if request.method == "POST":
         form = ProducementKosibForms(request.POST)
         if form.is_valid():
-            # Get the selected producement_id
-            selected_producement_id = form.cleaned_data['producement_id']
-            try:
-                # Fetch the Producement object
-                original_producement = producement.objects.get(id=selected_producement_id.id)
-
-                # Create a new Producement object
-                new_producement = producement(
-                    staff_id=form.cleaned_data['staff_id'],
-                    shoe_model_id=original_producement.shoe_model_id,
-                    date=form.cleaned_data['date'],
-                    color_id=original_producement.color_id,
-                    leather_type=original_producement.leather_type,
-                    solo_type=original_producement.solo_type,
-                    quantity=form.cleaned_data['quantity'],
-                    quantity_type_id=form.cleaned_data['quantity_type_id'],
-                    price=form.cleaned_data['price'],
-                    order_id=original_producement.order_id,
-                    status=form.cleaned_data['status'],
-                    order_detail_id=original_producement.order_detail_id,
-                    lining_type_id=original_producement.lining_type_id,
-                    producement_id=original_producement,  # Link to original producement
-                    IsDeleted=False
-                )
-
-                # Save the new Producement object
-                new_producement.save()
-
-                # Redirect to a success page or display a success message
-                return redirect('producement_view')  # Replace with your success URL
-            except producement.DoesNotExist:
-                form.add_error('producement_id', 'Invalid Producement ID selected.')
+            if _create_chained_producement(form):
+                return redirect('producement_view')
     else:
-        forms = ProducementKosibForms()
-    context = {
-        "forms":forms,
-        "producements":data_json
-    }
-    return render(request, 'producement/producement_create.html', context=context)
+        form = ProducementKosibForms()
+    return render(request, 'producement/producement_create.html', {
+        "forms": form,
+        "details": details_json,
+    })
+
 
 def producement_create_upakovkachi(request):
+    details_json = _serialize_order_details_for_producement()
     if request.method == "POST":
         form = ProducementUpakovkachiForms(request.POST)
         if form.is_valid():
-            # Get the selected producement_id
-            selected_producement_id = form.cleaned_data['producement_id']
-            try:
-                # Fetch the Producement object
-                original_producement = producement.objects.get(id=selected_producement_id.id)
-
-                # Create a new Producement object
-                new_producement = producement(
-                    staff_id=form.cleaned_data['staff_id'],
-                    shoe_model_id=original_producement.shoe_model_id,
-                    date=form.cleaned_data['date'],
-                    color_id=original_producement.color_id,
-                    leather_type=original_producement.leather_type,
-                    solo_type=original_producement.solo_type,
-                    quantity=form.cleaned_data['quantity'],
-                    quantity_type_id=form.cleaned_data['quantity_type_id'],
-                    price=form.cleaned_data['price'],
-                    order_id=original_producement.order_id,
-                    status=form.cleaned_data['status'],
-                    order_detail_id=original_producement.order_detail_id,
-                    lining_type_id=original_producement.lining_type_id,
-                    producement_id=original_producement,  # Link to original producement
-                    IsDeleted=False
-                )
-
-                # Save the new Producement object
-                new_producement.save()
-
-                # Redirect to a success page or display a success message
-                return redirect('producement_view')  # Replace with your success URL
-            except producement.DoesNotExist:
-                form.add_error('producement_id', 'Invalid Producement ID selected.')
+            if _create_chained_producement(form):
+                return redirect('producement_view')
     else:
         form = ProducementUpakovkachiForms()
-    context = {
-        "forms":form
-    }
-    return render(request, 'producement/producement_create.html', context=context)
+    return render(request, 'producement/producement_create.html', {
+        "forms": form,
+        "details": details_json,
+    })
+
 
 def producement_read(request, pk):
-    producement_item = producement.objects.get(pk=pk)
-    context = {
-        "producement":producement_item
-    }
-    return render(request , 'producement/producement_read.html' , context=context)
+    producement_item = _producement_queryset_base().get(pk=pk)
+    return render(request, 'producement/producement_read.html', {
+        "producement": producement_item,
+    })
+
 
 def producement_update(request, pk, ProducementForms):
     producement_item = producement.objects.get(pk=pk)
-
-    # Prepare Order_details JSON (same as in create)
-    details = Order_details.objects.filter(IsDeleted=False).values(
-        'id', 'order_id', 'model_id', 'model_id__name',
-        'quantity', 'price', 'quantity_type_id',
-        'color_id', 'leather_type', 'sole_type_id',
-        'lining_type_id'
-    )
-    details_list = []
-    for detail in details:
-        detail['price'] = float(detail['price'])  # Decimal to float
-        details_list.append(detail)
-    details_json = json.dumps(details_list)
+    details_json = _serialize_order_details_for_producement()
 
     if request.method == "POST":
         form = ProducementForms(request.POST, instance=producement_item)
         if form.is_valid():
-            # Update manually
-            sole_type_id = form.cleaned_data['order_detail_id'].sole_type_id
-            producment_data = {
-                'order_id': form.cleaned_data['order_id'],
-                'order_detail_id': form.cleaned_data['order_detail_id'],
-                'shoe_model_id': form.cleaned_data['shoe_model_id'],
-                'staff_id': form.cleaned_data['staff_id'],
-                'color_id': form.cleaned_data['color_id'],
-                'leather_type': form.cleaned_data['leather_type'],
-                'lining_type_id': form.cleaned_data['lining_type_id'],
-                'quantity': form.cleaned_data['quantity'],
-                'quantity_type_id': form.cleaned_data['quantity_type_id'],
-                'solo_type': sole_type_id,
-                'price': form.cleaned_data['price'],
-                'status': form.cleaned_data['status'],
-                'date': form.cleaned_data['date'],
-            }
-
-            # Manually update fields
-            for field, value in producment_data.items():
+            for field, value in _producement_data_from_form(form).items():
                 setattr(producement_item, field, value)
             producement_item.save()
 
             next_page = request.GET.get("next")
             if next_page == "shoe_model_read":
                 return redirect("shoe_model_read", pk=producement_item.shoe_model_id.id)
-            elif next_page == "work":
+            if next_page == "work":
                 return redirect("staff_view")
-            else:
-                return redirect("producement_view")
+            return redirect("producement_view")
     else:
-        # Set initial values from instance manually
         initial_data = {
             'order_id': producement_item.order_id,
             'order_detail_id': producement_item.order_detail_id,
             'shoe_model_id': producement_item.shoe_model_id,
             'staff_id': producement_item.staff_id,
-            'color_id': producement_item.color_id,
-            'leather_type': producement_item.leather_type,
-            'lining_type_id': producement_item.lining_type_id,
             'quantity': producement_item.quantity,
             'quantity_type_id': producement_item.quantity_type_id,
             'price': producement_item.price,
@@ -1110,12 +915,11 @@ def producement_update(request, pk, ProducementForms):
         }
         form = ProducementForms(initial=initial_data)
 
-    context = {
+    return render(request, "producement/producement_update.html", {
         "forms": form,
         "producement": producement_item,
         "details": details_json,
-    }
-    return render(request, "producement/producement_update.html", context=context)
+    })
 
 def producement_delete(request ,pk):
     producement_item = producement.objects.get(pk=pk)

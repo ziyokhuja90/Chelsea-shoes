@@ -24,10 +24,21 @@
                 <div class="col-md-6">
                     <h6 class="text-muted">Ish Tafsilotlari</h6>
                     <ul class="list-group mb-4">
-                        <li class="list-group-item"><strong>Rang:</strong> {{ producement.color_id }}</li>
-                        <li class="list-group-item"><strong>Teri:</strong> {{ producement.leather_type }}</li>
-                        <li class="list-group-item"><strong>Taglik:</strong> {{ producement.solo_type }}</li>
-                        <li class="list-group-item"><strong>Miqdor:</strong> {{ producement.quantity }}</li>
+                        <li class="list-group-item"><strong>Buyurtma:</strong> {{ producement.order_id|default:"—" }}</li>
+                        <li class="list-group-item"><strong>Buyurtma qatori:</strong> {{ producement.order_detail_id|default:"—" }}</li>
+                        {% if producement.order_detail_id %}
+                            <li class="list-group-item">
+                                <strong>Materiallar:</strong>
+                                <ul class="mb-0 mt-1">
+                                    {% for part in producement.order_detail_id.parts.all %}
+                                        {% if not part.is_deleted %}
+                                            <li>{{ part.model_part_definition.part_ref_id }} — {{ part.material_stock.material_type_ref_id }}: {{ part.material_stock.variant_ref_id }}{% if part.material_stock.color_ref_id %} ({{ part.material_stock.color_ref_id }}){% endif %}</li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                        <li class="list-group-item"><strong>Miqdor:</strong> {{ producement.quantity }} {{ producement.quantity_type_id }}</li>
                         <li class="list-group-item"><strong>Birlik Narxi:</strong> {{ producement.price }}</li>
                         <li class="list-group-item"><strong>Holati:</strong> {{ producement.status }}</li>
                     </ul>

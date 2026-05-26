@@ -214,7 +214,6 @@ class producement_forms(forms.ModelForm):
 
         self.fields['shoe_model_id'].queryset = models.shoe_model.objects.filter(IsDeleted=False)
         self.fields['quantity_type_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value)
-        self.fields['color_id'].queryset = models.references.objects.filter(type=models.ReferenceType.COLOR.value, IsDeleted=False)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
         self.fields['order_id'].queryset = models.Orders.objects.filter(IsDeleted=False)
         self.fields['staff_id'].queryset = models.staff.objects.filter(IsDeleted=False)
@@ -291,19 +290,6 @@ class DefaultProducementForms(forms.Form):
         ))
 
     staff_id = None  # This will be set in the subclass
-
-    color_id = forms.ModelChoiceField(
-        queryset=models.references.objects.filter(
-            type=models.ReferenceType.COLOR.value,
-            IsDeleted=False
-        ),
-        empty_label= system_variables.EMPTY_LABEL,
-        label=system_variables.COLOR,
-        widget=forms.Select(
-            attrs={'class':"form-select"}
-        )
-    )
-
 
     quantity = forms.IntegerField(
         min_value=0,
@@ -444,8 +430,46 @@ class ProducementKroyForms(DefaultProducementForms):
     #     # Return a label combining order and related details
     #     return f"Order #{order.id} - Client: {order.client_id} - Details: [{details_text}]"
 
-class ProducementLazirForms(DefaultProducementForms):
-    
+def _previous_producement_field(previous_profession_value, label):
+    return forms.ModelChoiceField(
+        queryset=models.producement.objects.filter(
+            staff_id__profession__value=previous_profession_value,
+            IsDeleted=False,
+        ).select_related('shoe_model_id', 'order_id').order_by('-id'),
+        empty_label=system_variables.EMPTY_LABEL,
+        label=label,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
+
+class ChainedProducementFormsMixin:
+    """Next-step professions copy order/model from the selected previous producement."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ('order_id', 'order_detail_id', 'shoe_model_id'):
+            if name in self.fields:
+                self.fields[name].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        previous = cleaned_data.get('producement_id')
+        if previous:
+            if not cleaned_data.get('order_id'):
+                cleaned_data['order_id'] = previous.order_id
+            if not cleaned_data.get('order_detail_id'):
+                cleaned_data['order_detail_id'] = previous.order_detail_id
+            if not cleaned_data.get('shoe_model_id'):
+                cleaned_data['shoe_model_id'] = previous.shoe_model_id
+        return cleaned_data
+
+
+class ProducementLazirForms(ChainedProducementFormsMixin, DefaultProducementForms):
+
+    producement_id = _previous_producement_field(
+        system_variables.KROY,
+        "Oldingi ish (Kroy)",
+    )
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.LAZIR ,IsDeleted=False),
         empty_label= system_variables.EMPTY_LABEL,
@@ -454,8 +478,12 @@ class ProducementLazirForms(DefaultProducementForms):
             attrs={'class':"form-select"}
         ))
 
-class ProducementZakatopForms(DefaultProducementForms):
+class ProducementZakatopForms(ChainedProducementFormsMixin, DefaultProducementForms):
 
+    producement_id = _previous_producement_field(
+        system_variables.LAZIR,
+        "Oldingi ish (Lazir)",
+    )
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.ZAKATOP ,IsDeleted=False),
         empty_label= system_variables.EMPTY_LABEL,
@@ -464,7 +492,11 @@ class ProducementZakatopForms(DefaultProducementForms):
             attrs={'class':"form-select"}
         ))
  
-class ProducementTuquvchiForms(DefaultProducementForms):
+class ProducementTuquvchiForms(ChainedProducementFormsMixin, DefaultProducementForms):
+    producement_id = _previous_producement_field(
+        system_variables.ZAKATOP,
+        "Oldingi ish (Zakatop)",
+    )
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.TUQUVCHI ,IsDeleted=False),
         empty_label= system_variables.EMPTY_LABEL,
@@ -473,7 +505,11 @@ class ProducementTuquvchiForms(DefaultProducementForms):
             attrs={'class':"form-select"}
         ))
 
-class ProducementKosibForms(DefaultProducementForms):
+class ProducementKosibForms(ChainedProducementFormsMixin, DefaultProducementForms):
+    producement_id = _previous_producement_field(
+        system_variables.TUQUVCHI,
+        "Oldingi ish (Tuquvchi)",
+    )
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.KOSIB ,IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,
@@ -482,7 +518,11 @@ class ProducementKosibForms(DefaultProducementForms):
             attrs={'class':"form-select"}
         ))
     
-class ProducementUpakovkachiForms(DefaultProducementForms):
+class ProducementUpakovkachiForms(ChainedProducementFormsMixin, DefaultProducementForms):
+    producement_id = _previous_producement_field(
+        system_variables.KOSIB,
+        "Oldingi ish (Kosib)",
+    )
     staff_id = forms.ModelChoiceField(
         queryset=models.staff.objects.filter(profession__value=system_variables.QADOQLOVCHI ,IsDeleted=False), 
         empty_label= system_variables.EMPTY_LABEL ,

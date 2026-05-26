@@ -48,54 +48,6 @@
                 </select>
             </div>
 
-            <!-- Color -->
-            <div class="col-md-3">
-                <label for="color_id" class="form-label">{{COLOR}}</label>
-                <select id="color_id" name="color_id" class="form-control">
-                    <option value="">{{CHOOSE}}</option>
-                    {% for color in colors %}
-                        <option 
-                            value="{{ color.id }}" 
-                            {% if color_id == color.id %}selected{% endif %}
-                        >
-                            {{ color }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Leather Type -->
-            <div class="col-md-3">
-                <label for="leather_type" class="form-label">{{LEATHER_TYPE}}</label>
-                <select id="leather_type" name="leather_type" class="form-control">
-                    <option value="">{{CHOOSE}}</option>
-                    {% for leather in leather_types %}
-                        <option 
-                            value="{{ leather.id }}" 
-                            {% if leather_type == leather.id %}selected{% endif %}
-                        >
-                            {{ leather }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Solo Type -->
-            <div class="col-md-3">
-                <label for="solo_type" class="form-label">{{SOLE_TYPE}}</label>
-                <select id="solo_type" name="solo_type" class="form-control">
-                    <option value="">{{CHOOSE}}</option>
-                    {% for solo in sole_types %}
-                        <option 
-                            value="{{ solo.id }}" 
-                            {% if solo_type == solo.id %}selected{% endif %}
-                        >
-                            {{ solo }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
             <!-- Status -->
             <div class="col-md-3">
                 <label for="status" class="form-label">{{STATUS}}</label>
@@ -209,10 +161,16 @@
                                         <td>{{ counter }}</td>
                                         <td>{{ producement.staff_id }}</td>
                                         <td>
-                                            <strong>{{NAME}}:</strong> {{ producement.shoe_model_id }} <br>
-                                            <strong>{{COLOR}}:</strong> {{ producement.color_id }} <br>
-                                            <strong>{{SOLE}}:</strong> {{ producement.solo_type }} <br>
-                                            <strong>{{LINING}}:</strong> {{ producement.lining_type_id }}
+                                            <strong>{{NAME}}:</strong> {{ producement.shoe_model_id }}<br>
+                                            {% if producement.order_detail_id %}
+                                                {% for part in producement.order_detail_id.parts.all %}
+                                                    {% if not part.is_deleted %}
+                                                        <small>{{ part.model_part_definition.part_ref_id }}: {{ part.material_stock.variant_ref_id }}{% if part.material_stock.color_ref_id %} ({{ part.material_stock.color_ref_id }}){% endif %}</small><br>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <small class="text-muted">—</small>
+                                            {% endif %}
                                         </td>
                                         <td>
                                             <strong>{{CLIENT}}:</strong> {{ producement.order_id.client_id }}<br>
