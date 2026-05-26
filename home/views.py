@@ -18,6 +18,7 @@ from datetime import datetime
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from decimal import Decimal, InvalidOperation
 
 SYSTEM_REFERENCE_TYPES = {
     ReferenceType.STATUS,
@@ -1277,7 +1278,6 @@ def sales_delete(request, pk):
 # order_details
 from django.db import transaction
 from django.contrib import messages
-from decimal import Decimal
 
 
 def order_detail_create(request, pk):
@@ -1718,6 +1718,13 @@ def get_model_parts(request, pk):
 
             "colors":
                 colors,
+
+            "quantity_per_pair": float(part.quantity_per_pair),
+
+            "waste_percent": float(part.waste_percent),
+                
+            "material_type_id":
+                part.material_type_ref_id_id
         })
 
     return JsonResponse(data, safe=False)
@@ -1729,3 +1736,64 @@ def material_stock_view(request):
         "stocks": stocks
     }
     return render(request, 'material_stock/index.html', context=context)
+
+def get_material_stock(request):
+    material_type = request.GET.get("material_type")
+    variant = request.GET.get("variant")
+    color = request.GET.get("color")
+    order_quantity_raw = request.GET.get("order_quantity")
+    model_part_definition_id = request.GET.get("model_part_definition_id")
+
+    def build_required_payload():
+        if not order_quantity_raw or not model_part_definition_id:
+            return {}
+        try:
+            order_qty = Decimal(str(order_quantity_raw))
+            if order_qty < 0:
+                order_qty = Decimal("0")
+            model_part = Model_part_definition.objects.get(
+                id=model_part_definition_id,
+                is_deleted=False,
+            )
+            if str(model_part.material_type_ref_id_id) != str(material_type):
+                return {"required_error": "Material type mos emas"}
+            per_pair = model_part.quantity_per_pair
+            waste = model_part.waste_percent
+            required = order_qty * per_pair * (Decimal("1") + waste / Decimal("100"))
+            return {
+                "quantity_per_pair": float(per_pair),
+                "waste_percent": float(waste),
+                "required": float(required),
+            }
+        except (Model_part_definition.DoesNotExist, InvalidOperation, TypeError):
+            return {"required_error": "Hisoblashda xatolik"}
+
+    extra = build_required_payload()
+
+    try:
+        stock = Material_stock.objects.get(
+            material_type_ref_id=material_type,
+            variant_ref_id=variant,
+            color_ref_id=color if color else None,
+            is_deleted=False
+        )
+
+        payload = {
+            "available": stock.available_quantity,
+            "reserved": stock.reserved_quantity,
+        }
+        payload.update(extra)
+        if "required" in payload:
+            payload["sufficient"] = stock.available_quantity >= payload["required"]
+        return JsonResponse(payload)
+
+    except Material_stock.DoesNotExist:
+        payload = {
+            "available": 0,
+            "reserved": 0,
+            "error": "Topilmadi",
+        }
+        payload.update(extra)
+        if "required" in payload:
+            payload["sufficient"] = False
+        return JsonResponse(payload)

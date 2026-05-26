@@ -33,14 +33,14 @@
                     </div>
                     <input type="hidden" name="force_create" value="false" id="forceCreateInput">
                     {% if messages %}
-    <ul>
-        {% for message in messages %}
-            <li style="color: red;">
-                {{ message }}
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
+                    <ul>
+                        {% for message in messages %}
+                            <li style="color: red;">
+                                {{ message }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
                 </div>
                 
                 <div class="d-flex gap-3 align-items-center justify-content-end mt-4">
@@ -70,6 +70,86 @@
 function forceCreate() {
     document.getElementById("forceCreateInput").value = "true";
 }
+</script>
+
+<script>
+function orderQuantityValue() {
+    const input = document.querySelector('input[name="quantity"]');
+    return input && input.value !== "" ? input.value : "0";
+}
+
+function checkStock(partId) {
+
+    let variant = document.querySelector(
+        `[name="parts[${partId}][material_variant_id]"]`
+    ).value;
+
+    let colorEl = document.querySelector(
+        `[name="parts[${partId}][color_id]"]`
+    );
+
+    let color = colorEl ? colorEl.value : "";
+
+    let materialType = document.querySelector(
+        `[name="parts[${partId}][material_type_id]"]`
+    ).value;
+
+    if (!variant) return;
+
+    const orderQty = encodeURIComponent(orderQuantityValue());
+    const qs =
+        `material_type=${encodeURIComponent(materialType)}` +
+        `&variant=${encodeURIComponent(variant)}` +
+        `&color=${encodeURIComponent(color)}` +
+        `&order_quantity=${orderQty}` +
+        `&model_part_definition_id=${encodeURIComponent(partId)}`;
+
+    fetch(`/get-material-stock/?${qs}`)
+        .then(res => res.json())
+        .then(data => {
+
+            let el = document.getElementById(`stock-info-${partId}`);
+
+            if (data.required_error) {
+                el.innerText = data.required_error;
+                el.style.color = "red";
+                return;
+            }
+
+            if (data.error) {
+                el.innerText = "Topilmadi";
+                el.style.color = "red";
+                return;
+            }
+
+            let text = `Mavjud: ${data.available}`;
+            if (data.required != null) {
+                text += ` | Chiqindi ${data.waste_percent}% bilan kerak: ${data.required.toFixed(2)}`;
+            }
+            el.innerText = text;
+            if (data.required != null) {
+                el.style.color = data.sufficient ? "green" : "red";
+            } else {
+                el.style.color = data.available > 0 ? "green" : "red";
+            }
+
+        });
+}
+
+function refreshAllPartStock() {
+    document.querySelectorAll('select[name*="[material_variant_id]"]').forEach(sel => {
+        const match = sel.name.match(/^parts\[(\d+)\]/);
+        if (match && sel.value) checkStock(match[1]);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const qtyInput = document.querySelector('input[name="quantity"]');
+    if (qtyInput) {
+        qtyInput.addEventListener("input", refreshAllPartStock);
+        qtyInput.addEventListener("change", refreshAllPartStock);
+    }
+});
 </script>
 
 <script>
@@ -135,14 +215,20 @@ function renderParts(parts) {
                 </div>
 
                 <div class="col-md-3">
-                    ${part.material_type}
+                    ${part.material_type} ${part.material_type_id}
+                        <input
+                            type="hidden"
+                            name="parts[${part.id}][material_type_id]"
+                            value="${part.material_type_id}"
+                        >
                 </div>
 
                 <div class="col-md-3">
-
+                    <label>{{VARIANT_TYPE}}</label>
                     <select
                         name="parts[${part.id}][material_variant_id]"
                         class="form-control"
+                        onchange="checkStock(${part.id})"
                     >
                         ${variantOptions}
                     </select>
@@ -151,13 +237,21 @@ function renderParts(parts) {
 
                 <div class="col-md-3">
 
+                    <label>{{COLOR}}</label>
                     <select
                         name="parts[${part.id}][color_id]"
                         class="form-control"
+                        onchange="checkStock(${part.id})"
                     >
                         ${colorOptions}
                     </select>
 
+                </div>
+                <div class="col-md-12 mt-1">
+                    <small class="text-muted">Juftiga: ${part.quantity_per_pair}, chiqindi: ${part.waste_percent}%</small><br>
+                    <small id="stock-info-${part.id}" style="color: gray;">
+                        Stock: -
+                    </small>
                 </div>
 
             </div>
@@ -188,6 +282,7 @@ function loadParts(modelId) {
             // keyin shu yerda form render qilasan
             // masalan:
             renderParts(data);
+            refreshAllPartStock();
 
         })
         .catch(error => console.error(error));

@@ -100,6 +100,8 @@ urlpatterns = [
 
     # material stock
     path('material_stock/', views.material_stock_view, name='material_stock_view'),
+    path('get-material-stock/', views.get_material_stock, name='get_material_stock'),
+
     
     # next
     path('order/<int:pk>/next/', views.order_next_status, name='order_next_status'),

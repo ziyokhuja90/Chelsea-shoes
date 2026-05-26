@@ -133,14 +133,18 @@ class Model_part_definition(models.Model):
 class Material_stock(models.Model):
     material_type_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="material_type_ref_id_stock")
     variant_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="variant_ref_id_stock")
-    color_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="color_ref_id_stock")
+    color_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="color_ref_id_stock", null=True, blank=True)
     unit_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="unit_ref_id_stock")
     stock_quantity = models.IntegerField()
     reserved_quantity = models.IntegerField()
-    available_quantity = models.IntegerField()
+    # available_quantity = models.IntegerField()
     updated_at = models.DateField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
+    @property
+    def available_quantity(self):
+        return self.stock_quantity - self.reserved_quantity
+
     class Meta: 
         db_table = "material_stock"
 

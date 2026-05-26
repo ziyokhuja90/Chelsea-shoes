@@ -131,7 +131,7 @@ QUANTITY_TYPE = "Miqdor turi"
 # MATERIALS / REFERENCES
 # ============================
 MATERIAL_TYPE = "Material turi"
-VARIANT_TYPE = "VARIANT_TYPE"
+VARIANT_TYPE = "Variant turi"
 COLOR = "Rangi"
 LEATHER = "Teri"
 SOLE = "Taglik"
