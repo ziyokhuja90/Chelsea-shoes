@@ -599,14 +599,34 @@ def orders_create(request):
     return render(request, "orders/orders_create.html", context=context)
 
 def order_read(request, pk):
-    order_item = Orders.objects.get(pk=pk)
-    details = Order_details.objects.filter(order_id=order_item.pk, IsDeleted=False)
+    order_item = Orders.objects.select_related(
+        'client_id', 'client_id__currency', 'status',
+    ).get(pk=pk)
 
-    context ={
-        "order":order_item,
-        "details":details
+    parts_prefetch = Prefetch(
+        'parts',
+        queryset=Order_detail_parts.objects.filter(is_deleted=False).select_related(
+            'model_part_definition__part_ref_id',
+            'model_part_definition__material_type_ref_id',
+            'model_part_definition__unit_ref_id',
+            'material_stock__variant_ref_id',
+            'material_stock__color_ref_id',
+            'material_stock__material_type_ref_id',
+            'material_stock__unit_ref_id',
+        ),
+    )
+    details = Order_details.objects.filter(
+        order_id=order_item.pk,
+        IsDeleted=False,
+    ).select_related(
+        'model_id', 'quantity_type_id',
+    ).prefetch_related(parts_prefetch).order_by('id')
+
+    context = {
+        "order": order_item,
+        "details": details,
     }
-    return render(request , "orders/order_read.html" , context=context)
+    return render(request, "orders/order_read.html", context=context)
 
 def orders_update(request, pk):
     order_item = Orders.objects.get(pk=pk)
@@ -1186,15 +1206,15 @@ def order_detail_create(request, pk):
                     required = item["required"]
                     model_part = item["model_part"]
 
-                    stock.reserved_quantity += required
-                    stock.available_quantity -= required
-                    stock.save()
+                    reserve_qty = int(required)
+                    stock.reserved_quantity += reserve_qty
+                    stock.save(update_fields=['reserved_quantity'])
 
                     Order_detail_parts.objects.create(
                         order_detail=new_order_detail,
                         model_part_definition=model_part,
                         material_stock=stock,
-                        quantity_required=required
+                        quantity_required=reserve_qty
                     )
 
             # -----------------------------
