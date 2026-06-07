@@ -10,117 +10,94 @@
             <h5 class="mb-0 text-white">{{ORDER}} {{ID}}: {{ order.id }}</h5>
         </div>
         <div class="card-body">
-            <div class="row">
-                <div class="">
-                    <h6 class="text-muted">{{MAIN_DETAILS}}</h6>
-                    <ul class="list-group mb-4">
-                        <li class="list-group-item">
-                            <strong>{{CLIENT}}:</strong> {{ order.client_id }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>{{ORDER}} {{DATE}}:</strong> {{ order.date|date:"Y-m-d" }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>{{DEADLINE}}:</strong> {{ order.complete_date|date:"Y-m-d" }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>{{STATUS}}:</strong> {{ order.status }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>{{TOTAL_PRICE}}:</strong> {{ order.total_amount|floatformat:2|intcomma }}
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            <h6 class="text-muted">{{MAIN_DETAILS}}</h6>
+            <ul class="list-group mb-4">
+                <li class="list-group-item">
+                    <strong>{{CLIENT}}:</strong> {{ order.client_id }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{ORDER}} {{DATE}}:</strong> {{ order.date|date:"Y-m-d" }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{DEADLINE}}:</strong> {{ order.complete_date|date:"Y-m-d" }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{STATUS}}:</strong> {{ order.status }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{TOTAL_PRICE}}:</strong> {{ order.total_amount|floatformat:2|intcomma }}
+                </li>
+            </ul>
 
             <div class="d-flex align-items-center justify-content-between mb-3">
-                <h6 class="text-muted mb-0">{{ORDER}} {{DETAILS}}</h6>
+                <h6 class="text-muted mb-0">{{ORDER}} {{DETAIL}}</h6>
                 <a href="{% url 'order_detail_create' order.pk %}" class="btn btn-primary">{{DETAIL}} {{ADD}}</a>
             </div>
 
-            {% if details %}
-            <div class="accordion" id="orderDetailsAccordion">
-                {% for detail in details %}
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading-detail-{{ detail.id }}">
-                        <button
-                            class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#collapse-detail-{{ detail.id }}"
-                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
-                            aria-controls="collapse-detail-{{ detail.id }}"
-                        >
-                            <span class="me-2 text-muted">#{{ forloop.counter }}</span>
-                            <strong class="me-2">{{ detail.model_id }}</strong>
-                            <span class="me-2">{{ detail.quantity }} {{ detail.quantity_type_id }}</span>
-                            <span class="me-2">{{ detail.price|floatformat:2|intcomma }} {{ order.client_id.currency }}</span>
-                            <span class="text-muted">| {{TOTAL}}: {{ detail.total_amount|floatformat:2|intcomma }}</span>
-                        </button>
-                    </h2>
-                    <div
-                        id="collapse-detail-{{ detail.id }}"
-                        class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
-                        aria-labelledby="heading-detail-{{ detail.id }}"
-                        data-bs-parent="#orderDetailsAccordion"
-                    >
-                        <div class="accordion-body">
-                            <div class="d-flex justify-content-end gap-2 mb-3">
-                                <a class="btn btn-sm btn-warning text-white" href="{% url 'order_detail_update' detail.pk %}">
-                                    <i class="bx bx-edit-alt"></i> {{UPDATE}}
-                                </a>
-                                <a
-                                    class="btn btn-sm btn-danger"
-                                    href="#"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteModal"
-                                    data-delete-url="{% url 'order_detail_delete' detail.pk %}"
-                                >
-                                    <i class="bx bx-trash"></i> {{DELETE}}
-                                </a>
-                            </div>
-
-                            {% with parts=detail.parts.all %}
-                            {% if parts %}
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>{{MODEL_PART}}</th>
-                                            <th>{{MATERIAL_TYPE}}</th>
-                                            <th>{{VARIANT_TYPE}}</th>
-                                            <th>{{COLOR}}</th>
-                                            <th>{{QUANTITY_TYPE}}</th>
-                                            <th>Juftiga</th>
-                                            <th>{{WASTE_PERCENT}}</th>
-                                            <th>Kerak</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for part in parts %}
-                                        <tr>
-                                            <td>{{ part.model_part_definition.part_ref_id }}</td>
-                                            <td>{{ part.material_stock.material_type_ref_id }}</td>
-                                            <td>{{ part.material_stock.variant_ref_id }}</td>
-                                            <td>{{ part.material_stock.color_ref_id|default:"—" }}</td>
-                                            <td>{{ part.model_part_definition.unit_ref_id }}</td>
-                                            <td>{{ part.model_part_definition.quantity_per_pair|floatformat:2 }}</td>
-                                            <td>{{ part.model_part_definition.waste_percent|floatformat:2 }}%</td>
-                                            <td>{{ part.quantity_required }}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {% else %}
-                            <p class="text-muted mb-0">Materiallar kiritilmagan.</p>
-                            {% endif %}
-                            {% endwith %}
+            {% if order_lines %}
+                {% for line in order_lines %}
+                <details class="border rounded mb-2" {% if forloop.first %}open{% endif %}>
+                    <summary class="p-3 bg-light" style="cursor: pointer;">
+                        <strong>#{{ forloop.counter }} — {{ line.model_id }}</strong>
+                        <span class="ms-2">{{ line.quantity }} {{ line.quantity_type_id }}</span>
+                        <span class="ms-2">{{ line.price|floatformat:2|intcomma }} {{ order.client_id.currency }}</span>
+                        <span class="text-muted ms-2">| {{TOTAL}}: {{ line.total_amount|floatformat:2|intcomma }}</span>
+                    </summary>
+                    <div class="p-3">
+                        <div class="d-flex justify-content-end gap-2 mb-3">
+                            <a class="btn btn-sm btn-warning text-white" href="{% url 'order_detail_update' line.pk %}">
+                                <i class="bx bx-edit-alt"></i> {{UPDATE}}
+                            </a>
+                            <a
+                                class="btn btn-sm btn-danger"
+                                href="#"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                data-delete-url="{% url 'order_detail_delete' line.pk %}"
+                            >
+                                <i class="bx bx-trash"></i> {{DELETE}}
+                            </a>
                         </div>
+
+                        {% with parts=line.parts.all %}
+                        {% if parts %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>{{MODEL_PART}}</th>
+                                        <th>{{MATERIAL_TYPE}}</th>
+                                        <th>{{VARIANT_TYPE}}</th>
+                                        <th>{{COLOR}}</th>
+                                        <th>{{QUANTITY_TYPE}}</th>
+                                        <th>Juftiga</th>
+                                        <th>{{WASTE_PERCENT}}</th>
+                                        <th>Kerak</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for part in parts %}
+                                    <tr>
+                                        <td>{{ part.model_part_definition.part_ref_id }}</td>
+                                        <td>{{ part.material_stock.material_type_ref_id }}</td>
+                                        <td>{{ part.material_stock.variant_ref_id }}</td>
+                                        <td>{{ part.material_stock.color_ref_id|default:"—" }}</td>
+                                        <td>{{ part.model_part_definition.unit_ref_id }}</td>
+                                        <td>{{ part.model_part_definition.quantity_per_pair|floatformat:2 }}</td>
+                                        <td>{{ part.model_part_definition.waste_percent|floatformat:2 }}%</td>
+                                        <td>{{ part.quantity_required }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0">Materiallar kiritilmagan.</p>
+                        {% endif %}
+                        {% endwith %}
                     </div>
-                </div>
+                </details>
                 {% endfor %}
-            </div>
             {% else %}
             <p class="text-muted">{{NO_DATA}}</p>
             {% endif %}

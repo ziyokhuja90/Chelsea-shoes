@@ -1,45 +1,56 @@
+from django.db.models import Sum
 from django.db.models.signals import post_save, post_delete, post_migrate
 from django.dispatch import receiver
 from .models import producement, staff, staff_payments, Order_details, Orders, Warehouse, references, ReferenceType, clients, client_payments
 from config import system_variables
 
 
+def _update_client_balance(client_id):
+    completed_orders = Orders.objects.filter(
+        client_id=client_id,
+        status__value=system_variables.COMPLETED,
+        IsDeleted=False,
+    )
+    payments = client_payments.objects.filter(client_id=client_id, IsDeleted=False)
+
+    total_orders = sum(o.total_amount for o in completed_orders)
+    total_payments = sum(p.amount for p in payments)
+
+    clients.objects.filter(pk=client_id).update(
+        balance=total_payments - total_orders,
+    )
+
+
+def _recalculate_order_total(order_id):
+    total_amount = Order_details.objects.filter(
+        order_id=order_id,
+        IsDeleted=False,
+    ).aggregate(total=Sum('total_amount'))['total'] or 0
+
+    Orders.objects.filter(pk=order_id).update(total_amount=total_amount)
+    return total_amount
+
+
 @receiver(post_save, sender=Orders)
 def update_producement_on_order_status(sender, instance, **kwargs):
     if instance.status.value == system_variables.CANCELED:
-        producement_list = producement.objects.filter(order_id=instance)
-        for i in producement_list:
-            i.status = references.objects.get(value=system_variables.CANCELED)
-            i.save()    
+        canceled_status = references.objects.get(value=system_variables.CANCELED)
+        producement.objects.filter(order_id=instance).update(status=canceled_status)
+
 
 @receiver([post_delete, post_save], sender=producement)
 def update_order_status_on_producement(sender, instance, **kwargs):
-    order_id = instance.order_id
-    if order_id.status.value == system_variables.CREATED:
+    order = instance.order_id
+    if order and order.status.value == system_variables.CREATED:
         pending = references.objects.get(value=system_variables.ACTIVE)
-        order_id.status = pending
-        order_id.save()
-
+        Orders.objects.filter(pk=order.pk).update(status=pending)
 
 
 @receiver([post_delete, post_save], sender=Orders)
 @receiver([post_delete, post_save], sender=client_payments)
 def update_client_balance_on_orders(sender, instance, **kwargs):
-    
-    client_member = instance.client_id
-
-    completed_orders = Orders.objects.filter(
-        client_id=client_member,
-        status__value=system_variables.COMPLETED,
-        IsDeleted=False
-    )
-    payments = client_payments.objects.filter(client_id=client_member, IsDeleted=False)
-
-    total_orders = sum(o.total_amount for o in completed_orders)
-    total_payments = sum(p.amount for p in payments)
-
-    client_member.balance = total_payments - total_orders
-    client_member.save()
+    client_id = instance.client_id_id
+    _update_client_balance(client_id)
 
 @receiver(post_save, sender=producement)
 @receiver(post_delete, sender=producement)
@@ -58,7 +69,7 @@ def update_staff_balance_on_producement(sender, instance, **kwargs):
 
 
     staff_member.balance = total_price - total_payments
-    staff_member.save()
+    staff.objects.filter(pk=staff_member.pk).update(balance=staff_member.balance)
 
 @receiver(post_save, sender=staff_payments)
 @receiver(post_delete, sender=staff_payments)
@@ -75,41 +86,19 @@ def update_staff_balance_on_payment(sender, instance, **kwargs):
     total_payments = sum(p.amount for p in payments)
 
     staff_member.balance = total_price - total_payments
-    staff_member.save()
+    staff.objects.filter(pk=staff_member.pk).update(balance=staff_member.balance)
 
 @receiver([post_save, post_delete], sender=Order_details)
 def update_order_total_amount(sender, instance, **kwargs):
-    order = Orders.objects.get(pk=instance.order_id.pk)
-    details = Order_details.objects.filter(order_id=order)
-    total_amount = 0
-
-    for i in details:
-        total_amount += i.total_amount
-    
-    order.total_amount = total_amount
-    order.save()
+    _recalculate_order_total(instance.order_id_id)
+    _update_client_balance(instance.order_id.client_id_id)
 
 
-@receiver([post_save, post_delete], sender=Orders)
+@receiver(post_save, sender=Orders)
 def details_to_warehouse(sender, instance, **kwargs):
-    if instance.status.value == system_variables.COMPLETED and instance.client_id.name == system_variables.WAREHOUSE.upper():
-        order_details = Order_details.objects.filter(order_id=instance, IsDeleted=False)
-
-        for detail in order_details:
-            Warehouse.objects.create(
-                model_id=detail.model_id,
-                quantity=detail.quantity,
-                quantity_type_id=detail.quantity_type_id,
-                price=detail.price,
-                total_amount=detail.total_amount,
-                color_id=detail.color_id,
-                leather_type=detail.leather_type,
-                sole_type_id=detail.sole_type_id,
-                lining_type_id=detail.lining_type_id,
-                IsDeleted=False
-            )
-    else:
-        pass
+    # Warehouse still expects legacy color/leather fields removed from Order_details.
+    # Skip until Warehouse is aligned with Order_detail_parts.
+    return
 
 
 @receiver(post_migrate)

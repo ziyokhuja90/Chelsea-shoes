@@ -599,9 +599,12 @@ def orders_create(request):
     return render(request, "orders/orders_create.html", context=context)
 
 def order_read(request, pk):
-    order_item = Orders.objects.select_related(
-        'client_id', 'client_id__currency', 'status',
-    ).get(pk=pk)
+    order_item = get_object_or_404(
+        Orders.objects.select_related(
+            'client_id', 'client_id__currency', 'status',
+        ),
+        pk=pk,
+    )
 
     parts_prefetch = Prefetch(
         'parts',
@@ -612,19 +615,20 @@ def order_read(request, pk):
             'material_stock__variant_ref_id',
             'material_stock__color_ref_id',
             'material_stock__material_type_ref_id',
-            'material_stock__unit_ref_id',
         ),
     )
-    details = Order_details.objects.filter(
-        order_id=order_item.pk,
-        IsDeleted=False,
-    ).select_related(
-        'model_id', 'quantity_type_id',
-    ).prefetch_related(parts_prefetch).order_by('id')
+    order_lines = list(
+        Order_details.objects.filter(
+            order_id=order_item.pk,
+            IsDeleted=False,
+        ).select_related(
+            'model_id', 'quantity_type_id',
+        ).prefetch_related(parts_prefetch).order_by('id')
+    )
 
     context = {
         "order": order_item,
-        "details": details,
+        "order_lines": order_lines,
     }
     return render(request, "orders/order_read.html", context=context)
 
