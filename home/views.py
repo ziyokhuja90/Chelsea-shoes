@@ -1115,8 +1115,6 @@ def order_detail_create(request, pk):
         forms = orderDetails_forms(request.POST)
 
         if forms.is_valid():
-            force_create = request.POST.get("force_create") == "true"
-
             new_order_detail = forms.save(commit=False)
             new_order_detail.order_id = order
 
@@ -1140,13 +1138,9 @@ def order_detail_create(request, pk):
                     parts_data[part_id][field_name] = value
 
             warnings = []
-            has_error = False
 
-            prepared_data = []  # 🔥 save qilishdan oldin yig‘amiz
+            prepared_data = []
 
-            # -----------------------------
-            # 1️⃣ ONLY CHECK (NO SAVE)
-            # -----------------------------
             for part in parts_data.values():
 
                 model_part = Model_part_definition.objects.get(
@@ -1175,32 +1169,13 @@ def order_detail_create(request, pk):
                         f"{model_part.id} part uchun yetarli emas "
                         f"(kerak: {required}, mavjud: {stock.available_quantity})"
                     )
-                    has_error = True
 
-                # 🔥 keyin ishlatish uchun saqlab qo‘yamiz
                 prepared_data.append({
                     "model_part": model_part,
                     "stock": stock,
                     "required": required
                 })
 
-            # -----------------------------
-            # 2️⃣ AGAR ERROR VA FORCE YO‘Q
-            # -----------------------------
-            if has_error and not force_create:
-                for w in warnings:
-                    messages.error(request, w)
-
-                messages.error(request, "Material yetarli emas. Baribir davom etasizmi?")
-
-                return render(request, 'orderDetails/detail_create.html', {
-                    "forms": forms,
-                    "force_needed": True
-                })
-
-            # -----------------------------
-            # 3️⃣ REAL SAVE
-            # -----------------------------
             with transaction.atomic():
 
                 new_order_detail.save()
@@ -1218,12 +1193,9 @@ def order_detail_create(request, pk):
                         order_detail=new_order_detail,
                         model_part_definition=model_part,
                         material_stock=stock,
-                        quantity_required=reserve_qty
+                        quantity_required=required
                     )
 
-            # -----------------------------
-            # WARNINGS (agar force bilan save bo‘lsa)
-            # -----------------------------
             if warnings:
                 for w in warnings:
                     messages.warning(request, w)

@@ -31,7 +31,6 @@
                         <label>{{ forms.price.label }}</label>
                         {{ forms.price }}
                     </div>
-                    <input type="hidden" name="force_create" value="false" id="forceCreateInput">
                     {% if messages %}
                     <ul>
                         {% for message in messages %}
@@ -46,15 +45,6 @@
                 <div class="d-flex gap-3 align-items-center justify-content-end mt-4">
                     <a href="" class="btn btn-secondary">{{CANCEL}}</a>
                     <button type="submit" class="btn btn-primary">{{SAVE}}</button>
-                    {% if force_needed %}
-                    <div style="color: red; font-weight: bold;">
-                        Material yetarli emas!
-                    </div>
-
-                    <button type="submit" onclick="forceCreate()">
-                        Baribir yaratish
-                    </button>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -65,12 +55,6 @@
     </form>
 </div>
 
-
-<script>
-function forceCreate() {
-    document.getElementById("forceCreateInput").value = "true";
-}
-</script>
 
 <script>
 function orderQuantityValue() {

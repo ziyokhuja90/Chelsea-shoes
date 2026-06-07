@@ -288,7 +288,7 @@ class Order_detail_parts(models.Model):
         on_delete=models.CASCADE,
         related_name="order_parts"
     )
-    quantity_required = models.IntegerField()
+    quantity_required = models.DecimalField(max_digits=10, decimal_places=2)
     is_deleted = models.BooleanField(default=False)
 
     class Meta:

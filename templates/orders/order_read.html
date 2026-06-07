@@ -72,7 +72,7 @@
                                         <th>{{QUANTITY_TYPE}}</th>
                                         <th>Juftiga</th>
                                         <th>{{WASTE_PERCENT}}</th>
-                                        <th>Kerak</th>
+                                        <th>{{QUANTITY_REQUIRED}}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -85,7 +85,7 @@
                                         <td>{{ part.model_part_definition.unit_ref_id }}</td>
                                         <td>{{ part.model_part_definition.quantity_per_pair|floatformat:2 }}</td>
                                         <td>{{ part.model_part_definition.waste_percent|floatformat:2 }}%</td>
-                                        <td>{{ part.quantity_required }}</td>
+                                        <td>{{ part.quantity_required|floatformat:2 }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

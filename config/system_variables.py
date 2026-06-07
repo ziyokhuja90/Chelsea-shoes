@@ -47,6 +47,7 @@ LOCATION = "Manzili"
 PHONE_NUMBER = "Telefon raqami"
 CHOOSE = "Tanlang..."
 REQUIRED = "Majburiy"
+QUANTITY_REQUIRED = "Kerak"
 WASTE_PERCENT = "Qoldiq foizi"
 
 # ============================
