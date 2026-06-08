@@ -103,6 +103,26 @@ class clients_forms(forms.ModelForm):
         
         self.fields['currency'].queryset = models.references.objects.filter(type=models.ReferenceType.CURRENCY.value)
 
+
+class supplier_forms(forms.ModelForm):
+    class Meta:
+        model = models.Supplier
+        fields = ['name', 'phone_number', 'address']
+
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control uppercase-input'}),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'id': 'member_phone',
+                'onkeyup': 'backspacerUP(this, event)',
+                'onkeydown': 'backspacerDOWN(this, event)',
+                'maxlength': '14',
+                'placeholder': '(XX) XXX-XX-XX',
+            }),
+            'address': forms.TextInput(attrs={'class': 'form-control uppercase-input'}),
+        }
+
+
 class orders_forms(forms.ModelForm):
     class Meta:
         model = models.Orders

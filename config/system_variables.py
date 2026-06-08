@@ -60,6 +60,7 @@ INCOME = "Daromad"
 EXPENSES = "Xarajatlar"
 STAFFS = "Hodimlar"
 CLIENTS = "Xaridorlar"
+SUPPLIERS = "Yetkazib beruvchilar"
 DEBTS = "Qarzlar"
 ORDERS = "Buyurtmalar"
 REFERENCE = "Ma'lumotnoma"
@@ -179,6 +180,7 @@ ALREADY_PRODUCED = "Allaqachon ishlab chiqarilgan"
 # ============================
 ORDER = "Buyurtma"
 CLIENT = "Xaridor"
+SUPPLIER = "Yetkazib beruvchi"
 DEADLINE = "Topshirish sanasi"
 CREATED_AT = "Yaratilgan sana"
 
@@ -199,6 +201,7 @@ DELETE_CONFIRMATION_INFO = (
     "Bu amalni ortga qaytarib bo‘lmaydi."
 )
 DELETE_CONFIRMATION_BUTTON = "Ha, o'chirib tashla"
+SYSTEM_RECORD_DELETE_FORBIDDEN = "Tizim yozuvini o'chirib bo'lmaydi"
 
 COMPLETE_CONFIRMATION_TITLE = "Yakunlashni tasdiqlash"
 COMPLETE_CONFIRMATION_INFO = "lorem ipsum dolar sit amet <br>"

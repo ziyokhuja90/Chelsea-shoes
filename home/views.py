@@ -480,6 +480,70 @@ def clients_delete(request, pk):
     client_item.save()
     return redirect('clients_view')
 
+# suppliers
+def supplier_view(request):
+    suppliers_list = Supplier.objects.filter(IsDeleted=False).order_by('id')
+
+    name = request.GET.get('name')
+    phone = request.GET.get('phone')
+    address = request.GET.get('address')
+
+    if name:
+        suppliers_list = suppliers_list.filter(name__icontains=name)
+    if phone:
+        suppliers_list = suppliers_list.filter(phone_number__icontains=phone)
+    if address:
+        suppliers_list = suppliers_list.filter(address__icontains=address)
+
+    total_balance = sum(s.balance or 0 for s in suppliers_list)
+
+    context = {
+        'suppliers_list': suppliers_list,
+        'balance': total_balance,
+    }
+    return render(request, 'supplier/suppliers.html', context=context)
+
+
+def supplier_create(request):
+    if request.method == 'POST':
+        forms = supplier_forms(request.POST)
+        if forms.is_valid():
+            supplier = forms.save(commit=False)
+            supplier.phone_number = phone_to_int(supplier.phone_number)
+            supplier.save()
+            return redirect('supplier_view')
+
+    context = {'forms': supplier_forms()}
+    return render(request, 'supplier/supplier_create.html', context=context)
+
+
+def supplier_update(request, pk):
+    supplier_item = get_object_or_404(Supplier, pk=pk, IsDeleted=False)
+
+    if request.method == 'POST':
+        forms = supplier_forms(request.POST, instance=supplier_item)
+        if forms.is_valid():
+            supplier = forms.save(commit=False)
+            supplier.phone_number = phone_to_int(supplier.phone_number)
+            supplier.save()
+            return redirect('supplier_view')
+
+    context = {
+        'forms': supplier_forms(instance=supplier_item),
+        'back_url_name': 'supplier_view',
+    }
+    return render(request, 'update.html', context=context)
+
+
+def supplier_delete(request, pk):
+    supplier_item = get_object_or_404(Supplier, pk=pk, IsDeleted=False)
+    if supplier_item.is_system:
+        messages.error(request, system_variables.SYSTEM_RECORD_DELETE_FORBIDDEN)
+        return redirect('supplier_view')
+    supplier_item.IsDeleted = True
+    supplier_item.save()
+    return redirect('supplier_view')
+
 # orders
 
 def orders_view(request):

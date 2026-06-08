@@ -37,6 +37,12 @@ urlpatterns = [
     path('clients/create' , views.clients_create, name="clients_create"),
     path('clients/update/<int:pk>' , views.clients_update , name="clients_update"),
     path('clients/delete/<int:pk>' , views.clients_delete , name="clients_delete"),
+
+    # suppliers
+    path('suppliers/', views.supplier_view, name='supplier_view'),
+    path('suppliers/create/', views.supplier_create, name='supplier_create'),
+    path('suppliers/update/<int:pk>/', views.supplier_update, name='supplier_update'),
+    path('suppliers/delete/<int:pk>/', views.supplier_delete, name='supplier_delete'),
     
     # client_payments
     path('client/payments/create', views.client_payment_create, name="client_payment_create"),

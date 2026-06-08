@@ -217,6 +217,17 @@
                 </div>
               </a>
             </li>
+
+            <li class="menu-item {% if request.resolver_match.url_name == 'supplier_view' or request.resolver_match.url_name == 'supplier_create' or request.resolver_match.url_name == 'supplier_update' %}active{% endif %}">
+              <a href="{% url 'supplier_view' %}" class="menu-link text-decoration-none">
+                <div data-i18n="Basic ">
+                  <i class="menu-icon tf-icons bx bx-store"></i>
+                  <span class="fw-bolder">
+                    {{SUPPLIERS}}
+                  </span>
+                </div>
+              </a>
+            </li>
             
 
             <li class="menu-item disabled">
