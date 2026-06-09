@@ -1595,11 +1595,130 @@ def get_model_parts(request, pk):
 
 # Material_stock
 def material_stock_view(request):
-    stocks = Material_stock.objects.filter(is_deleted=False).order_by('id')
+    stocks = Material_stock.objects.filter(is_deleted=False).select_related(
+        'material_type_ref_id', 'variant_ref_id', 'color_ref_id', 'unit_ref_id',
+    ).order_by('id')
+
+    purchases = Purchase.objects.filter(is_deleted=False).select_related(
+        'supplier_id', 'status',
+    ).prefetch_related(
+        'purchase_id__material_id__material_type_ref_id',
+        'purchase_id__material_id__variant_ref_id',
+        'purchase_id__material_id__color_ref_id',
+    ).order_by('-id')
+
     context = {
-        "stocks": stocks
+        "stocks": stocks,
+        "purchases": purchases,
     }
     return render(request, 'material_stock/index.html', context=context)
+
+
+def get_material_variants(request):
+    material_type_id = request.GET.get("material_type")
+    variants = []
+    if material_type_id:
+        try:
+            material_type = references.objects.get(id=material_type_id)
+            ref_type = REFERENCE_MATERIAL_TYPE_VALUE_REFENRECE_TYPE_VALUE.get(material_type.value)
+            if ref_type:
+                variants = list(
+                    references.objects.filter(type=ref_type, IsDeleted=False).values("id", "value")
+                )
+        except references.DoesNotExist:
+            pass
+    return JsonResponse(variants, safe=False)
+
+
+def purchase_create(request):
+    material_types = references.objects.filter(
+        type=ReferenceType.MATERIAL_TYPE.value, IsDeleted=False,
+    ).order_by('order')
+    colors = references.objects.filter(
+        type=ReferenceType.COLOR.value, IsDeleted=False,
+    ).order_by('id')
+    units = references.objects.filter(
+        type=ReferenceType.QUANTITY_TYPE.value, IsDeleted=False,
+    ).order_by('id')
+    suppliers = Supplier.objects.filter(IsDeleted=False).order_by('name')
+
+    if request.method == "POST":
+        supplier_id = request.POST.get("supplier_id")
+        purchase_date = request.POST.get("purchase_date")
+        paid_amount_raw = request.POST.get("paid_amount") or "0"
+
+        items = {}
+        for key, value in request.POST.items():
+            if key.startswith("items["):
+                idx = key.split("[")[1].split("]")[0]
+                field = key.split("[")[2].split("]")[0]
+                items.setdefault(idx, {})[field] = value
+
+        valid_items = [
+            it for it in items.values()
+            if it.get("material_type") and it.get("variant")
+            and it.get("unit") and it.get("quantity") and it.get("price")
+        ]
+
+        parsed_date = None
+        if purchase_date:
+            try:
+                parsed_date = datetime.strptime(purchase_date.strip(), '%d %m %Y').date()
+            except ValueError:
+                parsed_date = None
+
+        if not supplier_id or not parsed_date or not valid_items:
+            messages.error(request, system_variables.PURCHASE_VALIDATION)
+        else:
+            created_status = references.objects.get(value=system_variables.CREATED)
+            with transaction.atomic():
+                purchase = Purchase.objects.create(
+                    supplier_id_id=supplier_id,
+                    purchase_date=parsed_date,
+                    total_amount=Decimal("0"),
+                    paid_amount=Decimal(str(paid_amount_raw)),
+                    status=created_status,
+                )
+
+                total = Decimal("0")
+                for it in valid_items:
+                    quantity = int(it["quantity"])
+                    price = Decimal(str(it["price"]))
+                    amount = price * quantity
+                    total += amount
+
+                    color_id = it.get("color") or None
+                    stock, _ = Material_stock.objects.get_or_create(
+                        material_type_ref_id_id=it["material_type"],
+                        variant_ref_id_id=it["variant"],
+                        color_ref_id_id=color_id,
+                        unit_ref_id_id=it["unit"],
+                        is_deleted=False,
+                        defaults={"stock_quantity": 0, "reserved_quantity": 0},
+                    )
+                    stock.stock_quantity += quantity
+                    stock.save(update_fields=["stock_quantity"])
+
+                    Purchase_item.objects.create(
+                        purchase_id=purchase,
+                        material_id=stock,
+                        quantity=quantity,
+                        price=price,
+                        amount=amount,
+                    )
+
+                purchase.total_amount = total
+                purchase.save(update_fields=["total_amount"])
+
+            return redirect('material_stock_view')
+
+    context = {
+        "material_types": material_types,
+        "colors": colors,
+        "units": units,
+        "suppliers": suppliers,
+    }
+    return render(request, 'material_stock/purchase_create.html', context=context)
 
 def get_material_stock(request):
     material_type = request.GET.get("material_type")

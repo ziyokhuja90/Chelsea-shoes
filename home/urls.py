@@ -108,6 +108,10 @@ urlpatterns = [
     path('material_stock/', views.material_stock_view, name='material_stock_view'),
     path('get-material-stock/', views.get_material_stock, name='get_material_stock'),
 
+    # purchases
+    path('purchases/create/', views.purchase_create, name='purchase_create'),
+    path('purchases/variants/', views.get_material_variants, name='get_material_variants'),
+
     
     # next
     path('order/<int:pk>/next/', views.order_next_status, name='order_next_status'),

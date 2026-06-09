@@ -1,21 +1,27 @@
 {% extends 'base.html' %}
-
+{% load humanize %}
 
 {% block content %}
-    <div class="container">
+<div class="container">
 
-        <h1>{{MATERIAL_STOCK}}</h1>
-        <div class="card">
-            <table class="table table-hover">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+        <h1 class="mb-0">{{MATERIAL_STOCK}}</h1>
+        <a href="{% url 'purchase_create' %}" class="btn btn-primary">{{PURCHASE_MATERIALS}}</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
                 <thead>
                     <tr>
                         <th>{{MATERIAL_TYPE}}</th>
                         <th>{{VARIANT_TYPE}}</th>
-                        <th>unit_ref_id</th>
-                        <th>stock_quantity</th>
-                        <th>Reserved quantity</th>
-                        <th>Available quantity</th>
-                        <th>Updated at</th>
+                        <th>{{COLOR}}</th>
+                        <th>{{UNIT}}</th>
+                        <th>{{STOCK_QUANTITY}}</th>
+                        <th>{{RESERVED_QUANTITY}}</th>
+                        <th>{{AVAILABLE_QUANTITY}}</th>
+                        <th>{{UPDATED_AT}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -23,16 +29,66 @@
                     <tr>
                         <td>{{ stock.material_type_ref_id }}</td>
                         <td>{{ stock.variant_ref_id }}</td>
+                        <td>{{ stock.color_ref_id|default:"—" }}</td>
                         <td>{{ stock.unit_ref_id }}</td>
                         <td>{{ stock.stock_quantity }}</td>
                         <td>{{ stock.reserved_quantity }}</td>
                         <td>{{ stock.available_quantity }}</td>
                         <td>{{ stock.updated_at }}</td>
                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">{{MATERIAL_STOCK}} {{NO_DATA}}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+
+    <h4 class="mb-2">{{PURCHASES}}</h4>
+    {% if purchases %}
+        {% for purchase in purchases %}
+        <details class="border rounded mb-2">
+            <summary class="p-3 bg-light" style="cursor: pointer;">
+                <strong>#{{ purchase.id }} — {{ purchase.supplier_id }}</strong>
+                <span class="ms-2">{{ purchase.purchase_date|date:"Y-m-d" }}</span>
+                <span class="ms-2">{{TOTAL}}: {{ purchase.total_amount|floatformat:2|intcomma }}</span>
+                <span class="ms-2 text-muted">{{PAID_AMOUNT}}: {{ purchase.paid_amount|floatformat:2|intcomma }}</span>
+                <span class="ms-2">{{ purchase.status }}</span>
+            </summary>
+            <div class="p-3">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{{MATERIAL_TYPE}}</th>
+                                <th>{{VARIANT_TYPE}}</th>
+                                <th>{{COLOR}}</th>
+                                <th>{{QUANTITY}}</th>
+                                <th>{{PRICE}}</th>
+                                <th>{{TOTAL}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in purchase.purchase_id.all %}
+                            <tr>
+                                <td>{{ item.material_id.material_type_ref_id }}</td>
+                                <td>{{ item.material_id.variant_ref_id }}</td>
+                                <td>{{ item.material_id.color_ref_id|default:"—" }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.price|floatformat:2|intcomma }}</td>
+                                <td>{{ item.amount|floatformat:2|intcomma }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </details>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">{{PURCHASES}} {{NO_DATA}}</p>
+    {% endif %}
+</div>
 {% endblock content %}
-    

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-3">
+    <form method="post">
+        {% csrf_token %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-info">
+                <h3 class="mb-0 text-white">{{PURCHASE_MATERIALS}}</h3>
+            </div>
+            <div class="card-body">
+
+                {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                    <li style="color: red;">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">{{SUPPLIER}}</label>
+                        <select name="supplier_id" class="form-control" required>
+                            <option value="">{{CHOOSE}}</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">{{PURCHASE_DATE}}</label>
+                        <input type="text" name="purchase_date" class="form-control datepicker" placeholder="dd mm yyyy" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">{{PAID_AMOUNT}}</label>
+                        <input type="number" step="0.01" min="0" name="paid_amount" class="form-control" value="0">
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">{{PURCHASE_ITEMS}}</h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="addRowBtn">{{ADD_ROW}}</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{{MATERIAL_TYPE}}</th>
+                                <th>{{VARIANT_TYPE}}</th>
+                                <th>{{COLOR}}</th>
+                                <th>{{UNIT}}</th>
+                                <th>{{QUANTITY}}</th>
+                                <th>{{PRICE}}</th>
+                                <th>{{TOTAL}}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody"></tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="6" class="text-end">{{TOTAL}}</th>
+                                <th id="grandTotal">0.00</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="d-flex gap-3 align-items-center justify-content-end mt-4">
+                    <a href="{% url 'material_stock_view' %}" class="btn btn-secondary">{{CANCEL}}</a>
+                    <button type="submit" class="btn btn-primary">{{SAVE}}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+(function () {
+    const materialTypeOptions = `
+        <option value="">{{CHOOSE}}</option>
+        {% for mt in material_types %}<option value="{{ mt.id }}">{{ mt.value }}</option>{% endfor %}
+    `;
+    const colorOptions = `
+        <option value="">{{EMPTY_LABEL}}</option>
+        {% for c in colors %}<option value="{{ c.id }}">{{ c.value }}</option>{% endfor %}
+    `;
+    const unitOptions = `
+        <option value="">{{CHOOSE}}</option>
+        {% for u in units %}<option value="{{ u.id }}">{{ u.value }}</option>{% endfor %}
+    `;
+
+    let rowIndex = 0;
+    const itemsBody = document.getElementById("itemsBody");
+
+    function recalc() {
+        let grand = 0;
+        itemsBody.querySelectorAll("tr").forEach(tr => {
+            const qty = parseFloat(tr.querySelector(".qty").value) || 0;
+            const price = parseFloat(tr.querySelector(".price").value) || 0;
+            const amount = qty * price;
+            tr.querySelector(".amount").innerText = amount.toFixed(2);
+            grand += amount;
+        });
+        document.getElementById("grandTotal").innerText = grand.toFixed(2);
+    }
+
+    function loadVariants(select, materialTypeId, variantSelect) {
+        variantSelect.innerHTML = `<option value="">{{CHOOSE}}</option>`;
+        if (!materialTypeId) return;
+        fetch(`{% url 'get_material_variants' %}?material_type=${encodeURIComponent(materialTypeId)}`)
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(v => {
+                    const opt = document.createElement("option");
+                    opt.value = v.id;
+                    opt.textContent = v.value;
+                    variantSelect.appendChild(opt);
+                });
+            });
+    }
+
+    function addRow() {
+        const i = rowIndex++;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><select name="items[${i}][material_type]" class="form-control material-type">${materialTypeOptions}</select></td>
+            <td><select name="items[${i}][variant]" class="form-control variant"><option value="">{{CHOOSE}}</option></select></td>
+            <td><select name="items[${i}][color]" class="form-control">${colorOptions}</select></td>
+            <td><select name="items[${i}][unit]" class="form-control">${unitOptions}</select></td>
+            <td><input type="number" min="0" step="1" name="items[${i}][quantity]" class="form-control qty" value="0"></td>
+            <td><input type="number" min="0" step="0.01" name="items[${i}][price]" class="form-control price" value="0"></td>
+            <td class="amount">0.00</td>
+            <td><button type="button" class="btn btn-sm btn-danger removeRow"><i class="bx bx-trash"></i></button></td>
+        `;
+        itemsBody.appendChild(tr);
+
+        const materialTypeSelect = tr.querySelector(".material-type");
+        const variantSelect = tr.querySelector(".variant");
+        materialTypeSelect.addEventListener("change", () => loadVariants(materialTypeSelect, materialTypeSelect.value, variantSelect));
+        tr.querySelector(".qty").addEventListener("input", recalc);
+        tr.querySelector(".price").addEventListener("input", recalc);
+        tr.querySelector(".removeRow").addEventListener("click", () => { tr.remove(); recalc(); });
+    }
+
+    document.getElementById("addRowBtn").addEventListener("click", addRow);
+    addRow();
+})();
+</script>
+{% endblock content %}
