@@ -132,7 +132,7 @@
             <td><select name="items[${i}][variant]" class="form-control variant"><option value="">{{CHOOSE}}</option></select></td>
             <td><select name="items[${i}][color]" class="form-control">${colorOptions}</select></td>
             <td><select name="items[${i}][unit]" class="form-control">${unitOptions}</select></td>
-            <td><input type="number" min="0" step="1" name="items[${i}][quantity]" class="form-control qty" value="0"></td>
+            <td><input type="number" min="0" step="0.01" name="items[${i}][quantity]" class="form-control qty" value="0"></td>
             <td><input type="number" min="0" step="0.01" name="items[${i}][price]" class="form-control price" value="0"></td>
             <td class="amount">0.00</td>
             <td><button type="button" class="btn btn-sm btn-danger removeRow"><i class="bx bx-trash"></i></button></td>

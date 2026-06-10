@@ -31,9 +31,9 @@
                         <td>{{ stock.variant_ref_id }}</td>
                         <td>{{ stock.color_ref_id|default:"—" }}</td>
                         <td>{{ stock.unit_ref_id }}</td>
-                        <td>{{ stock.stock_quantity }}</td>
-                        <td>{{ stock.reserved_quantity }}</td>
-                        <td>{{ stock.available_quantity }}</td>
+                        <td>{{ stock.stock_quantity|floatformat:2 }}</td>
+                        <td>{{ stock.reserved_quantity|floatformat:2 }}</td>
+                        <td>{{ stock.available_quantity|floatformat:2 }}</td>
                         <td>{{ stock.updated_at }}</td>
                     </tr>
                     {% empty %}
@@ -76,7 +76,7 @@
                                 <td>{{ item.material_id.material_type_ref_id }}</td>
                                 <td>{{ item.material_id.variant_ref_id }}</td>
                                 <td>{{ item.material_id.color_ref_id|default:"—" }}</td>
-                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.quantity|floatformat:2 }}</td>
                                 <td>{{ item.price|floatformat:2|intcomma }}</td>
                                 <td>{{ item.amount|floatformat:2|intcomma }}</td>
                             </tr>

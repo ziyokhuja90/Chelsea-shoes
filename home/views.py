@@ -1249,8 +1249,7 @@ def order_detail_create(request, pk):
                     required = item["required"]
                     model_part = item["model_part"]
 
-                    reserve_qty = int(required)
-                    stock.reserved_quantity += reserve_qty
+                    stock.reserved_quantity += required
                     stock.save(update_fields=['reserved_quantity'])
 
                     Order_detail_parts.objects.create(
@@ -1682,7 +1681,7 @@ def purchase_create(request):
 
                 total = Decimal("0")
                 for it in valid_items:
-                    quantity = int(it["quantity"])
+                    quantity = Decimal(str(it["quantity"]))
                     price = Decimal(str(it["price"]))
                     amount = price * quantity
                     total += amount
@@ -1694,7 +1693,10 @@ def purchase_create(request):
                         color_ref_id_id=color_id,
                         unit_ref_id_id=it["unit"],
                         is_deleted=False,
-                        defaults={"stock_quantity": 0, "reserved_quantity": 0},
+                        defaults={
+                            "stock_quantity": Decimal("0"),
+                            "reserved_quantity": Decimal("0"),
+                        },
                     )
                     stock.stock_quantity += quantity
                     stock.save(update_fields=["stock_quantity"])
@@ -1762,12 +1764,12 @@ def get_material_stock(request):
         )
 
         payload = {
-            "available": stock.available_quantity,
-            "reserved": stock.reserved_quantity,
+            "available": float(stock.available_quantity),
+            "reserved": float(stock.reserved_quantity),
         }
         payload.update(extra)
         if "required" in payload:
-            payload["sufficient"] = stock.available_quantity >= payload["required"]
+            payload["sufficient"] = stock.available_quantity >= Decimal(str(payload["required"]))
         return JsonResponse(payload)
 
     except Material_stock.DoesNotExist:
