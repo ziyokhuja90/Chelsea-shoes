@@ -782,20 +782,25 @@ def _producement_queryset_base():
     ).prefetch_related(PRODUCEMENT_PARTS_PREFETCH)
 
 
-def _serialize_order_details_for_producement():
+def _order_details_for_producement():
     details_list = []
     details = Order_details.objects.filter(IsDeleted=False).select_related(
         'model_id', 'order_id', 'quantity_type_id',
+    ).prefetch_related(
+        Prefetch(
+            'parts',
+            queryset=Order_detail_parts.objects.filter(is_deleted=False).select_related(
+                'material_stock__variant_ref_id',
+                'material_stock__color_ref_id',
+                'material_stock__material_type_ref_id',
+                'model_part_definition__part_ref_id',
+            ),
+        ),
     ).order_by('id')
 
     for detail in details:
         parts_summary = []
-        for part in detail.parts.filter(is_deleted=False).select_related(
-            'material_stock__variant_ref_id',
-            'material_stock__color_ref_id',
-            'material_stock__material_type_ref_id',
-            'model_part_definition__part_ref_id',
-        ):
+        for part in detail.parts.all():
             stock = part.material_stock
             parts_summary.append({
                 'part': str(part.model_part_definition.part_ref_id),
@@ -813,7 +818,30 @@ def _serialize_order_details_for_producement():
             'quantity_type_id': detail.quantity_type_id_id,
             'parts_summary': parts_summary,
         })
-    return json.dumps(details_list)
+    return details_list
+
+
+def _chain_sources_for_form(form):
+    if 'producement_id' not in form.fields:
+        return []
+    return [
+        {
+            'id': p.id,
+            'order_id': p.order_id_id,
+            'order_detail_id': p.order_detail_id_id,
+            'shoe_model_id': p.shoe_model_id_id,
+        }
+        for p in form.fields['producement_id'].queryset
+        if p.order_id_id and p.order_detail_id_id and p.shoe_model_id_id
+    ]
+
+
+def _producement_form_context(form):
+    return {
+        'forms': form,
+        'order_details': _order_details_for_producement(),
+        'chain_sources': _chain_sources_for_form(form),
+    }
 
 
 def _producement_data_from_form(form):
@@ -831,29 +859,6 @@ def _producement_data_from_form(form):
     if order_detail:
         data['order_detail_id'] = order_detail
     return data
-
-
-def _producement_data_from_original(original, form):
-    return {
-        'staff_id': form.cleaned_data['staff_id'],
-        'shoe_model_id': original.shoe_model_id,
-        'date': form.cleaned_data['date'],
-        'quantity': form.cleaned_data['quantity'],
-        'quantity_type_id': form.cleaned_data['quantity_type_id'],
-        'price': form.cleaned_data['price'],
-        'order_id': original.order_id,
-        'status': form.cleaned_data['status'],
-        'order_detail_id': original.order_detail_id,
-    }
-
-
-def _create_chained_producement(form):
-    selected = form.cleaned_data.get('producement_id')
-    if not selected:
-        form.add_error('producement_id', 'Oldingi ishni tanlang')
-        return None
-    original = producement.objects.get(id=selected.id)
-    return producement.objects.create(**_producement_data_from_original(original, form))
 
 
 def producement_view(request):
@@ -910,98 +915,19 @@ def producement_view(request):
     }
     return render(request, 'producement/producement.html', context=context)
 
-def producement_create(request, ProducementForms):
-    details_json = _serialize_order_details_for_producement()
+def producement_create(request, ProducementForms=ProducementKroyForms):
     if request.method == "POST":
-        forms = ProducementForms(request.POST)
-        if forms.is_valid():
-            producement.objects.create(**_producement_data_from_form(forms))
+        form = ProducementForms(request.POST)
+        if form.is_valid():
+            producement.objects.create(**_producement_data_from_form(form))
             return redirect('producement_view')
     else:
-        forms = ProducementForms()
-    return render(request, "producement/producement_create.html", {
-        "forms": forms,
-        "details": details_json,
-    })
-
-
-def producement_create_kroy(request):
-    return producement_create(request, ProducementKroyForms)
-
-
-def producement_create_zakatop(request):
-    details_json = _serialize_order_details_for_producement()
-    if request.method == "POST":
-        form = ProducementZakatopForms(request.POST)
-        if form.is_valid():
-            if _create_chained_producement(form):
-                return redirect('producement_view')
-    else:
-        form = ProducementZakatopForms()
-    return render(request, 'producement/producement_create.html', {
-        "forms": form,
-        "details": details_json,
-    })
-
-
-def producement_create_lazir(request):
-    details_json = _serialize_order_details_for_producement()
-    if request.method == "POST":
-        form = ProducementLazirForms(request.POST)
-        if form.is_valid():
-            if _create_chained_producement(form):
-                return redirect('producement_view')
-    else:
-        form = ProducementLazirForms()
-    return render(request, 'producement/producement_create.html', {
-        "forms": form,
-        "details": details_json,
-    })
-
-
-def producement_create_tuquvchi(request):
-    details_json = _serialize_order_details_for_producement()
-    if request.method == "POST":
-        form = ProducementTuquvchiForms(request.POST)
-        if form.is_valid():
-            if _create_chained_producement(form):
-                return redirect('producement_view')
-    else:
-        form = ProducementTuquvchiForms()
-    return render(request, 'producement/producement_create.html', {
-        "forms": form,
-        "details": details_json,
-    })
-
-
-def producement_create_kosib(request):
-    details_json = _serialize_order_details_for_producement()
-    if request.method == "POST":
-        form = ProducementKosibForms(request.POST)
-        if form.is_valid():
-            if _create_chained_producement(form):
-                return redirect('producement_view')
-    else:
-        form = ProducementKosibForms()
-    return render(request, 'producement/producement_create.html', {
-        "forms": form,
-        "details": details_json,
-    })
-
-
-def producement_create_upakovkachi(request):
-    details_json = _serialize_order_details_for_producement()
-    if request.method == "POST":
-        form = ProducementUpakovkachiForms(request.POST)
-        if form.is_valid():
-            if _create_chained_producement(form):
-                return redirect('producement_view')
-    else:
-        form = ProducementUpakovkachiForms()
-    return render(request, 'producement/producement_create.html', {
-        "forms": form,
-        "details": details_json,
-    })
+        form = ProducementForms()
+    return render(
+        request,
+        "producement/producement_create.html",
+        _producement_form_context(form),
+    )
 
 
 def producement_read(request, pk):
@@ -1013,7 +939,6 @@ def producement_read(request, pk):
 
 def producement_update(request, pk, ProducementForms):
     producement_item = producement.objects.get(pk=pk)
-    details_json = _serialize_order_details_for_producement()
 
     if request.method == "POST":
         form = ProducementForms(request.POST, instance=producement_item)
@@ -1042,11 +967,9 @@ def producement_update(request, pk, ProducementForms):
         }
         form = ProducementForms(initial=initial_data)
 
-    return render(request, "producement/producement_update.html", {
-        "forms": form,
-        "producement": producement_item,
-        "details": details_json,
-    })
+    context = _producement_form_context(form)
+    context['producement'] = producement_item
+    return render(request, "producement/producement_update.html", context)
 
 def producement_delete(request ,pk):
     producement_item = producement.objects.get(pk=pk)

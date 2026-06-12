@@ -474,13 +474,16 @@ class ChainedProducementFormsMixin:
     def clean(self):
         cleaned_data = super().clean()
         previous = cleaned_data.get('producement_id')
-        if previous:
-            if not cleaned_data.get('order_id'):
-                cleaned_data['order_id'] = previous.order_id
-            if not cleaned_data.get('order_detail_id'):
-                cleaned_data['order_detail_id'] = previous.order_detail_id
-            if not cleaned_data.get('shoe_model_id'):
-                cleaned_data['shoe_model_id'] = previous.shoe_model_id
+        if 'producement_id' in self.fields:
+            if not previous:
+                self.add_error(
+                    'producement_id',
+                    system_variables.PREVIOUS_PRODUCEMENT_REQUIRED,
+                )
+                return cleaned_data
+            cleaned_data['order_id'] = previous.order_id
+            cleaned_data['order_detail_id'] = previous.order_detail_id
+            cleaned_data['shoe_model_id'] = previous.shoe_model_id
         return cleaned_data
 
 

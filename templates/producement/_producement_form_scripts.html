@@ -1,0 +1,128 @@
+{{ order_details|json_script:"order-details-data" }}
+{% if chain_sources %}
+{{ chain_sources|json_script:"chain-sources-data" }}
+{% endif %}
+
+<div id="selected-parts-panel" class="col-12 d-none">
+    <div class="card bg-light mb-3">
+        <div class="card-body py-2">
+            <h6 class="mb-2">{{SELECTED_PARTS}}</h6>
+            <div id="selected-parts-content" class="small text-muted">{{NO_DATA}}</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+(function () {
+    const details = JSON.parse(document.getElementById('order-details-data').textContent);
+    const chainEl = document.getElementById('chain-sources-data');
+    const chainSources = chainEl ? JSON.parse(chainEl.textContent) : [];
+
+    function formatDetailLabel(detail) {
+        const parts = (detail.parts_summary || []).map(function (p) {
+            const color = p.color ? ' (' + p.color + ')' : '';
+            return p.part + ': ' + p.variant + color;
+        }).join('; ');
+        const base = detail.model_id__name + ' - ' + detail.quantity + ' - ' + detail.price;
+        return parts ? base + ' | ' + parts : base;
+    }
+
+    function setReadonlySelect(selectId, value) {
+        const selectElement = document.getElementById(selectId);
+        if (!selectElement || value == null) return;
+        Array.from(selectElement.options).forEach(function (option) {
+            option.selected = option.value == value;
+        });
+        $(selectElement).addClass('readonly');
+        $(selectElement).off('mousedown keydown').on('mousedown keydown', function (e) {
+            e.preventDefault();
+        });
+    }
+
+    function showPartsForDetail(detailId) {
+        const panel = $('#selected-parts-panel');
+        const content = $('#selected-parts-content');
+        const detail = details.find(function (d) { return String(d.id) === String(detailId); });
+        if (!detail || !detail.parts_summary || !detail.parts_summary.length) {
+            panel.addClass('d-none');
+            content.text('');
+            return;
+        }
+        const html = detail.parts_summary.map(function (p) {
+            const color = p.color ? ' — ' + p.color : '';
+            return '<div><strong>' + p.part + '</strong>: ' + p.material + ' / ' + p.variant + color + '</div>';
+        }).join('');
+        content.html(html);
+        panel.removeClass('d-none');
+    }
+
+    function populateOrderDetailsDropdown(selectedDetailId) {
+        const selectedOrderId = $('#id_order_id').val();
+        const orderDetailSelect = $('#id_order_detail_id');
+        orderDetailSelect.empty();
+
+        if (!selectedOrderId) {
+            orderDetailSelect.append('<option value="">{{EMPTY_LABEL}}</option>');
+            return;
+        }
+
+        orderDetailSelect.append('<option value="">{{EMPTY_LABEL}}</option>');
+        details.forEach(function (detail) {
+            if (String(detail.order_id) === String(selectedOrderId)) {
+                const selected = selectedDetailId && String(detail.id) === String(selectedDetailId) ? 'selected' : '';
+                orderDetailSelect.append(
+                    '<option value="' + detail.id + '" ' + selected + '>' + formatDetailLabel(detail) + '</option>'
+                );
+            }
+        });
+    }
+
+    function applyOrderDetailSelection(detailId) {
+        if (!detailId) {
+            $('#selected-parts-panel').addClass('d-none');
+            return;
+        }
+        details.forEach(function (detail) {
+            if (String(detail.id) === String(detailId)) {
+                setReadonlySelect('id_shoe_model_id', detail.model_id);
+                showPartsForDetail(detail.id);
+            }
+        });
+    }
+
+    function applyChainSelection(producementId) {
+        const source = chainSources.find(function (item) {
+            return String(item.id) === String(producementId);
+        });
+        if (!source) return;
+
+        $('#id_order_id').val(source.order_id).trigger('change');
+        populateOrderDetailsDropdown(source.order_detail_id);
+        $('#id_order_detail_id').val(source.order_detail_id);
+        applyOrderDetailSelection(source.order_detail_id);
+        setReadonlySelect('id_order_id', source.order_id);
+        setReadonlySelect('id_order_detail_id', source.order_detail_id);
+    }
+
+    $('#id_order_id').on('change', function () {
+        populateOrderDetailsDropdown();
+        $('#selected-parts-panel').addClass('d-none');
+    });
+
+    $('#id_order_detail_id').on('change', function () {
+        applyOrderDetailSelection($(this).val());
+    });
+
+    $('#id_producement_id').on('change', function () {
+        applyChainSelection($(this).val());
+    });
+
+    populateOrderDetailsDropdown($('#id_order_detail_id').val());
+    applyOrderDetailSelection($('#id_order_detail_id').val());
+
+    if ($('#id_producement_id').length && $('#id_producement_id').val()) {
+        applyChainSelection($('#id_producement_id').val());
+    }
+})();
+</script>

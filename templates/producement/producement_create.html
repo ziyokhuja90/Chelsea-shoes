@@ -3,9 +3,9 @@
 {% block content %}
 <style>
     select.readonly {
-            background-color: #e9ecef;
-            color: #6c757d;
-        }
+        background-color: #e9ecef;
+        color: #6c757d;
+    }
 </style>
 
 <div class="container mt-3">
@@ -16,7 +16,7 @@
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
-                
+
                 <div class="row g-3">
                     {% for field in forms %}
                     <div class="col-md-6">
@@ -29,8 +29,9 @@
                         </div>
                     </div>
                     {% endfor %}
+                    {% include "producement/_producement_form_scripts.html" %}
                 </div>
-                
+
                 <div class="d-flex gap-3 align-items-center justify-content-end mt-4">
                     <a href="{% url 'producement_view' %}" class="btn btn-secondary">{{CANCEL}}</a>
                     <button type="submit" class="btn btn-primary">{{SAVE}}</button>
@@ -39,89 +40,4 @@
         </div>
     </div>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script>
-    $(document).ready(function() {
-        const details = JSON.parse('{{ details|default:"null"|safe }}');
-        if (!details) return;
-
-        $('#id_order_id').change(function () {
-            const selectedOrderId = $(this).val();
-            const orderDetailSelect = $('#id_order_detail_id');
-            orderDetailSelect.empty();
-
-            if (selectedOrderId) {
-                orderDetailSelect.append('<option value="">---------</option>');
-                details.forEach(detail => {
-                    if (detail.order_id == selectedOrderId) {
-                        orderDetailSelect.append(`
-                            <option value="${detail.id}">
-                                ${detail.model_id__name} - Quantity: ${detail.quantity} - Price: ${detail.price}
-                            </option>
-                        `);
-                    }
-                });
-            } else {
-                orderDetailSelect.append('<option value="">---------</option>');
-            }
-        });
-
-        function setSelectedValue(selectId, value) {
-            const selectElement = document.getElementById(selectId);
-            if (!selectElement || value == null) return;
-            Array.from(selectElement.options).forEach(option => {
-                option.selected = option.value == value;
-            });
-            $(selectElement).addClass('readonly');
-            $(selectElement).on('mousedown keydown', function (e) {
-                e.preventDefault();
-            });
-        }
-
-        $('#id_order_detail_id').change(function () {
-            const selectedOrderDetail = $(this).val();
-            details.forEach(detail => {
-                if (detail.id == selectedOrderDetail) {
-                    setSelectedValue("id_shoe_model_id", detail.model_id);
-                }
-            });
-        });
-
-        function populateOrderDetailsDropdown() {
-            const selectedOrderId = $('#id_order_id').val();
-            const orderDetailSelect = $('#id_order_detail_id');
-            orderDetailSelect.empty();
-
-            if (selectedOrderId) {
-                details.forEach(detail => {
-                    if (detail.order_id == selectedOrderId) {
-                        const isSelected = detail.id == orderDetailSelect.data('selected-id') ? 'selected' : '';
-                        orderDetailSelect.append(`
-                            <option value="${detail.id}" ${isSelected}>
-                                ${detail.model_id__name} - Quantity: ${detail.quantity} - Price: ${detail.price}
-                            </option>
-                        `);
-                    }
-                });
-            } else {
-                orderDetailSelect.append('<option value="">---------</option>');
-            }
-        }
-
-        function updateFieldsFromOrderDetail() {
-            const selectedOrderDetail = $('#id_order_detail_id').val();
-            details.forEach(detail => {
-                if (detail.id == selectedOrderDetail) {
-                    setSelectedValue("id_shoe_model_id", detail.model_id);
-                }
-            });
-        }
-
-        populateOrderDetailsDropdown();
-        updateFieldsFromOrderDetail();
-    });
-</script>
-
 {% endblock content %}

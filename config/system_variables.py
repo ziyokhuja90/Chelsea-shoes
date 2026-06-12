@@ -188,6 +188,8 @@ MAIN_DETAILS = "Asosiy tafsilotlar"
 DETAIL = "Tafsilot"
 MAX_ALLOWED_Q = "Bu tafsilot uchun ruxsat etilgan maksimal miqdor"
 ALREADY_PRODUCED = "Allaqachon ishlab chiqarilgan"
+PREVIOUS_PRODUCEMENT_REQUIRED = "Oldingi ishni tanlang"
+SELECTED_PARTS = "Tanlangan buyurtma qismlari"
 
 
 # ============================
