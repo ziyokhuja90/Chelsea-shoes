@@ -15,6 +15,7 @@ import json
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from datetime import datetime
+from urllib.parse import urlencode
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -546,6 +547,15 @@ def supplier_delete(request, pk):
 
 # orders
 
+def _safe_int(value):
+    if not value:
+        return None
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return None
+
+
 def orders_view(request):
     completed_id = references.objects.get(value=system_variables.COMPLETED)
 
@@ -558,10 +568,14 @@ def orders_view(request):
         system_variables.CANCELED
     ]
 
-    statuses = references.objects.filter(type=ReferenceType.STATUS.value)
+    statuses = references.objects.filter(
+        type=ReferenceType.STATUS.value,
+        IsDeleted=False,
+    ).order_by('order')
 
-    # ===== BASE QUERY =====
-    orders = Orders.objects.filter(IsDeleted=False).annotate(
+    orders = Orders.objects.filter(IsDeleted=False).select_related(
+        'client_id', 'client_id__currency', 'status',
+    ).annotate(
         status_order=Case(
             When(status__value__in=active_statuses, then=0),
             When(status__value__in=completed_statuses, then=1),
@@ -570,78 +584,103 @@ def orders_view(request):
         )
     )
 
-    # ===== GET FILTERS =====
-    shoe_model_id = request.GET.get('shoe_model_id')
-    color_id = request.GET.get('color_id')
-    leather_type_id = request.GET.get('leather_type')
-    sole_type_id = request.GET.get('solo_type')
-    client_id = request.GET.get('client')
-    status_id = request.GET.get('status')
+    shoe_model_id = _safe_int(request.GET.get('shoe_model_id'))
+    color_id = _safe_int(request.GET.get('color_id'))
+    leather_type_id = _safe_int(request.GET.get('leather_type'))
+    sole_type_id = _safe_int(request.GET.get('solo_type'))
+    client_id = _safe_int(request.GET.get('client'))
+    status_id = _safe_int(request.GET.get('status'))
 
-    # ===== ORDER LEVEL FILTERS =====
     if client_id:
         orders = orders.filter(client_id=client_id)
 
     if status_id:
-        orders = orders.filter(status=status_id)
+        orders = orders.filter(status_id=status_id)
 
-    # ===== ORDER DETAILS FILTERS =====
+    active_details = Q(order_id_orders__IsDeleted=False)
+
     if shoe_model_id:
-        orders = orders.filter(order_id_orders__model_id=shoe_model_id)
+        orders = orders.filter(active_details, order_id_orders__model_id=shoe_model_id)
+
+    active_parts = Q(
+        order_id_orders__parts__is_deleted=False,
+        order_id_orders__IsDeleted=False,
+    )
 
     if color_id:
-        orders = orders.filter(order_id_orders__color_id=color_id)
+        orders = orders.filter(
+            active_parts,
+            order_id_orders__parts__material_stock__color_ref_id=color_id,
+        )
 
     if leather_type_id:
-        orders = orders.filter(order_id_orders__leather_type=leather_type_id)
+        leather_material = references.objects.filter(
+            type=ReferenceType.MATERIAL_TYPE.value,
+            value=system_variables.LEATHER,
+            IsDeleted=False,
+        ).first()
+        leather_filter = {
+            'order_id_orders__parts__material_stock__variant_ref_id': leather_type_id,
+        }
+        if leather_material:
+            leather_filter['order_id_orders__parts__material_stock__material_type_ref_id'] = leather_material.id
+        orders = orders.filter(active_parts, **leather_filter)
 
     if sole_type_id:
-        orders = orders.filter(order_id_orders__sole_type_id=sole_type_id)
+        sole_material = references.objects.filter(
+            type=ReferenceType.MATERIAL_TYPE.value,
+            value=system_variables.SOLE,
+            IsDeleted=False,
+        ).first()
+        sole_filter = {
+            'order_id_orders__parts__material_stock__variant_ref_id': sole_type_id,
+        }
+        if sole_material:
+            sole_filter['order_id_orders__parts__material_stock__material_type_ref_id'] = sole_material.id
+        orders = orders.filter(active_parts, **sole_filter)
 
     orders = orders.distinct().order_by('status_order', 'complete_date')
 
-    # ===== DROPDOWNS =====
-    shoe_models = models.shoe_model.objects.filter(IsDeleted=False)
-    colors = models.references.objects.filter(
-        type=models.ReferenceType.COLOR.value,
-        IsDeleted=False
-    )
-    leather_types = models.references.objects.filter(
-        type=models.ReferenceType.LEATHER_VARIANT.value,
-        IsDeleted=False
-    )
-    sole_types = models.references.objects.filter(
-        type=models.ReferenceType.SOLE_VARIANT.value,
-        IsDeleted=False
-    )
-    clients = models.clients.objects.filter(
+    shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
+    colors = references.objects.filter(
+        type=ReferenceType.COLOR.value,
+        IsDeleted=False,
+    ).order_by('id')
+    leather_types = references.objects.filter(
+        type=ReferenceType.LEATHER_VARIANT.value,
+        IsDeleted=False,
+    ).order_by('id')
+    sole_types = references.objects.filter(
+        type=ReferenceType.SOLE_VARIANT.value,
+        IsDeleted=False,
+    ).order_by('id')
+    clients_list = clients.objects.filter(
         is_system=False,
-        IsDeleted=False
-    )
+        IsDeleted=False,
+    ).order_by('name')
 
-    # ===== PAGINATION =====
+    filter_params = {k: v for k, v in request.GET.items() if k != 'page' and v}
+    filter_query = urlencode(filter_params)
+
     paginator = Paginator(orders, 10)
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator.get_page(request.GET.get('page', 1))
 
     context = {
         "orders_list": page_obj,
         "statuses": statuses,
         "completed_status_id": completed_id.pk,
-
         "shoe_models": shoe_models,
         "colors": colors,
         "leather_types": leather_types,
         "sole_types": sole_types,
-        "clients": clients,
-
-        # selected values
-        "shoe_model_id": int(shoe_model_id) if shoe_model_id else None,
-        "color_id": int(color_id) if color_id else None,
-        "leather_type": int(leather_type_id) if leather_type_id else None,
-        "solo_type": int(sole_type_id) if sole_type_id else None,
-        "client_id": int(client_id) if client_id else None,
-        "status_id": int(status_id) if status_id else None,
+        "clients": clients_list,
+        "filter_query": filter_query,
+        "shoe_model_id": shoe_model_id,
+        "color_id": color_id,
+        "leather_type": leather_type_id,
+        "solo_type": sole_type_id,
+        "client_id": client_id,
+        "status_id": status_id,
     }
 
     return render(request, "orders/orders.html", context)

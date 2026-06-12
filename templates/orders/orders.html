@@ -83,9 +83,25 @@
                     {% for client in clients %}
                         <option 
                             value="{{ client.id }}" 
-                            {% if client == client.id %}selected{% endif %}
+                            {% if client_id == client.id %}selected{% endif %}
                         >
                             {{ client }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-3">
+                <label for="status" class="form-label">{{STATUS}}</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for status_item in statuses %}
+                        <option 
+                            value="{{ status_item.id }}" 
+                            {% if status_id == status_item.id %}selected{% endif %}
+                        >
+                            {{ status_item }}
                         </option>
                     {% endfor %}
                 </select>
@@ -95,7 +111,7 @@
         <!-- Buttons -->
         <div class="mt-3 text-end">
             <button type="submit" class="btn btn-primary">{{FILTER}}</button>
-            <a href="{% url 'sale' %}" class="btn btn-secondary">{{CLEAN}}</a>
+            <a href="{% url 'orders_view' %}" class="btn btn-secondary">{{CLEAN}}</a>
         </div>
     </form>
 </div>
@@ -176,12 +192,12 @@
           <!-- Oldingi tugmalar -->
           {% if orders_list.has_previous %}
             <li class="page-item">
-              <a class="page-link" href="?page=1" aria-label="Birinchi">
+              <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page=1" aria-label="Birinchi">
                 <i class="bx bx-chevrons-left"></i> 
               </a>
             </li>
             <li class="page-item">
-              <a class="page-link" href="?page={{ orders_list.previous_page_number }}" aria-label="Oldingi">
+              <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ orders_list.previous_page_number }}" aria-label="Oldingi">
                 <i class="bx bx-chevron-left"></i> 
               </a>
             </li>
@@ -208,12 +224,12 @@
           <!-- Keyingi tugmalar -->
           {% if orders_list.has_next %}
             <li class="page-item">
-              <a class="page-link" href="?page={{ orders_list.next_page_number }}" aria-label="Keyingi">
+              <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ orders_list.next_page_number }}" aria-label="Keyingi">
                  <i class="bx bx-chevron-right"></i>
               </a>
             </li>
             <li class="page-item">
-              <a class="page-link" href="?page={{ orders_list.paginator.num_pages }}" aria-label="Oxirgi">
+              <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ orders_list.paginator.num_pages }}" aria-label="Oxirgi">
                  <i class="bx bx-chevrons-right"></i>
               </a>
             </li>
