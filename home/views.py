@@ -328,11 +328,28 @@ def shoe_model_delete(request, pk):
     return redirect('home')
 
 # staff
+def _completed_producements_queryset(**filters):
+    return producement.objects.filter(
+        status__value=system_variables.COMPLETED,
+        IsDeleted=False,
+        **filters,
+    ).select_related(
+        'staff_id',
+        'staff_id__profession',
+        'shoe_model_id',
+        'status',
+        'order_id',
+        'order_id__client_id',
+        'order_detail_id',
+        'quantity_type_id',
+    ).order_by('-date', '-id')
+
+
 def staff_view(request):
     staff_list = staff.objects.filter(IsDeleted=False).order_by('id')
-    
-    producement_list = producement.objects.filter(status__value="BAJARILDI", IsDeleted=False).order_by('id')
-    payment_list = staff_payments.objects.filter(IsDeleted=False).order_by('id')
+
+    producement_list = _completed_producements_queryset()
+    payment_list = staff_payments.objects.filter(IsDeleted=False).select_related('staff_id').order_by('-date', '-id')
 
     genders = references.objects.filter(type=ReferenceType.GENDER.value, IsDeleted=False).order_by("id")
     professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False).order_by('id')
@@ -356,13 +373,13 @@ def staff_view(request):
     return render(request , "staff/staff.html" , context=context)
 
 def staff_read(request, pk):
-    staff_item = staff.objects.get(pk=pk, IsDeleted=False)
-    payment_list = staff_payments.objects.filter(staff_id=staff_item, IsDeleted=False).order_by('date')
-    pruducements = producement.objects.filter(staff_id=staff_item, status__value="Bajarildi").order_by('date')
+    staff_item = get_object_or_404(staff, pk=pk, IsDeleted=False)
+    payment_list = staff_payments.objects.filter(staff_id=staff_item, IsDeleted=False).order_by('-date')
+    producement_list = _completed_producements_queryset(staff_id=staff_item)
     context = {
-        "staff":staff_item,
-        "payment_list":payment_list,
-        "producements":pruducements
+        "staff": staff_item,
+        "payment_list": payment_list,
+        "producements": producement_list,
     }
     return render(request, "staff/staff_read.html", context=context)
 

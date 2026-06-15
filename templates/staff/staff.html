@@ -231,12 +231,17 @@
 
               <!-- Staff Work Tab -->
               <div class="tab-pane fade" id="work" role="tabpanel" aria-labelledby="work-tab">
-                  <table class="table table-hover  ">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h5>{{WORK_LIST}}</h5>
+                  </div>
+                  <table class="table table-hover">
                       <thead class="table-light">
                           <tr>
                               <th>{{ID}}</th>
                               <th>{{STAFF}}</th>
                               <th>{{MODEL}}</th>
+                              <th>{{ORDER}}</th>
+                              <th>{{DATE}}</th>
                               <th>{{PRICE}}</th>
                               <th>{{QUANTITY}}</th>
                               <th>{{TOTAL}}</th>
@@ -248,38 +253,40 @@
                           {% for work in producements %}
                           <tr>
                               <td>{{ work.id }}</td>
-                              <td>{{work.staff_id}}</td>
+                              <td>{{ work.staff_id }}</td>
                               <td>{{ work.shoe_model_id }}</td>
-                              <td>{{ work.price }}</td>
+                              <td>
+                                  {% if work.order_id %}
+                                      #{{ work.order_id.id }} — {{ work.order_id.client_id }}
+                                  {% else %}
+                                      —
+                                  {% endif %}
+                              </td>
+                              <td>{{ work.date|date:"d.m.Y" }}</td>
+                              <td>{{ work.price|floatformat:2|intcomma }}</td>
                               <td>{{ work.quantity }}</td>
+                              <td>{{ work.price|multiply:work.quantity|floatformat:2|intcomma }}</td>
                               <td>
-                                  <p>{{ work.price|multiply:work.quantity }}</p>
-
-
+                                  <span class="badge bg-success">{{ work.status }}</span>
                               </td>
                               <td>
-                                  <span class="badge bg-success">
-                                      {{ work.status }}
-                                  </span>
-                              </td>
-                              <td>
-
-                                 <a class="btn btn-sm btn-warning" href="{% url 'producement_update' work.id %}?next=work">
-                                     <i class="bx bx-edit-alt text-white"></i>
-                                 </a>
-
-                                  <a class="btn btn-sm btn-danger"  href="#"
+                                  <a class="btn btn-sm btn-info" href="{% url 'producement_read' work.id %}">
+                                      <i class="bx bx-show"></i>
+                                  </a>
+                                  <a class="btn btn-sm btn-warning" href="{% url 'producement_update' work.id %}?next=work">
+                                      <i class="bx bx-edit-alt text-white"></i>
+                                  </a>
+                                  <a class="btn btn-sm btn-danger" href="#"
                                   data-bs-toggle="modal"
                                   data-bs-target="#deleteModal"
                                   data-delete-url="{% url 'producement_delete' work.id %}">
-                
-                                      <i class="bx bx-trash "></i>
+                                      <i class="bx bx-trash"></i>
                                   </a>
                               </td>
                           </tr>
                           {% empty %}
                           <tr>
-                              <td colspan="6" class="text-center">{{WORKS}} {{NO_DATA}}</td>
+                              <td colspan="10" class="text-center">{{WORKS}} {{NO_DATA}}</td>
                           </tr>
                           {% endfor %}
                       </tbody>

@@ -4,59 +4,45 @@
 
 {% block content %}
 <div class="container mt-4">
-    <!-- Card Wrapper -->
     <div class="card shadow-sm">
-        <!-- Card Header with Balance -->
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">{{ staff }}</h5>
-            <h5>{{BALANCE}}: 
-                        {% if staff.balance >= 0 %}
-            <span class="text-success">
-                {{staff.balance|floatformat:2|intcomma}}
-            </span>
-            {% else %}
-            <span class="text-danger">
-                {{staff.balance|floatformat:2|intcomma}}
-            </span>
-            {% endif %}
-                
+            <h5>{{BALANCE}}:
+                {% if staff.balance >= 0 %}
+                <span class="text-success">{{ staff.balance|floatformat:2|intcomma }}</span>
+                {% else %}
+                <span class="text-danger">{{ staff.balance|floatformat:2|intcomma }}</span>
+                {% endif %}
             </h5>
         </div>
 
-        <!-- Card Body with Tabs -->
         <div class="card-body">
-            <!-- Tabs Navigation -->
             <ul class="nav nav-tabs" id="staffTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab" aria-controls="payments" aria-selected="true">
-                        To'lovlar ro'yxati
+                        {{PAYMENTS_LIST}}
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="work-tab" data-bs-toggle="tab" data-bs-target="#work" type="button" role="tab" aria-controls="work" aria-selected="false">
-                        Xodim ishlari
+                        {{WORK_LIST}}
                     </button>
                 </li>
             </ul>
 
-            <!-- Tabs Content -->
             <div class="tab-content mt-3" id="staffTabsContent">
-                <!-- Staff Payments Tab -->
                 <div class="tab-pane fade show active" id="payments" role="tabpanel" aria-labelledby="payments-tab">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5>To'lovlar</h5>
-                        <!-- Add Payment Button -->
-                        <a class="btn btn-primary" href="{% url "staff_payment_read_create"  staff.id %}">
-                            To'lov qilish
-                        </a>    
+                        <h5>{{PAYMENTS}}</h5>
+                        <a class="btn btn-primary" href="{% url 'staff_payment_read_create' staff.id %}">{{PAY}}</a>
                     </div>
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>ID</th>
-                                <th>Summa</th>
-                                <th>sana</th>
-                                <th>Amallar</th>
+                                <th>{{ID}}</th>
+                                <th>{{SUM}}</th>
+                                <th>{{DATE}}</th>
+                                <th>{{ACTIONS}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -64,42 +50,44 @@
                             <tr>
                                 <td>{{ payment.id }}</td>
                                 <td>{{ payment.amount|floatformat:2|intcomma }}</td>
-                                <td>{{ payment.date|date:"Y.m.d" }}</td>
+                                <td>{{ payment.date|date:"d.m.Y" }}</td>
                                 <td>
-
-                                      <a class="btn btn-sm btn-warning text-white" href="{% url "staff_payment_update" payment.id %}">
-                                        <i class="bx bx-edit-alt "></i>
+                                    <a class="btn btn-sm btn-warning text-white" href="{% url 'staff_payment_update' payment.id %}">
+                                        <i class="bx bx-edit-alt"></i>
                                     </a>
-                                      <a class="btn btn-sm btn-danger"  href="#"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteModal"
-                                      data-delete-url="{% url "staff_payment_delete" payment.id %}"> 
-                    
-                                          <i class="bx bx-trash "></i>
-                                      </a>
+                                    <a class="btn btn-sm btn-danger" href="#"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal"
+                                    data-delete-url="{% url 'staff_payment_delete' payment.id %}">
+                                        <i class="bx bx-trash"></i>
+                                    </a>
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center">To'lovlar mavjud emas</td>
+                                <td colspan="4" class="text-center">{{PAYMENTS}} {{NO_DATA}}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Staff Work Tab -->
                 <div class="tab-pane fade" id="work" role="tabpanel" aria-labelledby="work-tab">
-                    <table class="table table-hover  ">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>{{WORK_LIST}}</h5>
+                    </div>
+                    <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>ID</th>
-                                <th>Madel</th>
-                                <th>Narxi</th>
-                                <th>Miqdori</th>
-                                <th>Jami</th>
-                                <th>Holati</th>
-                                <th>Amallar</th>
+                                <th>{{ID}}</th>
+                                <th>{{MODEL}}</th>
+                                <th>{{ORDER}}</th>
+                                <th>{{DATE}}</th>
+                                <th>{{PRICE}}</th>
+                                <th>{{QUANTITY}}</th>
+                                <th>{{TOTAL}}</th>
+                                <th>{{STATUS}}</th>
+                                <th>{{ACTIONS}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,33 +95,38 @@
                             <tr>
                                 <td>{{ work.id }}</td>
                                 <td>{{ work.shoe_model_id }}</td>
-                                <td>{{ work.price }}</td>
+                                <td>
+                                    {% if work.order_id %}
+                                        #{{ work.order_id.id }} — {{ work.order_id.client_id }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>{{ work.date|date:"d.m.Y" }}</td>
+                                <td>{{ work.price|floatformat:2|intcomma }}</td>
                                 <td>{{ work.quantity }}</td>
+                                <td>{{ work.price|multiply:work.quantity|floatformat:2|intcomma }}</td>
                                 <td>
-                                    <p>{{ work.price|multiply:work.quantity }}</p>
+                                    <span class="badge bg-success">{{ work.status }}</span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-success">
-                                        {{ work.status }}
-                                    </span>
-                                </td>
-                                <td>
-
-                                      <a class="btn btn-sm btn-warning text-white" href="#">
-                                        <i class="bx bx-edit-alt "></i>
-                                      </a>
-                                      <a class="btn btn-sm btn-danger"  href="#"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteModal"
-                                      data-delete-url=""> 
-                    
-                                          <i class="bx bx-trash "></i>
-                                      </a>
+                                    <a class="btn btn-sm btn-info" href="{% url 'producement_read' work.id %}">
+                                        <i class="bx bx-show"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-warning text-white" href="{% url 'producement_update' work.id %}?next=work">
+                                        <i class="bx bx-edit-alt"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-danger" href="#"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal"
+                                    data-delete-url="{% url 'producement_delete' work.id %}">
+                                        <i class="bx bx-trash"></i>
+                                    </a>
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="6" class="text-center">Bajarilgan ishlar mavjud emas</td>
+                                <td colspan="9" class="text-center">{{WORKS}} {{NO_DATA}}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
