@@ -111,7 +111,8 @@
 
     <!-- Tab Content -->
     <div class="tab-content" id="myTabContent">
-        {% for profession in professions %}
+        {% for tab in profession_tabs %}
+        {% with profession=tab.profession producement_list=tab.producement_list %}
         <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
             id="profession-{{ profession.order }}" 
             role="tabpanel" 
@@ -134,9 +135,6 @@
             {%else%}
             href=""
             {% endif %}
-
-            
-            
             >{{NEW}} {{PRODUCEMENT|lower}}</a>
         </div>
             <table class="table table-hover">
@@ -153,124 +151,97 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% with 0 as counter %}
-                        {% for producement in producement_list %}
-                            {% if producement.staff_id.profession.id == profession.id %}
-                                {% inc_counter counter as counter %}
-                                    <tr>
-                                        <td>{{ counter }}</td>
-                                        <td>{{ producement.staff_id }}</td>
-                                        <td>
-                                            <strong>{{NAME}}:</strong> {{ producement.shoe_model_id }}<br>
-                                            {% if producement.order_detail_id %}
-                                                {% for part in producement.order_detail_id.parts.all %}
-                                                    {% if not part.is_deleted %}
-                                                        <small>{{ part.model_part_definition.part_ref_id }}: {{ part.material_stock.variant_ref_id }}{% if part.material_stock.color_ref_id %} ({{ part.material_stock.color_ref_id }}){% endif %}</small><br>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            {% else %}
-                                                <small class="text-muted">—</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <strong>{{CLIENT}}:</strong> {{ producement.order_id.client_id }}<br>
-                                            <strong>{{DEADLINE}}:</strong> {{ producement.order_id.complete_date|date:"d.m.Y" }}<br>
-                                            <strong>{{DATE}}:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
-                                        </td>
-                                        <td>{{ producement.quantity }}</td>
-                                        <td>{{ producement.price|floatformat:2|intcomma }}</td>
-
-                                        <td class="text-center">
-                                            <select 
-                                            name="status" 
-                                            class="form-select form-select-sm d-inline w-auto text-center"
-                                            data-producement-id="{{  producement.id }}"
-                                            onchange="updateProducementStatus(this)"
-                                            onfocus="previousStatus = this.value"
-                                          >
-
-                                          {% for s in statuses %}
-                                            <option value="{{ s.id }}" {% if s.id == producement.status.id %}selected{% endif %}>
-                                              {{ s.value }}
-                                            </option>
-                                          {% endfor %}
-                                        </select>
-                                      </td>
-
-                                        <td class="d-flex flex-column gap-2 align-items-center ">
-                                            <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">
-                                                <i class="bx bx-show"></i>
-                                            </a>
-                                            
-                                            <a class="btn btn-sm btn-warning text-white"
-                                            {% if profession.order == 1 %}
-                                               href="{% url 'producement_update_kroy' producement.id %}"
-                                            {% elif profession.order == 2 %}
-                                               href="{% url 'producement_update_lazir' producement.id %}"
-                                            {% elif profession.order == 3 %}
-                                               href="{% url 'producement_update_zakatop' producement.id %}"
-                                            {% elif profession.order == 4 %}
-                                               href="{% url 'producement_update_tuquvchi' producement.id %}"
-                                            {% elif profession.order == 5 %}
-                                               href="{% url 'producement_update_kosib' producement.id %}"
-                                            {% elif profession.order == 6 %}
-                                               href="{% url 'producement_update_upakovkachi' producement.id %}"
-                                            {% endif %} 
-                                             >
-                                                <i class="bx bx-edit-alt"></i>
-                                            </a>
-                                            <a class="btn btn-sm btn-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" data-delete-url="{% url 'producement_delete' producement.id %}">
-                                                <i class="bx bx-trash"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
+                    {% for producement in producement_list %}
+                    <tr>
+                        <td>{{ forloop.counter0|add:producement_list.start_index }}</td>
+                        <td>{{ producement.staff_id }}</td>
+                        <td>
+                            <strong>{{NAME}}:</strong> {{ producement.shoe_model_id }}<br>
+                            {% if producement.order_detail_id %}
+                                {% for part in producement.order_detail_id.parts.all %}
+                                    {% if not part.is_deleted %}
+                                        <small>{{ part.model_part_definition.part_ref_id }}: {{ part.material_stock.variant_ref_id }}{% if part.material_stock.color_ref_id %} ({{ part.material_stock.color_ref_id }}){% endif %}</small><br>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <small class="text-muted">—</small>
                             {% endif %}
-                        {% endfor %}
-                    {% endwith %}
+                        </td>
+                        <td>
+                            {% if producement.order_id %}
+                            <strong>{{CLIENT}}:</strong> {{ producement.order_id.client_id }}<br>
+                            <strong>{{DEADLINE}}:</strong> {{ producement.order_id.complete_date|date:"d.m.Y" }}<br>
+                            <strong>{{DATE}}:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>{{ producement.quantity }}</td>
+                        <td>{{ producement.price|floatformat:2|intcomma }}</td>
+
+                        <td class="text-center">
+                            <select 
+                            name="status" 
+                            class="form-select form-select-sm d-inline w-auto text-center"
+                            data-producement-id="{{ producement.id }}"
+                            onchange="updateProducementStatus(this)"
+                            onfocus="previousStatus = this.value"
+                          >
+                          {% for s in statuses %}
+                            <option value="{{ s.id }}" {% if s.id == producement.status.id %}selected{% endif %}>
+                              {{ s.value }}
+                            </option>
+                          {% endfor %}
+                        </select>
+                      </td>
+
+                        <td class="d-flex flex-column gap-2 align-items-center ">
+                            <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">
+                                <i class="bx bx-show"></i>
+                            </a>
+                            
+                            <a class="btn btn-sm btn-warning text-white"
+                            {% if profession.order == 1 %}
+                               href="{% url 'producement_update_kroy' producement.id %}"
+                            {% elif profession.order == 2 %}
+                               href="{% url 'producement_update_lazir' producement.id %}"
+                            {% elif profession.order == 3 %}
+                               href="{% url 'producement_update_zakatop' producement.id %}"
+                            {% elif profession.order == 4 %}
+                               href="{% url 'producement_update_tuquvchi' producement.id %}"
+                            {% elif profession.order == 5 %}
+                               href="{% url 'producement_update_kosib' producement.id %}"
+                            {% elif profession.order == 6 %}
+                               href="{% url 'producement_update_upakovkachi' producement.id %}"
+                            {% endif %} 
+                             >
+                                <i class="bx bx-edit-alt"></i>
+                            </a>
+                            <a class="btn btn-sm btn-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" data-delete-url="{% url 'producement_delete' producement.id %}">
+                                <i class="bx bx-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">{{PRODUCEMENT}} {{NO_DATA}}</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
+
+            {% with page_obj=tab.producement_list page_param=tab.page_key filter_query=tab.filter_query %}
+            {% include "partials/pagination.html" %}
+            {% endwith %}
         </div>
+        {% endwith %}
         {% endfor %}
     </div>
 </div>
 
 
     </div>
-    <!-- Pagination -->
-    <nav aria-label="Sahifa navigatsiyasi" class="my-4">
-      <ul class="pagination justify-content-center">
-        <!-- Oldingi tugmalar -->
-        <li class="page-item disabled">
-          <a class="page-link" href="#" aria-label="Birinchi">
-            <i class="bx bx-chevrons-left"></i>
-          </a>
-        </li>
-        <li class="page-item disabled">
-          <a class="page-link" href="#" aria-label="Oldingi">
-            <i class="bx bx-chevron-left"></i>
-          </a>
-        </li>
-        <!-- Joriy sahifa -->
-        <li class="page-item disabled">
-          <a class="page-link"> {{PAGE}} 1 / 5</a>
-        </li>
-        <!-- Keyingi tugmalar -->
-        <li class="page-item">
-          <a class="page-link" href="#" aria-label="Keyingi">
-            <i class="bx bx-chevron-right"></i>
-          </a>
-        </li>
-        <li class="page-item">
-          <a class="page-link" href="#" aria-label="Oxirgi">
-            <i class="bx bx-chevrons-right"></i>
-          </a>
-        </li>
-      </ul>
-    </nav>
   </div>
-</div>
-      </div> 
-    </div>
 </div>
                 <!-- Tab 2 content -->
                 {% comment %} <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">

@@ -87,7 +87,6 @@
                                 <th>{{QUANTITY}}</th>
                                 <th>{{TOTAL}}</th>
                                 <th>{{STATUS}}</th>
-                                <th>{{ACTIONS}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,20 +107,6 @@
                                 <td>{{ work.price|multiply:work.quantity|floatformat:2|intcomma }}</td>
                                 <td>
                                     <span class="badge bg-success">{{ work.status }}</span>
-                                </td>
-                                <td>
-                                    <a class="btn btn-sm btn-info" href="{% url 'producement_read' work.id %}">
-                                        <i class="bx bx-show"></i>
-                                    </a>
-                                    <a class="btn btn-sm btn-warning text-white" href="{% url 'producement_update' work.id %}?next=work">
-                                        <i class="bx bx-edit-alt"></i>
-                                    </a>
-                                    <a class="btn btn-sm btn-danger" href="#"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteModal"
-                                    data-delete-url="{% url 'producement_delete' work.id %}">
-                                        <i class="bx bx-trash"></i>
-                                    </a>
                                 </td>
                             </tr>
                             {% empty %}

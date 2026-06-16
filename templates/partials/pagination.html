@@ -1,0 +1,57 @@
+<nav aria-label="Sahifa navigatsiyasi" class="my-4">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}=1" aria-label="Birinchi">
+          <i class="bx bx-chevrons-left"></i>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}={{ page_obj.previous_page_number }}" aria-label="Oldingi">
+          <i class="bx bx-chevron-left"></i>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+          <i class="bx bx-chevrons-left"></i>
+        </a>
+      </li>
+      <li class="page-item disabled">
+        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+          <i class="bx bx-chevron-left"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    <li class="page-item disabled">
+      <a class="page-link">
+        {{PAGE}} {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+      </a>
+    </li>
+
+    {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}={{ page_obj.next_page_number }}" aria-label="Keyingi">
+          <i class="bx bx-chevron-right"></i>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}={{ page_obj.paginator.num_pages }}" aria-label="Oxirgi">
+          <i class="bx bx-chevrons-right"></i>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+          <i class="bx bx-chevron-right"></i>
+        </a>
+      </li>
+      <li class="page-item disabled">
+        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+          <i class="bx bx-chevrons-right"></i>
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>

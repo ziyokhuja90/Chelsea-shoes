@@ -881,53 +881,77 @@ def _producement_data_from_form(form):
 def producement_view(request):
     professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False).order_by("order")
 
-    producement_list = _producement_queryset_base().filter(
+    base_qs = _producement_queryset_base().filter(
         ~Q(order_id__client_id__name=system_variables.WAREHOUSE.upper()),
-    ).order_by('id')
-    producement_sklat_list = _producement_queryset_base().filter(
+    )
+    sklat_base_qs = _producement_queryset_base().filter(
         order_id__client_id__name=system_variables.WAREHOUSE.upper(),
-    ).order_by('id')
+    )
 
     staff_list = staff.objects.filter(IsDeleted=False).order_by('id')
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
     statuses = references.objects.filter(IsDeleted=False, type=ReferenceType.STATUS.value).order_by('id')
     order_list = Orders.objects.filter(IsDeleted=False).order_by('id')
 
-    staff_id = request.GET.get('staff_id')
-    model = request.GET.get('shoe_model_id')
-    status = request.GET.get('status')
-    order = request.GET.get('order')
+    staff_id = _safe_int(request.GET.get('staff_id'))
+    model = _safe_int(request.GET.get('shoe_model_id'))
+    status = _safe_int(request.GET.get('status'))
+    order = _safe_int(request.GET.get('order'))
 
     valid_filters = {}
+    filter_kwargs = {}
     if any([staff_id, model, status, order]):
-        filters = {
+        filter_kwargs = {
             'staff_id': staff_id,
             'shoe_model_id': model,
             'status': status,
             'order_id': order,
-            'IsDeleted': False,
         }
-        valid_filters = {key: int(value) for key, value in filters.items() if value not in [None, '']}
+        valid_filters = {k: v for k, v in filter_kwargs.items() if v is not None}
+        base_qs = base_qs.filter(**valid_filters)
+        sklat_base_qs = sklat_base_qs.filter(**valid_filters)
 
-        producement_list = producement_list.filter(**valid_filters).order_by('id')
-        producement_sklat_list = producement_sklat_list.filter(**valid_filters).order_by('id')
+    profession_tabs = []
+    for profession in professions:
+        page_key = f'page_{profession.order}'
+        qs = base_qs.filter(staff_id__profession_id=profession.id).order_by('id')
+        page_obj = Paginator(qs, 10).get_page(request.GET.get(page_key, 1))
+        tab_params = {
+            k: v for k, v in request.GET.items()
+            if v and k != page_key and not k.startswith('page_')
+        }
+        tab_params['active_tab'] = f'#profession-{profession.order}'
+        profession_tabs.append({
+            'profession': profession,
+            'producement_list': page_obj,
+            'page_key': page_key,
+            'filter_query': urlencode(tab_params),
+        })
 
-    paginator = Paginator(producement_list, 10)
-    page_obj = paginator.get_page(request.GET.get('page', 1))
-
-    paginator_sklat = Paginator(producement_sklat_list, 10)
-    page_obj_sklat = paginator_sklat.get_page(request.GET.get('page_sklat', 1))
+    sklat_page_key = 'page_sklat'
+    page_obj_sklat = Paginator(
+        sklat_base_qs.order_by('id'), 10,
+    ).get_page(request.GET.get(sklat_page_key, 1))
+    sklat_params = {
+        k: v for k, v in request.GET.items()
+        if v and k != sklat_page_key and not k.startswith('page_')
+    }
 
     active_tab = request.GET.get("active_tab", "#profession-1")
     context = {
         "professions": professions,
-        "producement_list": page_obj,
+        "profession_tabs": profession_tabs,
         "producement_sklat_list": page_obj_sklat,
+        "sklat_page_key": sklat_page_key,
+        "sklat_filter_query": urlencode(sklat_params),
         "staff_list": staff_list,
         "shoe_models": shoe_models,
         "statuses": statuses,
         "order_list": order_list,
-        **valid_filters,
+        "staff_id": staff_id,
+        "shoe_model_id": model,
+        "status": status,
+        "order_id": order,
         "active_tab": active_tab,
     }
     return render(request, 'producement/producement.html', context=context)
