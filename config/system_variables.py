@@ -141,6 +141,13 @@ RESERVED_QUANTITY = "Band qilingan"
 AVAILABLE_QUANTITY = "Mavjud miqdor"
 UPDATED_AT = "Yangilangan sana"
 
+# Stock movement
+STOCK_IN = "IN"
+STOCK_OUT = "OUT"
+STOCK_MOVEMENT = "Ombor harakati"
+STOCK_MOVEMENTS = "Ombor harakatlari"
+MOVEMENT_TYPE = "Harakat turi"
+
 # Purchases
 PURCHASE = "Xarid"
 PURCHASES = "Xaridlar"

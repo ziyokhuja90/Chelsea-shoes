@@ -249,21 +249,25 @@ class Stock_movement(models.Model):
         on_delete=models.CASCADE,
         related_name="stock_movements"
     )
-    quantity = models.IntegerField()
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
     movement_type = models.ForeignKey(
-        references,
+        references, # IN or OUT
         on_delete=models.CASCADE,
         related_name="stock_movements"
     )
     order = models.ForeignKey(
         Orders,
         on_delete=models.CASCADE,
-        related_name="stock_movements"
+        related_name="stock_movements",
+        null=True,
+        blank=True,
     )
     purchase = models.ForeignKey(
         Purchase,
         on_delete=models.CASCADE,
-        related_name="stock_movements"
+        related_name="stock_movements",
+        null=True,
+        blank=True,
     )
     created_at = models.DateField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)

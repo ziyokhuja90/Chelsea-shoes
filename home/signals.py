@@ -1,7 +1,11 @@
 from django.db.models import Sum
 from django.db.models.signals import post_save, post_delete, post_migrate
 from django.dispatch import receiver
-from .models import producement, staff, staff_payments, Order_details, Orders, Warehouse, references, ReferenceType, clients, client_payments
+from .models import (
+    producement, staff, staff_payments, Order_details, Orders, Warehouse,
+    references, ReferenceType, clients, client_payments,
+    Purchase_item, Order_detail_parts, Stock_movement,
+)
 from config import system_variables
 
 
@@ -94,6 +98,42 @@ def update_order_total_amount(sender, instance, **kwargs):
     _update_client_balance(instance.order_id.client_id_id)
 
 
+@receiver(post_save, sender=Purchase_item)
+def stock_movement_in_on_purchase(sender, instance, created, **kwargs):
+    # A purchased material increases stock -> record an IN movement.
+    if not created:
+        return
+    movement_type = references.objects.get(
+        type=ReferenceType.STOCK_MOVEMENT_TYPE.value,
+        value=system_variables.STOCK_IN,
+    )
+    Stock_movement.objects.create(
+        material=instance.material_id,
+        quantity=instance.quantity,
+        movement_type=movement_type,
+        order=None,
+        purchase=instance.purchase_id,
+    )
+
+
+@receiver(post_save, sender=Order_detail_parts)
+def stock_movement_out_on_order_part(sender, instance, created, **kwargs):
+    # A new order detail part consumes material -> record an OUT movement.
+    if not created:
+        return
+    movement_type = references.objects.get(
+        type=ReferenceType.STOCK_MOVEMENT_TYPE.value,
+        value=system_variables.STOCK_OUT,
+    )
+    Stock_movement.objects.create(
+        material=instance.material_stock,
+        quantity=instance.quantity_required,
+        movement_type=movement_type,
+        order=instance.order_detail.order_id,
+        purchase=None,
+    )
+
+
 @receiver(post_save, sender=Orders)
 def details_to_warehouse(sender, instance, **kwargs):
     # Warehouse still expects legacy color/leather fields removed from Order_details.
@@ -121,6 +161,9 @@ def create_system_data(sender, **kwargs):
         references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.QADOQLOVCHI, IsSystem=True, order=6)
         # quantity_type
         references.objects.get_or_create(type=ReferenceType.QUANTITY_TYPE.value, value=system_variables.COUPLE, IsSystem=True)
+        # stock movement type (IN / OUT)
+        references.objects.get_or_create(type=ReferenceType.STOCK_MOVEMENT_TYPE.value, value=system_variables.STOCK_IN, IsSystem=True, order=1)
+        references.objects.get_or_create(type=ReferenceType.STOCK_MOVEMENT_TYPE.value, value=system_variables.STOCK_OUT, IsSystem=True, order=2)
         # currency
         references.objects.get_or_create(type=ReferenceType.CURRENCY.value, value=system_variables.USD, IsSystem=True)
         references.objects.get_or_create(type=ReferenceType.CURRENCY.value, value=system_variables.UZS, IsSystem=True)
