@@ -139,6 +139,11 @@
         </tbody>
       </table>
     </div>
+
+    {% with page_obj=clients_list page_param=clients_page_param filter_query=clients_filter_query %}
+    {% include "partials/pagination.html" %}
+    {% endwith %}
+
   </div>
 </div>
 
@@ -180,11 +185,30 @@
               <div class="tab-pane fade show active" id="payments" role="tabpanel" aria-labelledby="payments-tab">
                   <div class="d-flex justify-content-between align-items-center mb-3">
                       <h5>{{PAYMENTS_LIST}}</h5>
-                      <!-- Add Payment Button -->
                       <a class="btn btn-primary" href="{% url 'client_payment_create'  %}">
                            {{PAY}}
                       </a>
                   </div>
+                  <form method="get" class="border rounded p-3 mb-3 bg-light">
+                      <input type="hidden" name="active_tab" value="#payments">
+                      <div class="row g-3">
+                          <div class="col-md-4">
+                              <label for="payment_client" class="form-label">{{CLIENT}}</label>
+                              <select id="payment_client" name="payment_client" class="form-select">
+                                  <option value="">{{CHOOSE}}</option>
+                                  {% for c in all_clients %}
+                                  <option value="{{ c.id }}" {% if payment_client == c.id %}selected{% endif %}>{{ c }}</option>
+                                  {% endfor %}
+                              </select>
+                          </div>
+                          <div class="col-md-4">
+                              <label for="payment_date" class="form-label">{{DATE}}</label>
+                              <input type="date" id="payment_date" name="payment_date" class="form-control" value="{{ payment_date }}">
+                          </div>
+                      </div>
+                      {% url 'clients_view' as filter_clean_url %}
+                      {% include "partials/filter_buttons.html" %}
+                  </form>
                   <table class="table table-hover">
                       <thead class="table-light">
                           <tr>
@@ -222,10 +246,47 @@
                           {% endfor %}
                       </tbody>
                   </table>
+                  {% with page_obj=payments page_param=payments_page_param filter_query=payments_filter_query %}
+                  {% include "partials/pagination.html" %}
+                  {% endwith %}
               </div>
 
               <!-- Staff Work Tab -->
               <div class="tab-pane fade" id="work" role="tabpanel" aria-labelledby="work-tab">
+                  <form method="get" class="border rounded p-3 mb-3 bg-light">
+                      <input type="hidden" name="active_tab" value="#work">
+                      <div class="row g-3">
+                          <div class="col-md-4">
+                              <label for="detail_client" class="form-label">{{CLIENT}}</label>
+                              <select id="detail_client" name="detail_client" class="form-select">
+                                  <option value="">{{CHOOSE}}</option>
+                                  {% for c in all_clients %}
+                                  <option value="{{ c.id }}" {% if detail_client == c.id %}selected{% endif %}>{{ c }}</option>
+                                  {% endfor %}
+                              </select>
+                          </div>
+                          <div class="col-md-4">
+                              <label for="detail_model" class="form-label">{{MODEL}}</label>
+                              <select id="detail_model" name="detail_model" class="form-select">
+                                  <option value="">{{CHOOSE}}</option>
+                                  {% for m in shoe_models %}
+                                  <option value="{{ m.id }}" {% if detail_model == m.id %}selected{% endif %}>{{ m }}</option>
+                                  {% endfor %}
+                              </select>
+                          </div>
+                          <div class="col-md-4">
+                              <label for="detail_order" class="form-label">{{ORDER}}</label>
+                              <select id="detail_order" name="detail_order" class="form-select">
+                                  <option value="">{{CHOOSE}}</option>
+                                  {% for o in order_list %}
+                                  <option value="{{ o.id }}" {% if detail_order == o.id %}selected{% endif %}>#{{ o.id }} — {{ o.client_id }}</option>
+                                  {% endfor %}
+                              </select>
+                          </div>
+                      </div>
+                      {% url 'clients_view' as filter_clean_url %}
+                      {% include "partials/filter_buttons.html" %}
+                  </form>
                   <table class="table table-hover  ">
                       <thead class="table-light">
                           <tr>
@@ -275,9 +336,15 @@
                           {% endfor %}
                       </tbody>
                   </table>
+                  {% with page_obj=details page_param=details_page_param filter_query=details_filter_query %}
+                  {% include "partials/pagination.html" %}
+                  {% endwith %}
               </div>
           </div>
       </div>
   </div>
 </div>
+
+<input type="hidden" id="active-tab" value="{{ active_tab|default:'#payments' }}">
+{% include "partials/tab_active_script.html" %}
 {% endblock content %}

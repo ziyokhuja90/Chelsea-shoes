@@ -132,6 +132,10 @@
         </div>
         {% endfor %}
 
+        {% with page_obj=group.items page_param=group.page_key filter_query=group.filter_query %}
+        {% include "partials/pagination.html" %}
+        {% endwith %}
+
       </div>
     </div>
 

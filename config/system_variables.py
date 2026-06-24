@@ -66,7 +66,7 @@ ORDERS = "Buyurtmalar"
 REFERENCE = "Ma'lumotnoma"
 WAREHOUSE = "Ombor"
 PRODUCEMENT = "Ishlab chiqarish"
-MATERIAL_STOCK = "MATERIAL_STOCK"
+MATERIAL_STOCK = "Material ombori"
 
 # ============================
 # STATUS / STATES (SYSTEM)

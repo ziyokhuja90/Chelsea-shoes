@@ -1,10 +1,29 @@
 {% extends "base.html" %} {% load static %} {% block content %}
 <div class="container">
-  <div class="card rounded-1  p-2 mt-3">
+  <div class="card rounded-1 p-2 mt-3">
     <div class="card-header rounded-2 shadow-sm d-flex align-items-center justify-content-between">
       <h3>{{SHOE_MODELS}}</h3>
       <a class="btn btn-primary text-white" href="{% url "shoe_model_create" %}">{{CREATE_BUTTON}}</a>
     </div>
+
+    <div class="card-body border-bottom">
+      <h6 class="text-center mb-3">{{FILTER}}</h6>
+      <form method="get" class="mb-0">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label for="name" class="form-label">{{NAME}}</label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="{{NAME}}" value="{{ request.GET.name }}">
+          </div>
+          <div class="col-md-4">
+            <label for="code" class="form-label">{{CODE}}</label>
+            <input type="text" id="code" name="code" class="form-control" placeholder="{{CODE}}" value="{{ request.GET.code }}">
+          </div>
+        </div>
+        {% url 'home' as filter_clean_url %}
+        {% include "partials/filter_buttons.html" %}
+      </form>
+    </div>
+
     <div class="row row-cols-1 row-cols-md-3 g-4">
       {% for shoe_model in shoe_models %}
       <div class="col-md-6 col-lg-4 mb-3 mt-5">
@@ -41,6 +60,11 @@
   {% endfor %}
   
   </div>
+
+  {% with page_obj=shoe_models page_param=shoe_models_page_param filter_query=shoe_models_filter_query %}
+  {% include "partials/pagination.html" %}
+  {% endwith %}
+
   </div>
 </div>
 </div>

@@ -76,6 +76,39 @@
                 </a>
             </div>
 
+            <form method="get" class="border rounded p-3 mb-3 bg-light">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="part_id" class="form-label">{{ MODEL_PART }}</label>
+                        <select id="part_id" name="part_id" class="form-select">
+                            <option value="">{{ CHOOSE }}</option>
+                            {% for part in parts_list %}
+                            <option value="{{ part.id }}" {% if part_id == part.id %}selected{% endif %}>{{ part.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="material_type_id" class="form-label">{{ MATERIAL_TYPE }}</label>
+                        <select id="material_type_id" name="material_type_id" class="form-select">
+                            <option value="">{{ CHOOSE }}</option>
+                            {% for mt in material_types %}
+                            <option value="{{ mt.id }}" {% if material_type_id == mt.id %}selected{% endif %}>{{ mt.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="is_required" class="form-label">{{ REQUIRED }}</label>
+                        <select id="is_required" name="is_required" class="form-select">
+                            <option value="">{{ CHOOSE }}</option>
+                            <option value="1" {% if is_required == '1' %}selected{% endif %}>Yes</option>
+                            <option value="0" {% if is_required == '0' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
+                </div>
+                {% url 'shoe_model_read' shoe_model_item.pk as filter_clean_url %}
+                {% include "partials/filter_buttons.html" %}
+            </form>
+
             <div class="table-responsive">
                 <table class="table table-bordered table-hover">
                     <thead class="table-light">
@@ -94,7 +127,7 @@
                     <tbody>
                         {% for part in model_part_definations %}
                         <tr>
-                            <td>{{ forloop.counter }}</td>
+                            <td>{{ forloop.counter0|add:model_part_definations.start_index }}</td>
 
                             <td>{{ part.part_ref_id }}</td>
 
@@ -144,6 +177,9 @@
                 </table>
             </div>
 
+            {% with page_obj=model_part_definations page_param=parts_page_param filter_query=parts_filter_query %}
+            {% include "partials/pagination.html" %}
+            {% endwith %}
 
         </div>
     </div>

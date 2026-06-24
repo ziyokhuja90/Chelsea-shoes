@@ -133,7 +133,11 @@
         </tbody>
     </table>
 </div>
-</div>
-</div>
+
+{% with page_obj=warehouse_items page_param=warehouse_page_param filter_query=warehouse_filter_query %}
+{% include "partials/pagination.html" %}
+{% endwith %}
+
+    </div>
 </div>
 {% endblock content %}

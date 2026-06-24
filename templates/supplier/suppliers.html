@@ -110,6 +110,10 @@
                 </tbody>
             </table>
         </div>
+
+        {% with page_obj=suppliers_list page_param=suppliers_page_param filter_query=suppliers_filter_query %}
+        {% include "partials/pagination.html" %}
+        {% endwith %}
     </div>
 </div>
 {% endblock content %}

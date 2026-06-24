@@ -1,0 +1,22 @@
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const activeTabInput = document.getElementById('active-tab');
+  const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
+
+  tabButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      if (activeTabInput) {
+        activeTabInput.value = this.getAttribute('data-bs-target');
+      }
+    });
+  });
+
+  const currentTab = "{{ active_tab|default:''|escapejs }}";
+  if (currentTab) {
+    const triggerButton = document.querySelector('[data-bs-target="' + currentTab + '"]');
+    if (triggerButton) {
+      bootstrap.Tab.getOrCreateInstance(triggerButton).show();
+    }
+  }
+});
+</script>

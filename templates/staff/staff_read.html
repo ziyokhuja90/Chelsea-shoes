@@ -36,6 +36,17 @@
                         <h5>{{PAYMENTS}}</h5>
                         <a class="btn btn-primary" href="{% url 'staff_payment_read_create' staff.id %}">{{PAY}}</a>
                     </div>
+                    <form method="get" class="border rounded p-3 mb-3 bg-light">
+                        <input type="hidden" name="active_tab" value="#payments">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="payment_date" class="form-label">{{DATE}}</label>
+                                <input type="date" id="payment_date" name="payment_date" class="form-control" value="{{ payment_date }}">
+                            </div>
+                        </div>
+                        {% url 'staff_read' staff.id as filter_clean_url %}
+                        {% include "partials/filter_buttons.html" %}
+                    </form>
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
@@ -70,12 +81,40 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    {% with page_obj=payment_list page_param=payments_page_param filter_query=payments_filter_query %}
+                    {% include "partials/pagination.html" %}
+                    {% endwith %}
                 </div>
 
                 <div class="tab-pane fade" id="work" role="tabpanel" aria-labelledby="work-tab">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5>{{WORK_LIST}}</h5>
                     </div>
+                    <form method="get" class="border rounded p-3 mb-3 bg-light">
+                        <input type="hidden" name="active_tab" value="#work">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="work_model" class="form-label">{{MODEL}}</label>
+                                <select id="work_model" name="work_model" class="form-select">
+                                    <option value="">{{CHOOSE}}</option>
+                                    {% for m in shoe_models %}
+                                    <option value="{{ m.id }}" {% if work_model == m.id %}selected{% endif %}>{{ m }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="work_order" class="form-label">{{ORDER}}</label>
+                                <select id="work_order" name="work_order" class="form-select">
+                                    <option value="">{{CHOOSE}}</option>
+                                    {% for o in order_list %}
+                                    <option value="{{ o.id }}" {% if work_order == o.id %}selected{% endif %}>#{{ o.id }} — {{ o.client_id }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        {% url 'staff_read' staff.id as filter_clean_url %}
+                        {% include "partials/filter_buttons.html" %}
+                    </form>
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
@@ -116,9 +155,15 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    {% with page_obj=producements page_param=works_page_param filter_query=works_filter_query %}
+                    {% include "partials/pagination.html" %}
+                    {% endwith %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<input type="hidden" id="active-tab" value="{{ active_tab|default:'#payments' }}">
+{% include "partials/tab_active_script.html" %}
 {% endblock content %}

@@ -148,26 +148,22 @@ def login_view(request):
     return render(request, 'login.html', {'form': form})
 
 def home(request):
-    shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
-    # finished_producements = producement.objects.filter(status__value='BAJARILDI', IsDeleted=False)
-    # quantity_producements = dict()
-    # for item in finished_producements:
-    #     if item.shoe_model_id.name not in quantity_producements:
-    #         quantity_producements[item.shoe_model_id.name] = {"quantity":[item.quantity]}
-    #     else:
-    #         quantity_producements[item.shoe_model_id.name]["quantity"].append(item.quantity)
-        
-    #     quantity_producements[item.shoe_model_id.name]["total"] = sum(quantity_producements[item.shoe_model_id.name]["quantity"])
+    shoe_models_qs = shoe_model.objects.filter(IsDeleted=False).order_by('id')
 
-  
-        
-    # quantity_producements_json = json.dumps(quantity_producements)
-    context ={
-        "shoe_models":shoe_models,
-        # "quantity_producements":quantity_producements_json,
+    name = request.GET.get('name', '').strip()
+    code = request.GET.get('code', '').strip()
+    if name:
+        shoe_models_qs = shoe_models_qs.filter(name__icontains=name)
+    if code:
+        shoe_models_qs = shoe_models_qs.filter(code__icontains=code)
+
+    shoe_models_page, shoe_models_fq, shoe_models_page_param = _paginate(request, shoe_models_qs, 'page')
+    context = {
+        "shoe_models": shoe_models_page,
+        "shoe_models_page_param": shoe_models_page_param,
+        "shoe_models_filter_query": shoe_models_fq,
     }
-    
-    return render(request , "index.html" , context=context)
+    return render(request, "index.html", context=context)
 
 
 
@@ -220,21 +216,19 @@ def reference_view(request):
 
     grouped = []
 
-    
     for rt in ReferenceType:
-        items = reference_qs.filter(type=rt.value)
-        if items.exists():
+        items_qs = reference_qs.filter(type=rt.value)
+        if items_qs.exists():
             ui_key = REFERENCE_TYPE_UI_KEY.get(rt)
-            print("------------------------------")
-            print(f"Processing reference type: {rt} with UI key: {ui_key}")
-            print("------------------------------")
-            # 🔥 THIS is the important line
             ui_label = getattr(system_variables, ui_key, rt.name)
-
+            page_key = f'page_ref_{rt.value}'
+            items_page, items_fq, _ = _paginate(request, items_qs, page_key)
             grouped.append({
                 "type": rt,
-                "label": ui_label,   # already Uzbek
-                "items": items,
+                "label": ui_label,
+                "items": items_page,
+                "page_key": page_key,
+                "filter_query": items_fq,
                 "is_system": rt in SYSTEM_REFERENCE_TYPES,
             })
 
@@ -295,15 +289,42 @@ def shoe_model_create(request):
     }
     return render(request , "shoe_model/shoe_model_create.html" , context=context)
 
-def shoe_model_read(request , pk):
+def shoe_model_read(request, pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
-    model_part_definations = models.Model_part_definition.objects.filter(model_id=shoe_model_item, is_deleted=False).order_by('id')
-    
+    parts_qs = models.Model_part_definition.objects.filter(
+        model_id=shoe_model_item, is_deleted=False,
+    ).select_related(
+        'part_ref_id', 'material_type_ref_id', 'unit_ref_id',
+    ).order_by('id')
+
+    part_id = _safe_int(request.GET.get('part_id'))
+    material_type_id = _safe_int(request.GET.get('material_type_id'))
+    is_required = request.GET.get('is_required')
+    if part_id:
+        parts_qs = parts_qs.filter(part_ref_id_id=part_id)
+    if material_type_id:
+        parts_qs = parts_qs.filter(material_type_ref_id_id=material_type_id)
+    if is_required in ('1', '0'):
+        parts_qs = parts_qs.filter(is_required=(is_required == '1'))
+
+    parts_page, parts_fq, parts_page_param = _paginate(request, parts_qs, 'page')
+
     context = {
-        "shoe_model_item":shoe_model_item,
-        "model_part_definations":model_part_definations,
+        "shoe_model_item": shoe_model_item,
+        "model_part_definations": parts_page,
+        "parts_page_param": parts_page_param,
+        "parts_filter_query": parts_fq,
+        "parts_list": references.objects.filter(
+            type=ReferenceType.MODEL_PART.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        "material_types": references.objects.filter(
+            type=ReferenceType.MATERIAL_TYPE.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        "part_id": part_id,
+        "material_type_id": material_type_id,
+        "is_required": is_required,
     }
-    return render(request , 'shoe_model/shoe_model_read.html' , context=context)  
+    return render(request, 'shoe_model/shoe_model_read.html', context=context)
 
 def shoe_model_update(request, pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
@@ -347,40 +368,120 @@ def _completed_producements_queryset(**filters):
 
 
 def staff_view(request):
-    staff_list = staff.objects.filter(IsDeleted=False).order_by('id')
-
-    producement_list = _completed_producements_queryset()
-    payment_list = staff_payments.objects.filter(IsDeleted=False).select_related('staff_id').order_by('-date', '-id')
+    staff_qs = staff.objects.filter(IsDeleted=False).order_by('id')
 
     genders = references.objects.filter(type=ReferenceType.GENDER.value, IsDeleted=False).order_by("id")
     professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False).order_by('id')
 
-    full_name, gender, profession, phone = request.GET.get("full_name",None),request.GET.get("gender",None),request.GET.get("profession",None),request.GET.get("phone",None)
+    full_name = request.GET.get("full_name")
+    gender = request.GET.get("gender")
+    profession = request.GET.get("profession")
+    phone = request.GET.get("phone")
 
     if full_name or gender or profession or phone:
-        staff_list = staff_list.filter(full_name__icontains=full_name, gender__value__icontains=gender, profession__value__icontains=profession, phone_number__icontains=phone, IsDeleted=False).order_by('id')
+        staff_qs = staff_qs.filter(
+            full_name__icontains=full_name or '',
+            gender__value__icontains=gender or '',
+            profession__value__icontains=profession or '',
+            phone_number__icontains=phone or '',
+            IsDeleted=False,
+        ).order_by('id')
 
+    balance = sum(i.balance for i in staff_qs)
 
+    staff_page, staff_fq, staff_page_param = _paginate(request, staff_qs, 'page_staff')
 
-    balance = sum(i.balance for i in staff_list)
+    all_staff = staff.objects.filter(IsDeleted=False).order_by('id')
+    shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
+    order_list = Orders.objects.filter(IsDeleted=False).order_by('id')
+
+    payments_qs = staff_payments.objects.filter(IsDeleted=False).select_related('staff_id').order_by('-date', '-id')
+    payment_staff = _safe_int(request.GET.get('payment_staff'))
+    payment_date = _safe_date(request.GET.get('payment_date'))
+    if payment_staff:
+        payments_qs = payments_qs.filter(staff_id_id=payment_staff)
+    if payment_date:
+        payments_qs = payments_qs.filter(date=payment_date)
+    payments_page, payments_fq, payments_page_param = _paginate(
+        request, payments_qs, 'page_payments', {'active_tab': '#payments'},
+    )
+
+    works_qs = _completed_producements_queryset()
+    work_staff = _safe_int(request.GET.get('work_staff'))
+    work_model = _safe_int(request.GET.get('work_model'))
+    work_order = _safe_int(request.GET.get('work_order'))
+    if work_staff:
+        works_qs = works_qs.filter(staff_id_id=work_staff)
+    if work_model:
+        works_qs = works_qs.filter(shoe_model_id_id=work_model)
+    if work_order:
+        works_qs = works_qs.filter(order_id_id=work_order)
+    works_page, works_fq, works_page_param = _paginate(
+        request, works_qs, 'page_works', {'active_tab': '#work'},
+    )
+
     context = {
-        "staff_list":staff_list,
-        "producements":producement_list,
-        "payment_list":payment_list,
-        "balance":balance,
-        "genders":genders,
-        "professions":professions
+        "staff_list": staff_page,
+        "staff_page_param": staff_page_param,
+        "staff_filter_query": staff_fq,
+        "producements": works_page,
+        "works_page_param": works_page_param,
+        "works_filter_query": works_fq,
+        "payment_list": payments_page,
+        "payments_page_param": payments_page_param,
+        "payments_filter_query": payments_fq,
+        "balance": balance,
+        "genders": genders,
+        "professions": professions,
+        "all_staff": all_staff,
+        "shoe_models": shoe_models,
+        "order_list": order_list,
+        "payment_staff": payment_staff,
+        "payment_date": request.GET.get('payment_date', ''),
+        "work_staff": work_staff,
+        "work_model": work_model,
+        "work_order": work_order,
+        "active_tab": request.GET.get('active_tab', '#payments'),
     }
-    return render(request , "staff/staff.html" , context=context)
+    return render(request, "staff/staff.html", context=context)
+
 
 def staff_read(request, pk):
     staff_item = get_object_or_404(staff, pk=pk, IsDeleted=False)
-    payment_list = staff_payments.objects.filter(staff_id=staff_item, IsDeleted=False).order_by('-date')
-    producement_list = _completed_producements_queryset(staff_id=staff_item)
+
+    payments_qs = staff_payments.objects.filter(staff_id=staff_item, IsDeleted=False).order_by('-date')
+    payment_date = _safe_date(request.GET.get('payment_date'))
+    if payment_date:
+        payments_qs = payments_qs.filter(date=payment_date)
+    payments_page, payments_fq, payments_page_param = _paginate(
+        request, payments_qs, 'page_payments', {'active_tab': '#payments'},
+    )
+
+    works_qs = _completed_producements_queryset(staff_id=staff_item)
+    work_model = _safe_int(request.GET.get('work_model'))
+    work_order = _safe_int(request.GET.get('work_order'))
+    if work_model:
+        works_qs = works_qs.filter(shoe_model_id_id=work_model)
+    if work_order:
+        works_qs = works_qs.filter(order_id_id=work_order)
+    works_page, works_fq, works_page_param = _paginate(
+        request, works_qs, 'page_works', {'active_tab': '#work'},
+    )
+
     context = {
         "staff": staff_item,
-        "payment_list": payment_list,
-        "producements": producement_list,
+        "payment_list": payments_page,
+        "payments_page_param": payments_page_param,
+        "payments_filter_query": payments_fq,
+        "producements": works_page,
+        "works_page_param": works_page_param,
+        "works_filter_query": works_fq,
+        "shoe_models": shoe_model.objects.filter(IsDeleted=False).order_by('id'),
+        "order_list": Orders.objects.filter(IsDeleted=False).order_by('id'),
+        "payment_date": request.GET.get('payment_date', ''),
+        "work_model": work_model,
+        "work_order": work_order,
+        "active_tab": request.GET.get('active_tab', '#payments'),
     }
     return render(request, "staff/staff_read.html", context=context)
 
@@ -432,31 +533,83 @@ def staff_delete(request, pk):
 
 # clients   
 def clients_view(request):
-    clients_list = clients.objects.filter(IsDeleted=False).order_by('id')
+    clients_qs = clients.objects.filter(IsDeleted=False).order_by('id')
     currencys = references.objects.filter(type=ReferenceType.CURRENCY.value, IsDeleted=False).order_by("id")
-    payments = client_payments.objects.filter(IsDeleted=False).order_by('id')
-    orders = Orders.objects.filter(status__value=system_variables.COMPLETED, IsDeleted=False).order_by('id')
-    details = Order_details.objects.filter(
+
+    full_name = request.GET.get("full_name")
+    currency = request.GET.get("currency")
+    address = request.GET.get("address")
+    phone = request.GET.get("phone")
+
+    if full_name or currency or address or phone:
+        clients_qs = clients_qs.filter(
+            name__icontains=full_name or '',
+            currency__value__icontains=currency or '',
+            address__icontains=address or '',
+            phone_number__icontains=phone or '',
+            IsDeleted=False,
+        ).order_by('id')
+
+    total_balance = sum(i.balance for i in clients_qs)
+
+    clients_page, clients_fq, clients_page_param = _paginate(request, clients_qs, 'page_clients')
+
+    all_clients = clients.objects.filter(IsDeleted=False).order_by('id')
+    shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
+    order_list = Orders.objects.filter(IsDeleted=False).order_by('id')
+
+    payments_qs = client_payments.objects.filter(IsDeleted=False).select_related('client_id').order_by('-date', '-id')
+    payment_client = _safe_int(request.GET.get('payment_client'))
+    payment_date = _safe_date(request.GET.get('payment_date'))
+    if payment_client:
+        payments_qs = payments_qs.filter(client_id_id=payment_client)
+    if payment_date:
+        payments_qs = payments_qs.filter(date=payment_date)
+    payments_page, payments_fq, payments_page_param = _paginate(
+        request, payments_qs, 'page_payments', {'active_tab': '#payments'},
+    )
+
+    details_qs = Order_details.objects.filter(
         order_id__status__value=system_variables.COMPLETED,
-        order_id__client_id__is_system=False, 
-        IsDeleted=False).order_by('id')
-
-    full_name, gender, profession, phone = request.GET.get("full_name",None),request.GET.get("currency",None),request.GET.get("address",None),request.GET.get("phone",None)
-
-    if full_name or gender or profession or phone:
-        clients_list = clients_list.filter(name__icontains=full_name, currency__value__icontains=gender, address__icontains=profession, phone_number__icontains=phone, IsDeleted=False).order_by('id')
-
-    total_balance = sum(i.balance for i in clients_list)
+        order_id__client_id__is_system=False,
+        IsDeleted=False,
+    ).select_related('order_id', 'order_id__client_id', 'model_id', 'order_id__status').order_by('-id')
+    detail_client = _safe_int(request.GET.get('detail_client'))
+    detail_model = _safe_int(request.GET.get('detail_model'))
+    detail_order = _safe_int(request.GET.get('detail_order'))
+    if detail_client:
+        details_qs = details_qs.filter(order_id__client_id_id=detail_client)
+    if detail_model:
+        details_qs = details_qs.filter(model_id_id=detail_model)
+    if detail_order:
+        details_qs = details_qs.filter(order_id_id=detail_order)
+    details_page, details_fq, details_page_param = _paginate(
+        request, details_qs, 'page_details', {'active_tab': '#work'},
+    )
 
     context = {
-        "clients_list":clients_list,
-        "currencys":currencys,
-        "payments":payments,
-        "orders":orders,
-        "details":details,
-        "balance":total_balance
+        "clients_list": clients_page,
+        "clients_page_param": clients_page_param,
+        "clients_filter_query": clients_fq,
+        "currencys": currencys,
+        "payments": payments_page,
+        "payments_page_param": payments_page_param,
+        "payments_filter_query": payments_fq,
+        "details": details_page,
+        "details_page_param": details_page_param,
+        "details_filter_query": details_fq,
+        "balance": total_balance,
+        "all_clients": all_clients,
+        "shoe_models": shoe_models,
+        "order_list": order_list,
+        "payment_client": payment_client,
+        "payment_date": request.GET.get('payment_date', ''),
+        "detail_client": detail_client,
+        "detail_model": detail_model,
+        "detail_order": detail_order,
+        "active_tab": request.GET.get('active_tab', '#payments'),
     }
-    return render(request , "clients/clients.html" , context=context)
+    return render(request, "clients/clients.html", context=context)
 
 def clients_create(request):
     if request.method == "POST":
@@ -501,23 +654,26 @@ def clients_delete(request, pk):
 
 # suppliers
 def supplier_view(request):
-    suppliers_list = Supplier.objects.filter(IsDeleted=False).order_by('id')
+    suppliers_qs = Supplier.objects.filter(IsDeleted=False).order_by('id')
 
     name = request.GET.get('name')
     phone = request.GET.get('phone')
     address = request.GET.get('address')
 
     if name:
-        suppliers_list = suppliers_list.filter(name__icontains=name)
+        suppliers_qs = suppliers_qs.filter(name__icontains=name)
     if phone:
-        suppliers_list = suppliers_list.filter(phone_number__icontains=phone)
+        suppliers_qs = suppliers_qs.filter(phone_number__icontains=phone)
     if address:
-        suppliers_list = suppliers_list.filter(address__icontains=address)
+        suppliers_qs = suppliers_qs.filter(address__icontains=address)
 
-    total_balance = sum(s.balance or 0 for s in suppliers_list)
+    total_balance = sum(s.balance or 0 for s in suppliers_qs)
+    suppliers_page, suppliers_fq, suppliers_page_param = _paginate(request, suppliers_qs, 'page')
 
     context = {
-        'suppliers_list': suppliers_list,
+        'suppliers_list': suppliers_page,
+        'suppliers_page_param': suppliers_page_param,
+        'suppliers_filter_query': suppliers_fq,
         'balance': total_balance,
     }
     return render(request, 'supplier/suppliers.html', context=context)
@@ -572,6 +728,26 @@ def _safe_int(value):
         return int(value)
     except (ValueError, TypeError):
         return None
+
+
+def _safe_date(value):
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value.strip(), '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return None
+
+
+PAGE_SIZE = 10
+
+
+def _paginate(request, queryset, page_param='page', extra_params=None):
+    page_obj = Paginator(queryset, PAGE_SIZE).get_page(request.GET.get(page_param, 1))
+    params = {k: v for k, v in request.GET.items() if v and k != page_param}
+    if extra_params:
+        params.update(extra_params)
+    return page_obj, urlencode(params), page_param
 
 
 def orders_view(request):
@@ -738,18 +914,26 @@ def order_read(request, pk):
             'material_stock__material_type_ref_id',
         ),
     )
-    order_lines = list(
-        Order_details.objects.filter(
-            order_id=order_item.pk,
-            IsDeleted=False,
-        ).select_related(
-            'model_id', 'quantity_type_id',
-        ).prefetch_related(parts_prefetch).order_by('id')
-    )
+    order_lines_qs = Order_details.objects.filter(
+        order_id=order_item.pk,
+        IsDeleted=False,
+    ).select_related(
+        'model_id', 'quantity_type_id',
+    ).prefetch_related(parts_prefetch).order_by('id')
+
+    line_model = _safe_int(request.GET.get('line_model'))
+    if line_model:
+        order_lines_qs = order_lines_qs.filter(model_id_id=line_model)
+
+    order_lines_page, order_lines_fq, order_lines_page_param = _paginate(request, order_lines_qs, 'page')
 
     context = {
         "order": order_item,
-        "order_lines": order_lines,
+        "order_lines": order_lines_page,
+        "order_lines_page_param": order_lines_page_param,
+        "order_lines_filter_query": order_lines_fq,
+        "shoe_models": shoe_model.objects.filter(IsDeleted=False).order_by('id'),
+        "line_model": line_model,
     }
     return render(request, "orders/order_read.html", context=context)
 
@@ -1078,34 +1262,33 @@ def staff_payment_delete(request, pk):
 
 # Sale 
 def sales_view(request):
-    
-    staff_id   = request.GET.get('staff_id')
-    model_id   = request.GET.get('shoe_model_id')
-    color_id   = request.GET.get('color_id')
-    leather_id = request.GET.get('leather_type')
-    sole_id    = request.GET.get('solo_type')
-    status     = request.GET.get('status')
-    order_id   = request.GET.get('order')
+    staff_id = _safe_int(request.GET.get('staff_id'))
+    model_id = _safe_int(request.GET.get('shoe_model_id'))
+    color_id = _safe_int(request.GET.get('color_id'))
+    leather_id = _safe_int(request.GET.get('leather_type'))
+    sole_id = _safe_int(request.GET.get('solo_type'))
+    status = _safe_int(request.GET.get('status'))
+    order_id = _safe_int(request.GET.get('order'))
 
-    # Put them in a dict
     filters = {
-        'warehouse__staff_id': staff_id,           # adjust field if needed
-        'warehouse__model_id': model_id,      # FK from Warehouse
+        'warehouse__staff_id': staff_id,
+        'warehouse__model_id': model_id,
         'warehouse__color_id': color_id,
         'warehouse__leather_type_id': leather_id,
         'warehouse__sole_type_id': sole_id,
-        'status': status,                          # if Sales has status
-        'order_id': order_id,                      # if exists
+        'status': status,
+        'order_id': order_id,
         'IsDeleted': False,
     }
+    valid_filters = {key: value for key, value in filters.items() if value is not None}
 
-    # Remove None or empty values
-    valid_filters = {key: int(value) for key, value in filters.items() if value not in [None, '']}
+    sold_qs = Sales.objects.filter(**valid_filters).select_related(
+        'client', 'warehouse', 'warehouse__model_id', 'warehouse__color_id',
+        'warehouse__sole_type_id', 'warehouse__lining_type_id',
+    ).order_by('id')
 
-    # Query sales
-    sold_items = Sales.objects.filter(**valid_filters).order_by('id')
+    sold_page, sold_fq, sold_page_param = _paginate(request, sold_qs, 'page')
 
-    # For dropdowns
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
     colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value).order_by('id')
     leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value).order_by('id')
@@ -1113,7 +1296,9 @@ def sales_view(request):
     client_list = clients.objects.filter(IsDeleted=False).order_by('id')
 
     context = {
-        "sold_items": sold_items,
+        "sold_items": sold_page,
+        "sold_page_param": sold_page_param,
+        "sold_filter_query": sold_fq,
         "shoe_models": shoe_models,
         "colors": colors,
         "leather_types": leather_types,
@@ -1124,11 +1309,9 @@ def sales_view(request):
         "leather_type": leather_id,
         "solo_type": sole_id,
         "status": status,
-        "order": order_id,
+        "order_id": order_id,
         "staff_id": staff_id,
-        
     }
-
     return render(request, 'Sale/sale.html', context=context)
 
 def sales_create(request):
@@ -1309,33 +1492,32 @@ def order_detail_delete(request, pk):
 
 # warehouse
 def warehouse_view(request):
+    staff_id = _safe_int(request.GET.get('staff_id'))
+    model_id = _safe_int(request.GET.get('shoe_model_id'))
+    color_id = _safe_int(request.GET.get('color_id'))
+    leather_id = _safe_int(request.GET.get('leather_type'))
+    sole_id = _safe_int(request.GET.get('solo_type'))
+    status = _safe_int(request.GET.get('status'))
+    order_id = _safe_int(request.GET.get('order'))
 
-    staff_id   = request.GET.get('staff_id')
-    model_id   = request.GET.get('shoe_model_id')
-    color_id   = request.GET.get('color_id')
-    leather_id = request.GET.get('leather_type')
-    sole_id    = request.GET.get('solo_type')
-    status     = request.GET.get('status')
-    order_id   = request.GET.get('order')
-    
     filters = {
-        'staff_id': staff_id,           # adjust field if needed
-        'model_id': model_id,      # FK from Warehouse
+        'staff_id': staff_id,
+        'model_id': model_id,
         'color_id': color_id,
         'leather_type_id': leather_id,
         'sole_type_id': sole_id,
-        'status': status,                          # if Sales has status
-        'order_id': order_id,                      # if exists
+        'status': status,
+        'order_id': order_id,
         'IsDeleted': False,
     }
-    valid_filters = {key: int(value) for key, value in filters.items() if value not in [None, '']}
+    valid_filters = {key: value for key, value in filters.items() if value is not None}
 
-    
-    # warehouse_items = Warehouse.objects.filter(IsDeleted=False).order_by('id')
+    warehouse_qs = Warehouse.objects.filter(**valid_filters).select_related(
+        'model_id', 'color_id', 'leather_type', 'sole_type_id', 'lining_type_id',
+    ).order_by('id')
 
-    warehouse_items = Warehouse.objects.filter(**valid_filters).order_by('id')
+    warehouse_page, warehouse_fq, warehouse_page_param = _paginate(request, warehouse_qs, 'page')
 
-    # For dropdowns
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
     colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value).order_by('id')
     leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value).order_by('id')
@@ -1343,7 +1525,9 @@ def warehouse_view(request):
     client_list = clients.objects.filter(IsDeleted=False).order_by('id')
 
     context = {
-        "warehouse_items": warehouse_items,
+        "warehouse_items": warehouse_page,
+        "warehouse_page_param": warehouse_page_param,
+        "warehouse_filter_query": warehouse_fq,
         "shoe_models": shoe_models,
         "colors": colors,
         "leather_types": leather_types,
@@ -1354,7 +1538,7 @@ def warehouse_view(request):
         "leather_type": leather_id,
         "solo_type": sole_id,
         "status": status,
-        "order": order_id,
+        "order_id": order_id,
         "staff_id": staff_id,
     }
     return render(request, 'warehouse/warehouse.html', context=context)
@@ -1598,11 +1782,11 @@ def get_model_parts(request, pk):
 
 # Material_stock
 def material_stock_view(request):
-    stocks = Material_stock.objects.filter(is_deleted=False).select_related(
+    stocks_qs = Material_stock.objects.filter(is_deleted=False).select_related(
         'material_type_ref_id', 'variant_ref_id', 'color_ref_id', 'unit_ref_id',
     ).order_by('id')
 
-    purchases = Purchase.objects.filter(is_deleted=False).select_related(
+    purchases_qs = Purchase.objects.filter(is_deleted=False).select_related(
         'supplier_id', 'status',
     ).prefetch_related(
         'purchase_id__material_id__material_type_ref_id',
@@ -1610,9 +1794,90 @@ def material_stock_view(request):
         'purchase_id__material_id__color_ref_id',
     ).order_by('-id')
 
+    movements_qs = Stock_movement.objects.filter(is_deleted=False).select_related(
+        'material__material_type_ref_id',
+        'material__variant_ref_id',
+        'material__color_ref_id',
+        'material__unit_ref_id',
+        'movement_type',
+        'order',
+        'order__client_id',
+        'purchase',
+        'purchase__supplier_id',
+    ).order_by('-created_at', '-id')
+
+    stock_material_type = _safe_int(request.GET.get('stock_material_type'))
+    stock_color = _safe_int(request.GET.get('stock_color'))
+    if stock_material_type:
+        stocks_qs = stocks_qs.filter(material_type_ref_id_id=stock_material_type)
+    if stock_color:
+        stocks_qs = stocks_qs.filter(color_ref_id_id=stock_color)
+
+    purchase_supplier = _safe_int(request.GET.get('purchase_supplier'))
+    purchase_status = _safe_int(request.GET.get('purchase_status'))
+    purchase_date = _safe_date(request.GET.get('purchase_date'))
+    if purchase_supplier:
+        purchases_qs = purchases_qs.filter(supplier_id_id=purchase_supplier)
+    if purchase_status:
+        purchases_qs = purchases_qs.filter(status_id=purchase_status)
+    if purchase_date:
+        purchases_qs = purchases_qs.filter(purchase_date=purchase_date)
+
+    movement_type = _safe_int(request.GET.get('movement_type'))
+    movement_material_type = _safe_int(request.GET.get('movement_material_type'))
+    movement_order = _safe_int(request.GET.get('movement_order'))
+    if movement_type:
+        movements_qs = movements_qs.filter(movement_type_id=movement_type)
+    if movement_material_type:
+        movements_qs = movements_qs.filter(material__material_type_ref_id_id=movement_material_type)
+    if movement_order:
+        movements_qs = movements_qs.filter(order_id=movement_order)
+
+    active_tab = request.GET.get('active_tab', '#stock-panel')
+
+    stocks_page, stocks_fq, stocks_page_param = _paginate(
+        request, stocks_qs, 'page_stock', {'active_tab': '#stock-panel'},
+    )
+    purchases_page, purchases_fq, purchases_page_param = _paginate(
+        request, purchases_qs, 'page_purchases', {'active_tab': '#stock-panel'},
+    )
+    movements_page, movements_fq, movements_page_param = _paginate(
+        request, movements_qs, 'page_movements', {'active_tab': '#movement-panel'},
+    )
+
     context = {
-        "stocks": stocks,
-        "purchases": purchases,
+        "stocks": stocks_page,
+        "stocks_page_param": stocks_page_param,
+        "stocks_filter_query": stocks_fq,
+        "purchases": purchases_page,
+        "purchases_page_param": purchases_page_param,
+        "purchases_filter_query": purchases_fq,
+        "movements": movements_page,
+        "movements_page_param": movements_page_param,
+        "movements_filter_query": movements_fq,
+        "active_tab": active_tab,
+        "material_types": references.objects.filter(
+            type=ReferenceType.MATERIAL_TYPE.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        "colors": references.objects.filter(
+            type=ReferenceType.COLOR.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        "movement_types": references.objects.filter(
+            type=ReferenceType.STOCK_MOVEMENT_TYPE.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        "suppliers": Supplier.objects.filter(IsDeleted=False).order_by('name'),
+        "purchase_statuses": references.objects.filter(
+            type=ReferenceType.STATUS.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        "order_list": Orders.objects.filter(IsDeleted=False).order_by('-id'),
+        "stock_material_type": stock_material_type,
+        "stock_color": stock_color,
+        "purchase_supplier": purchase_supplier,
+        "purchase_status": purchase_status,
+        "purchase_date": request.GET.get('purchase_date', ''),
+        "movement_type": movement_type,
+        "movement_material_type": movement_material_type,
+        "movement_order": movement_order,
     }
     return render(request, 'material_stock/index.html', context=context)
 

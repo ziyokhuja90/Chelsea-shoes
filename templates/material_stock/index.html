@@ -2,93 +2,281 @@
 {% load humanize %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-3">
 
-    <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="mb-0">{{MATERIAL_STOCK}}</h1>
         <a href="{% url 'purchase_create' %}" class="btn btn-primary">{{PURCHASE_MATERIALS}}</a>
     </div>
 
-    <div class="card mb-4">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>{{MATERIAL_TYPE}}</th>
-                        <th>{{VARIANT_TYPE}}</th>
-                        <th>{{COLOR}}</th>
-                        <th>{{UNIT}}</th>
-                        <th>{{STOCK_QUANTITY}}</th>
-                        <th>{{RESERVED_QUANTITY}}</th>
-                        <th>{{AVAILABLE_QUANTITY}}</th>
-                        <th>{{UPDATED_AT}}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for stock in stocks %}
-                    <tr>
-                        <td>{{ stock.material_type_ref_id }}</td>
-                        <td>{{ stock.variant_ref_id }}</td>
-                        <td>{{ stock.color_ref_id|default:"—" }}</td>
-                        <td>{{ stock.unit_ref_id }}</td>
-                        <td>{{ stock.stock_quantity|floatformat:2 }}</td>
-                        <td>{{ stock.reserved_quantity|floatformat:2 }}</td>
-                        <td>{{ stock.available_quantity|floatformat:2 }}</td>
-                        <td>{{ stock.updated_at }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center">{{MATERIAL_STOCK}} {{NO_DATA}}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <ul class="nav nav-tabs" id="materialStockTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="stock-tab" data-bs-toggle="tab"
+                        data-bs-target="#stock-panel" type="button" role="tab"
+                        aria-controls="stock-panel" aria-selected="true">
+                        {{MATERIAL_STOCK}}
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="movement-tab" data-bs-toggle="tab"
+                        data-bs-target="#movement-panel" type="button" role="tab"
+                        aria-controls="movement-panel" aria-selected="false">
+                        {{STOCK_MOVEMENTS}}
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content mt-3" id="materialStockTabsContent">
+
+                <!-- Tab 1: Current stock -->
+                <div class="tab-pane fade show active" id="stock-panel" role="tabpanel" aria-labelledby="stock-tab">
+                    <form method="get" class="border rounded p-3 mb-3 bg-light">
+                        <input type="hidden" name="active_tab" value="#stock-panel">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="stock_material_type" class="form-label">{{MATERIAL_TYPE}}</label>
+                                <select id="stock_material_type" name="stock_material_type" class="form-select">
+                                    <option value="">{{CHOOSE}}</option>
+                                    {% for mt in material_types %}
+                                    <option value="{{ mt.id }}" {% if stock_material_type == mt.id %}selected{% endif %}>{{ mt.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="stock_color" class="form-label">{{COLOR}}</label>
+                                <select id="stock_color" name="stock_color" class="form-select">
+                                    <option value="">{{CHOOSE}}</option>
+                                    {% for color in colors %}
+                                    <option value="{{ color.id }}" {% if stock_color == color.id %}selected{% endif %}>{{ color.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        {% url 'material_stock_view' as filter_clean_url %}
+                        {% include "partials/filter_buttons.html" %}
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{{MATERIAL_TYPE}}</th>
+                                    <th>{{VARIANT_TYPE}}</th>
+                                    <th>{{COLOR}}</th>
+                                    <th>{{UNIT}}</th>
+                                    <th>{{STOCK_QUANTITY}}</th>
+                                    <th>{{RESERVED_QUANTITY}}</th>
+                                    <th>{{AVAILABLE_QUANTITY}}</th>
+                                    <th>{{UPDATED_AT}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stock in stocks %}
+                                <tr>
+                                    <td>{{ stock.material_type_ref_id }}</td>
+                                    <td>{{ stock.variant_ref_id }}</td>
+                                    <td>{{ stock.color_ref_id|default:"—" }}</td>
+                                    <td>{{ stock.unit_ref_id }}</td>
+                                    <td>{{ stock.stock_quantity|floatformat:2 }}</td>
+                                    <td>{{ stock.reserved_quantity|floatformat:2 }}</td>
+                                    <td>{{ stock.available_quantity|floatformat:2 }}</td>
+                                    <td>{{ stock.updated_at|date:"Y-m-d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">{{MATERIAL_STOCK}} {{NO_DATA}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% with page_obj=stocks page_param=stocks_page_param filter_query=stocks_filter_query %}
+                    {% include "partials/pagination.html" %}
+                    {% endwith %}
+
+                    <h5 class="mt-4 mb-2">{{PURCHASES}}</h5>
+                    <form method="get" class="border rounded p-3 mb-3 bg-light">
+                        <input type="hidden" name="active_tab" value="#stock-panel">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="purchase_supplier" class="form-label">{{SUPPLIER}}</label>
+                                <select id="purchase_supplier" name="purchase_supplier" class="form-select">
+                                    <option value="">{{CHOOSE}}</option>
+                                    {% for supplier in suppliers %}
+                                    <option value="{{ supplier.id }}" {% if purchase_supplier == supplier.id %}selected{% endif %}>{{ supplier }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="purchase_status" class="form-label">{{STATUS}}</label>
+                                <select id="purchase_status" name="purchase_status" class="form-select">
+                                    <option value="">{{CHOOSE}}</option>
+                                    {% for status_item in purchase_statuses %}
+                                    <option value="{{ status_item.id }}" {% if purchase_status == status_item.id %}selected{% endif %}>{{ status_item.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="purchase_date" class="form-label">{{DATE}}</label>
+                                <input type="date" id="purchase_date" name="purchase_date" class="form-control" value="{{ purchase_date }}">
+                            </div>
+                        </div>
+                        {% url 'material_stock_view' as filter_clean_url %}
+                        {% include "partials/filter_buttons.html" %}
+                    </form>
+                    {% if purchases %}
+                        {% for purchase in purchases %}
+                        <details class="border rounded mb-2">
+                            <summary class="p-3 bg-light" style="cursor: pointer;">
+                                <strong>#{{ purchase.id }} — {{ purchase.supplier_id }}</strong>
+                                <span class="ms-2">{{ purchase.purchase_date|date:"Y-m-d" }}</span>
+                                <span class="ms-2">{{TOTAL}}: {{ purchase.total_amount|floatformat:2|intcomma }}</span>
+                                <span class="ms-2 text-muted">{{PAID_AMOUNT}}: {{ purchase.paid_amount|floatformat:2|intcomma }}</span>
+                                <span class="ms-2">{{ purchase.status }}</span>
+                            </summary>
+                            <div class="p-3">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>{{MATERIAL_TYPE}}</th>
+                                                <th>{{VARIANT_TYPE}}</th>
+                                                <th>{{COLOR}}</th>
+                                                <th>{{QUANTITY}}</th>
+                                                <th>{{PRICE}}</th>
+                                                <th>{{TOTAL}}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in purchase.purchase_id.all %}
+                                            <tr>
+                                                <td>{{ item.material_id.material_type_ref_id }}</td>
+                                                <td>{{ item.material_id.variant_ref_id }}</td>
+                                                <td>{{ item.material_id.color_ref_id|default:"—" }}</td>
+                                                <td>{{ item.quantity|floatformat:2 }}</td>
+                                                <td>{{ item.price|floatformat:2|intcomma }}</td>
+                                                <td>{{ item.amount|floatformat:2|intcomma }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </details>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">{{PURCHASES}} {{NO_DATA}}</p>
+                    {% endif %}
+                    {% with page_obj=purchases page_param=purchases_page_param filter_query=purchases_filter_query %}
+                    {% include "partials/pagination.html" %}
+                    {% endwith %}
+                </div>
+
+                <!-- Tab 2: Stock movement history -->
+                <div class="tab-pane fade" id="movement-panel" role="tabpanel" aria-labelledby="movement-tab">
+                    <form method="get" class="border rounded p-3 mb-3 bg-light">
+                        <input type="hidden" name="active_tab" value="#movement-panel">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="movement_type" class="form-label">{{MOVEMENT_TYPE}}</label>
+                                <select id="movement_type" name="movement_type" class="form-select">
+                                    <option value="">{{CHOOSE}}</option>
+                                    {% for mt in movement_types %}
+                                    <option value="{{ mt.id }}" {% if movement_type == mt.id %}selected{% endif %}>{{ mt.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="movement_material_type" class="form-label">{{MATERIAL_TYPE}}</label>
+                                <select id="movement_material_type" name="movement_material_type" class="form-select">
+                                    <option value="">{{CHOOSE}}</option>
+                                    {% for mt in material_types %}
+                                    <option value="{{ mt.id }}" {% if movement_material_type == mt.id %}selected{% endif %}>{{ mt.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="movement_order" class="form-label">{{ORDER}}</label>
+                                <select id="movement_order" name="movement_order" class="form-select">
+                                    <option value="">{{CHOOSE}}</option>
+                                    {% for o in order_list %}
+                                    <option value="{{ o.id }}" {% if movement_order == o.id %}selected{% endif %}>#{{ o.id }} — {{ o.client_id }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        {% url 'material_stock_view' as filter_clean_url %}
+                        {% include "partials/filter_buttons.html" %}
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{{ID}}</th>
+                                    <th>{{DATE}}</th>
+                                    <th>{{MOVEMENT_TYPE}}</th>
+                                    <th>{{MATERIAL_TYPE}}</th>
+                                    <th>{{VARIANT_TYPE}}</th>
+                                    <th>{{COLOR}}</th>
+                                    <th>{{UNIT}}</th>
+                                    <th>{{QUANTITY}}</th>
+                                    <th>{{ORDER}}</th>
+                                    <th>{{PURCHASE}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movement in movements %}
+                                <tr>
+                                    <td>{{ movement.id }}</td>
+                                    <td>{{ movement.created_at|date:"Y-m-d" }}</td>
+                                    <td>
+                                        {% if movement.movement_type.value == STOCK_IN %}
+                                        <span class="badge bg-success">{{ movement.movement_type }}</span>
+                                        {% elif movement.movement_type.value == STOCK_OUT %}
+                                        <span class="badge bg-danger">{{ movement.movement_type }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ movement.movement_type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ movement.material.material_type_ref_id }}</td>
+                                    <td>{{ movement.material.variant_ref_id }}</td>
+                                    <td>{{ movement.material.color_ref_id|default:"—" }}</td>
+                                    <td>{{ movement.material.unit_ref_id }}</td>
+                                    <td>{{ movement.quantity|floatformat:2 }}</td>
+                                    <td>
+                                        {% if movement.order %}
+                                            #{{ movement.order.id }} — {{ movement.order.client_id }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if movement.purchase %}
+                                            #{{ movement.purchase.id }} — {{ movement.purchase.supplier_id }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center">{{STOCK_MOVEMENTS}} {{NO_DATA}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% with page_obj=movements page_param=movements_page_param filter_query=movements_filter_query %}
+                    {% include "partials/pagination.html" %}
+                    {% endwith %}
+                </div>
+
+            </div>
         </div>
     </div>
-
-    <h4 class="mb-2">{{PURCHASES}}</h4>
-    {% if purchases %}
-        {% for purchase in purchases %}
-        <details class="border rounded mb-2">
-            <summary class="p-3 bg-light" style="cursor: pointer;">
-                <strong>#{{ purchase.id }} — {{ purchase.supplier_id }}</strong>
-                <span class="ms-2">{{ purchase.purchase_date|date:"Y-m-d" }}</span>
-                <span class="ms-2">{{TOTAL}}: {{ purchase.total_amount|floatformat:2|intcomma }}</span>
-                <span class="ms-2 text-muted">{{PAID_AMOUNT}}: {{ purchase.paid_amount|floatformat:2|intcomma }}</span>
-                <span class="ms-2">{{ purchase.status }}</span>
-            </summary>
-            <div class="p-3">
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>{{MATERIAL_TYPE}}</th>
-                                <th>{{VARIANT_TYPE}}</th>
-                                <th>{{COLOR}}</th>
-                                <th>{{QUANTITY}}</th>
-                                <th>{{PRICE}}</th>
-                                <th>{{TOTAL}}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in purchase.purchase_id.all %}
-                            <tr>
-                                <td>{{ item.material_id.material_type_ref_id }}</td>
-                                <td>{{ item.material_id.variant_ref_id }}</td>
-                                <td>{{ item.material_id.color_ref_id|default:"—" }}</td>
-                                <td>{{ item.quantity|floatformat:2 }}</td>
-                                <td>{{ item.price|floatformat:2|intcomma }}</td>
-                                <td>{{ item.amount|floatformat:2|intcomma }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </details>
-        {% endfor %}
-    {% else %}
-        <p class="text-muted">{{PURCHASES}} {{NO_DATA}}</p>
-    {% endif %}
 </div>
+
+<input type="hidden" id="active-tab" value="{{ active_tab|default:'#stock-panel' }}">
+{% include "partials/tab_active_script.html" %}
 {% endblock content %}

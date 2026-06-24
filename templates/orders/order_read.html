@@ -34,11 +34,27 @@
                 <a href="{% url 'order_detail_create' order.pk %}" class="btn btn-primary">{{DETAIL}} {{ADD}}</a>
             </div>
 
+            <form method="get" class="border rounded p-3 mb-3 bg-light">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="line_model" class="form-label">{{MODEL}}</label>
+                        <select id="line_model" name="line_model" class="form-select">
+                            <option value="">{{CHOOSE}}</option>
+                            {% for m in shoe_models %}
+                            <option value="{{ m.id }}" {% if line_model == m.id %}selected{% endif %}>{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% url 'order_read' order.pk as filter_clean_url %}
+                {% include "partials/filter_buttons.html" %}
+            </form>
+
             {% if order_lines %}
                 {% for line in order_lines %}
                 <details class="border rounded mb-2" {% if forloop.first %}open{% endif %}>
                     <summary class="p-3 bg-light" style="cursor: pointer;">
-                        <strong>#{{ forloop.counter }} — {{ line.model_id }}</strong>
+                        <strong>#{{ forloop.counter0|add:order_lines.start_index }} — {{ line.model_id }}</strong>
                         <span class="ms-2">{{ line.quantity }} {{ line.quantity_type_id }}</span>
                         <span class="ms-2">{{ line.price|floatformat:2|intcomma }} {{ order.client_id.currency }}</span>
                         <span class="text-muted ms-2">| {{TOTAL}}: {{ line.total_amount|floatformat:2|intcomma }}</span>
@@ -98,6 +114,10 @@
                     </div>
                 </details>
                 {% endfor %}
+
+                {% with page_obj=order_lines page_param=order_lines_page_param filter_query=order_lines_filter_query %}
+                {% include "partials/pagination.html" %}
+                {% endwith %}
             {% else %}
             <p class="text-muted">{{NO_DATA}}</p>
             {% endif %}

@@ -150,9 +150,12 @@
                         </td>
                     </tr>
                 {% endfor %}
-                <!-- Sale items will be dynamically inserted here -->
             </tbody>
         </table>
+
+        {% with page_obj=sold_items page_param=sold_page_param filter_query=sold_filter_query %}
+        {% include "partials/pagination.html" %}
+        {% endwith %}
     </div>
 </div>
 </div>
