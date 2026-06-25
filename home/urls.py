@@ -111,6 +111,8 @@ urlpatterns = [
 
     # purchases
     path('purchases/create/', views.purchase_create, name='purchase_create'),
+    path('purchases/update/<int:pk>/', views.purchase_update, name='purchase_update'),
+    path('purchases/delete/<int:pk>/', views.purchase_delete, name='purchase_delete'),
     path('purchases/variants/', views.get_material_variants, name='get_material_variants'),
 
     

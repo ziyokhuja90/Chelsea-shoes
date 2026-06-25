@@ -209,7 +209,7 @@ def create_system_data(sender, **kwargs):
         references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.KOSIB, IsSystem=True, order=5)
         references.objects.get_or_create(type=ReferenceType.PROFESSION.value, value=system_variables.QADOQLOVCHI, IsSystem=True, order=6)
         # quantity_type
-        references.objects.get_or_create(type=ReferenceType.QUANTITY_TYPE.value, value=system_variables.COUPLE, IsSystem=True)
+        references.objects.get_or_create(type=ReferenceType.QUANTITY_TYPE.value, value=system_variables.COUPLE, IsSystem=True)  
         # stock movement type (IN / OUT)
         references.objects.get_or_create(type=ReferenceType.STOCK_MOVEMENT_TYPE.value, value=system_variables.STOCK_IN, IsSystem=True, order=1)
         references.objects.get_or_create(type=ReferenceType.STOCK_MOVEMENT_TYPE.value, value=system_variables.STOCK_OUT, IsSystem=True, order=2)

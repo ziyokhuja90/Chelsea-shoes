@@ -1783,6 +1783,26 @@ def get_model_parts(request, pk):
     return JsonResponse(data, safe=False)
 
 # Material_stock
+def _stock_filter_variants(material_type_id=None):
+    if material_type_id:
+        try:
+            material_type = references.objects.get(id=material_type_id, IsDeleted=False)
+            ref_type = REFERENCE_MATERIAL_TYPE_VALUE_REFENRECE_TYPE_VALUE.get(material_type.value)
+            if ref_type:
+                return references.objects.filter(
+                    type=ref_type, IsDeleted=False,
+                ).order_by('order', 'value')
+        except references.DoesNotExist:
+            pass
+
+    variant_ids = Material_stock.objects.filter(
+        is_deleted=False,
+    ).values_list('variant_ref_id_id', flat=True).distinct()
+    return references.objects.filter(
+        id__in=variant_ids, IsDeleted=False,
+    ).order_by('value')
+
+
 def material_stock_view(request):
     stocks_qs = Material_stock.objects.filter(is_deleted=False).select_related(
         'material_type_ref_id', 'variant_ref_id', 'color_ref_id', 'unit_ref_id',
@@ -1791,9 +1811,14 @@ def material_stock_view(request):
     purchases_qs = Purchase.objects.filter(is_deleted=False).select_related(
         'supplier_id', 'status',
     ).prefetch_related(
-        'purchase_id__material_id__material_type_ref_id',
-        'purchase_id__material_id__variant_ref_id',
-        'purchase_id__material_id__color_ref_id',
+        Prefetch(
+            'purchase_id',
+            queryset=Purchase_item.objects.filter(is_deleted=False).select_related(
+                'material_id__material_type_ref_id',
+                'material_id__variant_ref_id',
+                'material_id__color_ref_id',
+            ),
+        ),
     ).order_by('-id')
 
     movements_qs = Stock_movement.objects.filter(is_deleted=False).select_related(
@@ -1809,11 +1834,17 @@ def material_stock_view(request):
     ).order_by('-created_at', '-id')
 
     stock_material_type = _safe_int(request.GET.get('stock_material_type'))
+    stock_variant = _safe_int(request.GET.get('stock_variant'))
     stock_color = _safe_int(request.GET.get('stock_color'))
+    stock_unit = _safe_int(request.GET.get('stock_unit'))
     if stock_material_type:
         stocks_qs = stocks_qs.filter(material_type_ref_id_id=stock_material_type)
+    if stock_variant:
+        stocks_qs = stocks_qs.filter(variant_ref_id_id=stock_variant)
     if stock_color:
         stocks_qs = stocks_qs.filter(color_ref_id_id=stock_color)
+    if stock_unit:
+        stocks_qs = stocks_qs.filter(unit_ref_id_id=stock_unit)
 
     purchase_supplier = _safe_int(request.GET.get('purchase_supplier'))
     purchase_status = _safe_int(request.GET.get('purchase_status'))
@@ -1864,6 +1895,10 @@ def material_stock_view(request):
         "colors": references.objects.filter(
             type=ReferenceType.COLOR.value, IsDeleted=False,
         ).order_by('order', 'value'),
+        "units": references.objects.filter(
+            type=ReferenceType.QUANTITY_TYPE.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        "stock_variants": _stock_filter_variants(stock_material_type),
         "movement_types": references.objects.filter(
             type=ReferenceType.STOCK_MOVEMENT_TYPE.value, IsDeleted=False,
         ).order_by('order', 'value'),
@@ -1873,7 +1908,9 @@ def material_stock_view(request):
         ).order_by('order', 'value'),
         "order_list": Orders.objects.filter(IsDeleted=False).order_by('-id'),
         "stock_material_type": stock_material_type,
+        "stock_variant": stock_variant,
         "stock_color": stock_color,
+        "stock_unit": stock_unit,
         "purchase_supplier": purchase_supplier,
         "purchase_status": purchase_status,
         "purchase_date": request.GET.get('purchase_date', ''),
@@ -1949,97 +1986,231 @@ def get_material_variants(request):
 
 
 def purchase_create(request):
-    material_types = references.objects.filter(
-        type=ReferenceType.MATERIAL_TYPE.value, IsDeleted=False,
-    ).order_by('order')
-    colors = references.objects.filter(
-        type=ReferenceType.COLOR.value, IsDeleted=False,
-    ).order_by('id')
-    units = references.objects.filter(
-        type=ReferenceType.QUANTITY_TYPE.value, IsDeleted=False,
-    ).order_by('id')
-    suppliers = Supplier.objects.filter(IsDeleted=False).order_by('name')
-
     if request.method == "POST":
-        supplier_id = request.POST.get("supplier_id")
-        purchase_date = request.POST.get("purchase_date")
-        paid_amount_raw = request.POST.get("paid_amount") or "0"
-
-        items = {}
-        for key, value in request.POST.items():
-            if key.startswith("items["):
-                idx = key.split("[")[1].split("]")[0]
-                field = key.split("[")[2].split("]")[0]
-                items.setdefault(idx, {})[field] = value
-
-        valid_items = [
-            it for it in items.values()
-            if it.get("material_type") and it.get("variant")
-            and it.get("unit") and it.get("quantity") and it.get("price")
-        ]
-
-        parsed_date = None
-        if purchase_date:
-            try:
-                parsed_date = datetime.strptime(purchase_date.strip(), '%d %m %Y').date()
-            except ValueError:
-                parsed_date = None
-
-        if not supplier_id or not parsed_date or not valid_items:
+        parsed = _parse_purchase_post(request.POST)
+        if parsed is None:
             messages.error(request, system_variables.PURCHASE_VALIDATION)
         else:
+            supplier_id, parsed_date, paid_amount, status_id, valid_items = parsed
             created_status = references.objects.get(value=system_variables.CREATED)
+            status = references.objects.filter(pk=status_id, IsDeleted=False).first() if status_id else created_status
             with transaction.atomic():
                 purchase = Purchase.objects.create(
                     supplier_id_id=supplier_id,
                     purchase_date=parsed_date,
                     total_amount=Decimal("0"),
-                    paid_amount=Decimal(str(paid_amount_raw)),
-                    status=created_status,
+                    paid_amount=paid_amount,
+                    status=status or created_status,
                 )
-
-                total = Decimal("0")
-                for it in valid_items:
-                    quantity = Decimal(str(it["quantity"]))
-                    price = Decimal(str(it["price"]))
-                    amount = price * quantity
-                    total += amount
-
-                    color_id = it.get("color") or None
-                    stock, _ = Material_stock.objects.get_or_create(
-                        material_type_ref_id_id=it["material_type"],
-                        variant_ref_id_id=it["variant"],
-                        color_ref_id_id=color_id,
-                        unit_ref_id_id=it["unit"],
-                        is_deleted=False,
-                        defaults={
-                            "stock_quantity": Decimal("0"),
-                            "reserved_quantity": Decimal("0"),
-                        },
-                    )
-                    stock.stock_quantity += quantity
-                    stock.save(update_fields=["stock_quantity"])
-
-                    Purchase_item.objects.create(
-                        purchase_id=purchase,
-                        material_id=stock,
-                        quantity=quantity,
-                        price=price,
-                        amount=amount,
-                    )
-
+                total = _apply_purchase_items(purchase, valid_items)
                 purchase.total_amount = total
                 purchase.save(update_fields=["total_amount"])
-
             return redirect('material_stock_view')
 
-    context = {
-        "material_types": material_types,
-        "colors": colors,
-        "units": units,
-        "suppliers": suppliers,
+    context = _purchase_form_context()
+    context.update({
+        "form_title": system_variables.PURCHASE_MATERIALS,
+        "cancel_url": reverse('material_stock_view'),
+        "initial_items": "[]",
+    })
+    return render(request, 'material_stock/purchase_form.html', context=context)
+
+
+def purchase_update(request, pk):
+    purchase = get_object_or_404(Purchase, pk=pk, is_deleted=False)
+
+    if request.method == "POST":
+        parsed = _parse_purchase_post(request.POST)
+        if parsed is None:
+            messages.error(request, system_variables.PURCHASE_VALIDATION)
+        elif not _can_reverse_purchase_items(purchase):
+            messages.error(request, system_variables.PURCHASE_STOCK_REVERSE_ERROR)
+        else:
+            supplier_id, parsed_date, paid_amount, status_id, valid_items = parsed
+            with transaction.atomic():
+                _reverse_purchase_items(purchase)
+                purchase.supplier_id_id = supplier_id
+                purchase.purchase_date = parsed_date
+                purchase.paid_amount = paid_amount
+                if status_id:
+                    status = references.objects.filter(
+                        pk=status_id, type=ReferenceType.STATUS.value, IsDeleted=False,
+                    ).first()
+                    if status:
+                        purchase.status = status
+                purchase.total_amount = _apply_purchase_items(purchase, valid_items)
+                purchase.save(update_fields=[
+                    'supplier_id', 'purchase_date', 'paid_amount', 'status', 'total_amount',
+                ])
+            return redirect('material_stock_view')
+
+    context = _purchase_form_context()
+    context.update({
+        "form_title": system_variables.PURCHASE_UPDATE,
+        "cancel_url": reverse('material_stock_view'),
+        "purchase": purchase,
+        "initial_items": json.dumps(_purchase_items_as_dicts(purchase)),
+    })
+    return render(request, 'material_stock/purchase_form.html', context=context)
+
+
+def purchase_delete(request, pk):
+    purchase = get_object_or_404(Purchase, pk=pk, is_deleted=False)
+    if not _can_reverse_purchase_items(purchase):
+        messages.error(request, system_variables.PURCHASE_STOCK_REVERSE_ERROR)
+        return redirect('material_stock_view')
+
+    with transaction.atomic():
+        _reverse_purchase_items(purchase)
+        purchase.is_deleted = True
+        purchase.save(update_fields=['is_deleted'])
+
+    return redirect('material_stock_view')
+
+
+def _parse_purchase_date(value):
+    if not value:
+        return None
+    value = value.strip()
+    for fmt in ('%Y-%m-%d', '%d %m %Y'):
+        try:
+            return datetime.strptime(value, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def _parse_purchase_items_from_post(post):
+    items = {}
+    for key, value in post.items():
+        if key.startswith("items["):
+            idx = key.split("[")[1].split("]")[0]
+            field = key.split("[")[2].split("]")[0]
+            items.setdefault(idx, {})[field] = value
+    return [
+        it for it in items.values()
+        if it.get("material_type") and it.get("variant")
+        and it.get("unit") and it.get("quantity") and it.get("price")
+    ]
+
+
+def _parse_purchase_post(post):
+    supplier_id = _safe_int(post.get("supplier_id"))
+    parsed_date = _parse_purchase_date(post.get("purchase_date"))
+    paid_amount_raw = post.get("paid_amount") or "0"
+    status_id = _safe_int(post.get("status_id"))
+    valid_items = _parse_purchase_items_from_post(post)
+
+    if not supplier_id or not parsed_date or not valid_items:
+        return None
+
+    try:
+        paid_amount = Decimal(str(paid_amount_raw))
+    except (InvalidOperation, ValueError):
+        paid_amount = Decimal("0")
+
+    return supplier_id, parsed_date, paid_amount, status_id, valid_items
+
+
+def _purchase_form_context():
+    return {
+        "material_types": references.objects.filter(
+            type=ReferenceType.MATERIAL_TYPE.value, IsDeleted=False,
+        ).order_by('order'),
+        "colors": references.objects.filter(
+            type=ReferenceType.COLOR.value, IsDeleted=False,
+        ).order_by('id'),
+        "units": references.objects.filter(
+            type=ReferenceType.QUANTITY_TYPE.value, IsDeleted=False,
+        ).order_by('id'),
+        "suppliers": Supplier.objects.filter(IsDeleted=False).order_by('name'),
+        "statuses": references.objects.filter(
+            type=ReferenceType.STATUS.value, IsDeleted=False,
+        ).order_by('order'),
     }
-    return render(request, 'material_stock/purchase_create.html', context=context)
+
+
+def _apply_purchase_items(purchase, valid_items):
+    total = Decimal("0")
+    for it in valid_items:
+        quantity = Decimal(str(it["quantity"]))
+        price = Decimal(str(it["price"]))
+        amount = price * quantity
+        total += amount
+
+        color_id = it.get("color") or None
+        if color_id == "":
+            color_id = None
+
+        stock, _ = Material_stock.objects.get_or_create(
+            material_type_ref_id_id=it["material_type"],
+            variant_ref_id_id=it["variant"],
+            color_ref_id_id=color_id,
+            unit_ref_id_id=it["unit"],
+            is_deleted=False,
+            defaults={
+                "stock_quantity": Decimal("0"),
+                "reserved_quantity": Decimal("0"),
+            },
+        )
+        stock.stock_quantity += quantity
+        stock.save(update_fields=["stock_quantity"])
+
+        Purchase_item.objects.create(
+            purchase_id=purchase,
+            material_id=stock,
+            quantity=quantity,
+            price=price,
+            amount=amount,
+        )
+    return total
+
+
+def _can_reverse_purchase_items(purchase):
+    items = Purchase_item.objects.filter(
+        purchase_id=purchase, is_deleted=False,
+    ).select_related('material_id')
+    for item in items:
+        if item.material_id.stock_quantity < item.quantity:
+            return False
+    return True
+
+
+def _reverse_purchase_items(purchase):
+    items = Purchase_item.objects.filter(
+        purchase_id=purchase, is_deleted=False,
+    ).select_related('material_id')
+    for item in items:
+        stock = Material_stock.objects.select_for_update().get(pk=item.material_id_id)
+        stock.stock_quantity -= item.quantity
+        stock.save(update_fields=["stock_quantity"])
+        item.is_deleted = True
+        item.save(update_fields=["is_deleted"])
+
+    Stock_movement.objects.filter(purchase=purchase, is_deleted=False).update(is_deleted=True)
+
+
+def _purchase_items_as_dicts(purchase):
+    rows = []
+    for item in Purchase_item.objects.filter(
+        purchase_id=purchase, is_deleted=False,
+    ).select_related(
+        'material_id__material_type_ref_id',
+        'material_id__variant_ref_id',
+        'material_id__color_ref_id',
+        'material_id__unit_ref_id',
+    ):
+        material = item.material_id
+        rows.append({
+            "material_type": material.material_type_ref_id_id,
+            "variant": material.variant_ref_id_id,
+            "color": material.color_ref_id_id or "",
+            "unit": material.unit_ref_id_id,
+            "quantity": str(item.quantity),
+            "price": str(item.price),
+        })
+    return rows
+
 
 def get_material_stock(request):
     material_type = request.GET.get("material_type")
