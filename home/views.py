@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib import messages
@@ -278,16 +279,17 @@ def delete_reference(request, pk):
 # shoemodel
 def shoe_model_create(request):
     if request.method == "POST":
-        forms = shoe_model_forms(request.POST , request.FILES)
+        forms = shoe_model_forms(request.POST, request.FILES)
         if forms.is_valid():
             forms.save()
             return redirect('home')
-    else: 
+    else:
         forms = shoe_model_forms()
     context = {
-        "forms":forms
+        "forms": forms,
+        "cancel_url": reverse('home'),
     }
-    return render(request , "shoe_model/shoe_model_create.html" , context=context)
+    return render(request, "shoe_model/shoe_model_create.html", context=context)
 
 def shoe_model_read(request, pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
@@ -328,20 +330,20 @@ def shoe_model_read(request, pk):
 
 def shoe_model_update(request, pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
-    
+
     if request.method == "POST":
-        forms = shoe_model_forms(request.POST , request.FILES , instance=shoe_model_item)
+        forms = shoe_model_forms(request.POST, request.FILES, instance=shoe_model_item)
         if forms.is_valid():
             forms.save()
-            return redirect('home')
+            return redirect('shoe_model_read', pk=pk)
 
     forms = shoe_model_forms(instance=shoe_model_item)
     context = {
-        "forms":forms,
-        "shoe_model_item":shoe_model_item,
-        "back_url_name":"home"
+        "forms": forms,
+        "shoe_model_item": shoe_model_item,
+        "cancel_url": reverse('shoe_model_read', args=[pk]),
     }
-    return render(request , 'update.html', context=context)
+    return render(request, 'shoe_model/shoe_model_update.html', context=context)
 
 def shoe_model_delete(request, pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)
@@ -1880,6 +1882,54 @@ def material_stock_view(request):
         "movement_order": movement_order,
     }
     return render(request, 'material_stock/index.html', context=context)
+
+
+def material_stock_read(request, pk):
+    stock_item = get_object_or_404(
+        Material_stock.objects.select_related(
+            'material_type_ref_id', 'variant_ref_id', 'color_ref_id', 'unit_ref_id',
+        ),
+        pk=pk,
+        is_deleted=False,
+    )
+
+    movements_qs = Stock_movement.objects.filter(
+        material=stock_item,
+        is_deleted=False,
+    ).select_related(
+        'movement_type',
+        'order',
+        'order__client_id',
+        'purchase',
+        'purchase__supplier_id',
+    ).order_by('-created_at', '-id')
+
+    movement_type = _safe_int(request.GET.get('movement_type'))
+    movement_order = _safe_int(request.GET.get('movement_order'))
+    movement_date = _safe_date(request.GET.get('movement_date'))
+    if movement_type:
+        movements_qs = movements_qs.filter(movement_type_id=movement_type)
+    if movement_order:
+        movements_qs = movements_qs.filter(order_id=movement_order)
+    if movement_date:
+        movements_qs = movements_qs.filter(created_at=movement_date)
+
+    movements_page, movements_fq, movements_page_param = _paginate(request, movements_qs, 'page')
+
+    context = {
+        'stock': stock_item,
+        'movements': movements_page,
+        'movements_page_param': movements_page_param,
+        'movements_filter_query': movements_fq,
+        'movement_types': references.objects.filter(
+            type=ReferenceType.STOCK_MOVEMENT_TYPE.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        'order_list': Orders.objects.filter(IsDeleted=False).order_by('-id'),
+        'movement_type': movement_type,
+        'movement_order': movement_order,
+        'movement_date': request.GET.get('movement_date', ''),
+    }
+    return render(request, 'material_stock/read.html', context=context)
 
 
 def get_material_variants(request):

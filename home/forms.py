@@ -12,16 +12,26 @@ from collections import OrderedDict
 class shoe_model_forms(forms.ModelForm):
     class Meta:
         model = models.shoe_model
-        fields = ['name' , 'code', 'image' ,'description']
-        
-        widgets = {
-            "name":forms.TextInput(attrs={"class":"form-control uppercase-input"}),
-            "code":forms.TextInput(attrs={"class":"form-control uppercase-input"}),
-            "image":forms.ClearableFileInput(attrs={
-                "class":"form-control",
+        fields = ['name', 'code', 'image', 'description']
 
-                }),    
-            "description":forms.Textarea(attrs={"class":"form-control uppercase-input" }),    
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": system_variables.NAME,
+            }),
+            "code": forms.TextInput(attrs={
+                "class": "form-control uppercase-input",
+                "placeholder": system_variables.CODE,
+            }),
+            "image": forms.FileInput(attrs={
+                "class": "d-none shoe-model-image-input",
+                "accept": "image/*",
+            }),
+            "description": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": system_variables.DESCRIPTION,
+            }),
         }
 
     def clean_name(self):

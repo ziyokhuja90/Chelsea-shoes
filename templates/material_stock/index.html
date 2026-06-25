@@ -69,6 +69,7 @@
                                     <th>{{RESERVED_QUANTITY}}</th>
                                     <th>{{AVAILABLE_QUANTITY}}</th>
                                     <th>{{UPDATED_AT}}</th>
+                                    <th>{{ACTIONS}}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -82,10 +83,15 @@
                                     <td>{{ stock.reserved_quantity|floatformat:2 }}</td>
                                     <td>{{ stock.available_quantity|floatformat:2 }}</td>
                                     <td>{{ stock.updated_at|date:"Y-m-d" }}</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-info" href="{% url 'material_stock_read' stock.id %}">
+                                            <i class="bx bx-show"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="8" class="text-center">{{MATERIAL_STOCK}} {{NO_DATA}}</td>
+                                    <td colspan="9" class="text-center">{{MATERIAL_STOCK}} {{NO_DATA}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

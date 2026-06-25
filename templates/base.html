@@ -207,7 +207,7 @@
               </a>
             </li>
 
-            <li class="menu-item {% if request.resolver_match.url_name == 'material_stock_view' %}active{% endif %}">
+            <li class="menu-item {% if request.resolver_match.url_name == 'material_stock_view' or request.resolver_match.url_name == 'material_stock_read' %}active{% endif %}">
               <a href="{% url 'material_stock_view' %}" class="menu-link text-decoration-none">
                 <div data-i18n="Basic ">
                   <i class="menu-icon tf-icons bx bx-file"></i>

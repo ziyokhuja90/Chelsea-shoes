@@ -1,0 +1,99 @@
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-md-5 col-lg-4">
+            <div class="border rounded-3 p-3 bg-light h-100">
+                <label class="form-label fw-semibold mb-3">{{MODEL_IMAGE}}</label>
+
+                <div class="shoe-model-preview border rounded-3 bg-white d-flex align-items-center justify-content-center overflow-hidden mb-3 mx-auto"
+                     style="width: 100%; max-width: 240px; aspect-ratio: 1;">
+                    {% if shoe_model_item and shoe_model_item.image %}
+                    <img id="shoeModelImagePreview"
+                         src="{{ shoe_model_item.image.url }}"
+                         alt="{{ shoe_model_item.name }}"
+                         class="w-100 h-100 object-fit-cover">
+                    {% else %}
+                    <img id="shoeModelImagePreview"
+                         src=""
+                         alt="{{SHOE_MODEL}}"
+                         class="w-100 h-100 object-fit-cover d-none">
+                    <div id="shoeModelImagePlaceholder" class="text-center text-muted p-3">
+                        <i class="bx bx-image fs-1 d-block mb-2"></i>
+                        <small>{{CHOOSE_IMAGE}}</small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <label for="{{ form.image.id_for_label }}" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="bx bx-upload me-1"></i> {{CHOOSE_IMAGE}}
+                </label>
+                {{ form.image }}
+                {% if form.image.errors %}
+                <div class="text-danger small">{{ form.image.errors }}</div>
+                {% endif %}
+                <p class="text-muted small mb-0">{{MODEL_IMAGE_HINT}}</p>
+            </div>
+        </div>
+
+        <div class="col-md-7 col-lg-8">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">{{NAME}} <span class="text-danger">*</span></label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.code.id_for_label }}" class="form-label fw-semibold">{{CODE}} <span class="text-danger">*</span></label>
+                    {{ form.code }}
+                    {% if form.code.errors %}
+                    <div class="text-danger small mt-1">{{ form.code.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">{{DESCRIPTION}}</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 justify-content-end mt-4 pt-3 border-top">
+        <a href="{{ cancel_url }}" class="btn btn-secondary">{{CANCEL}}</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="bx bx-save me-1"></i> {{SAVE}}
+        </button>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.querySelector('.shoe-model-image-input');
+    const preview = document.getElementById('shoeModelImagePreview');
+    const placeholder = document.getElementById('shoeModelImagePlaceholder');
+
+    if (!input || !preview) return;
+
+    input.addEventListener('change', function () {
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+            preview.classList.remove('d-none');
+            if (placeholder) placeholder.classList.add('d-none');
+        };
+        reader.readAsDataURL(file);
+    });
+});
+</script>

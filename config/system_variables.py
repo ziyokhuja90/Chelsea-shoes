@@ -67,6 +67,7 @@ REFERENCE = "Ma'lumotnoma"
 WAREHOUSE = "Ombor"
 PRODUCEMENT = "Ishlab chiqarish"
 MATERIAL_STOCK = "Material ombori"
+MATERIAL_STOCK_DETAILS = "Material ombori tafsilotlari"
 
 # ============================
 # STATUS / STATES (SYSTEM)
@@ -118,6 +119,9 @@ SHOE = "Oyoq kiyim"
 CODE = "Kodi"
 SHOE_MODEL = "Oyoq kiyim modeli"
 SHOE_MODELS = "Oyoq kiyim modellari"
+MODEL_IMAGE = "Model rasmi"
+CHOOSE_IMAGE = "Rasm tanlash"
+MODEL_IMAGE_HINT = "JPG yoki PNG format tavsiya etiladi."
 MODEL = "Model"
 MODEL_PART = "Model qismi"
 PRICE = "Narxi"

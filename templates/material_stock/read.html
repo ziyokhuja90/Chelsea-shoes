@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">{{MATERIAL_STOCK_DETAILS}}</h2>
+
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0 text-white">{{MATERIAL_STOCK}} {{ID}}: {{ stock.id }}</h5>
+        </div>
+        <div class="card-body">
+            <h6 class="text-muted">{{MAIN_DETAILS}}</h6>
+            <ul class="list-group mb-4">
+                <li class="list-group-item">
+                    <strong>{{MATERIAL_TYPE}}:</strong> {{ stock.material_type_ref_id }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{VARIANT_TYPE}}:</strong> {{ stock.variant_ref_id }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{COLOR}}:</strong> {{ stock.color_ref_id|default:"—" }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{UNIT}}:</strong> {{ stock.unit_ref_id }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{STOCK_QUANTITY}}:</strong> {{ stock.stock_quantity|floatformat:2 }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{RESERVED_QUANTITY}}:</strong> {{ stock.reserved_quantity|floatformat:2 }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{AVAILABLE_QUANTITY}}:</strong> {{ stock.available_quantity|floatformat:2 }}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{UPDATED_AT}}:</strong> {{ stock.updated_at|date:"Y-m-d" }}
+                </li>
+            </ul>
+
+            <h6 class="text-muted mb-3">{{STOCK_MOVEMENTS}}</h6>
+
+            <form method="get" class="border rounded p-3 mb-3 bg-light">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="movement_type" class="form-label">{{MOVEMENT_TYPE}}</label>
+                        <select id="movement_type" name="movement_type" class="form-select">
+                            <option value="">{{CHOOSE}}</option>
+                            {% for mt in movement_types %}
+                            <option value="{{ mt.id }}" {% if movement_type == mt.id %}selected{% endif %}>{{ mt.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="movement_order" class="form-label">{{ORDER}}</label>
+                        <select id="movement_order" name="movement_order" class="form-select">
+                            <option value="">{{CHOOSE}}</option>
+                            {% for o in order_list %}
+                            <option value="{{ o.id }}" {% if movement_order == o.id %}selected{% endif %}>#{{ o.id }} — {{ o.client_id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="movement_date" class="form-label">{{DATE}}</label>
+                        <input type="date" id="movement_date" name="movement_date" class="form-control" value="{{ movement_date }}">
+                    </div>
+                </div>
+                {% url 'material_stock_read' stock.pk as filter_clean_url %}
+                {% include "partials/filter_buttons.html" %}
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>{{ID}}</th>
+                            <th>{{DATE}}</th>
+                            <th>{{MOVEMENT_TYPE}}</th>
+                            <th>{{QUANTITY}}</th>
+                            <th>{{ORDER}}</th>
+                            <th>{{PURCHASE}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for movement in movements %}
+                        <tr>
+                            <td>{{ movement.id }}</td>
+                            <td>{{ movement.created_at|date:"Y-m-d" }}</td>
+                            <td>
+                                {% if movement.movement_type.value == STOCK_IN %}
+                                <span class="badge bg-success">{{ movement.movement_type }}</span>
+                                {% elif movement.movement_type.value == STOCK_OUT %}
+                                <span class="badge bg-danger">{{ movement.movement_type }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ movement.movement_type }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ movement.quantity|floatformat:2 }}</td>
+                            <td>
+                                {% if movement.order %}
+                                    #{{ movement.order.id }} — {{ movement.order.client_id }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if movement.purchase %}
+                                    #{{ movement.purchase.id }} — {{ movement.purchase.supplier_id }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">{{STOCK_MOVEMENTS}} {{NO_DATA}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% with page_obj=movements page_param=movements_page_param filter_query=movements_filter_query %}
+            {% include "partials/pagination.html" %}
+            {% endwith %}
+
+            <div class="mt-3 d-flex justify-content-end">
+                <a href="{% url 'material_stock_view' %}" class="btn btn-secondary">
+                    <i class="bx bx-arrow-back"></i> {{BACK}}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

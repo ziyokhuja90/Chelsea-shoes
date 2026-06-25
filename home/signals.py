@@ -1,12 +1,16 @@
+from decimal import Decimal
+
+from django.db import transaction
 from django.db.models import Sum
-from django.db.models.signals import post_save, post_delete, post_migrate
+from django.db.models.signals import post_save, post_delete, post_migrate, pre_save
 from django.dispatch import receiver
+
+from config import system_variables
 from .models import (
     producement, staff, staff_payments, Order_details, Orders, Warehouse,
     references, ReferenceType, clients, client_payments,
-    Purchase_item, Order_detail_parts, Stock_movement,
+    Purchase_item, Order_detail_parts, Stock_movement, Material_stock,
 )
-from config import system_variables
 
 
 def _update_client_balance(client_id):
@@ -40,6 +44,51 @@ def update_producement_on_order_status(sender, instance, **kwargs):
     if instance.status.value == system_variables.CANCELED:
         canceled_status = references.objects.get(value=system_variables.CANCELED)
         producement.objects.filter(order_id=instance).update(status=canceled_status)
+
+
+def _release_order_reserved_quantities(order_id):
+    """Release reserved_quantity for all parts belonging to this order."""
+    part_totals = (
+        Order_detail_parts.objects.filter(
+            order_detail__order_id=order_id,
+            order_detail__IsDeleted=False,
+            is_deleted=False,
+        )
+        .values('material_stock_id')
+        .annotate(total=Sum('quantity_required'))
+    )
+    with transaction.atomic():
+        for row in part_totals:
+            stock = Material_stock.objects.select_for_update().get(pk=row['material_stock_id'])
+            released = row['total'] or Decimal('0')
+            new_reserved = stock.reserved_quantity - released
+            if new_reserved < Decimal('0'):
+                new_reserved = Decimal('0')
+            Material_stock.objects.filter(pk=stock.pk).update(reserved_quantity=new_reserved)
+
+
+@receiver(pre_save, sender=Orders)
+def _store_previous_order_status(sender, instance, **kwargs):
+    if instance.pk:
+        instance._previous_status_value = (
+            Orders.objects.filter(pk=instance.pk)
+            .values_list('status__value', flat=True)
+            .first()
+        )
+    else:
+        instance._previous_status_value = None
+
+
+@receiver(post_save, sender=Orders)
+def release_reserved_on_order_completed(sender, instance, **kwargs):
+    if instance.IsDeleted:
+        return
+    if instance.status.value != system_variables.COMPLETED:
+        return
+    previous = getattr(instance, '_previous_status_value', None)
+    if previous == system_variables.COMPLETED:
+        return
+    _release_order_reserved_quantities(instance.pk)
 
 
 @receiver([post_delete, post_save], sender=producement)

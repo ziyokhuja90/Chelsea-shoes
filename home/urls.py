@@ -106,6 +106,7 @@ urlpatterns = [
 
     # material stock
     path('material_stock/', views.material_stock_view, name='material_stock_view'),
+    path('material_stock/<int:pk>/', views.material_stock_read, name='material_stock_read'),
     path('get-material-stock/', views.get_material_stock, name='get_material_stock'),
 
     # purchases
