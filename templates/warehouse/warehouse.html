@@ -6,138 +6,128 @@
   <div class="card p-3 my-3">
     <h1 class="text-center mb-4">{{FILTER}}</h1>
 
-    <!-- Filtering Form -->
     <form id="filterForm" class="mb-4" method="get">
-
         <div class="row g-3">
-
-            <!-- Shoe Model -->
             <div class="col-md-3">
                 <label for="shoe_model_id" class="form-label">{{MODEL}}</label>
-                <select id="shoe_model_id" name="shoe_model_id" class="form-control">
+                <select id="shoe_model_id" name="shoe_model_id" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for model in shoe_models %}
-                        <option 
-                            value="{{ model.id }}" 
-                            {% if shoe_model_id == model.id %}selected{% endif %}
-                        >
-                            {{ model }}
-                        </option>
+                    <option value="{{ model.id }}" {% if shoe_model_id == model.id %}selected{% endif %}>{{ model }}</option>
                     {% endfor %}
                 </select>
             </div>
-
-            <!-- Color -->
             <div class="col-md-3">
                 <label for="color_id" class="form-label">{{COLOR}}</label>
-                <select id="color_id" name="color_id" class="form-control">
+                <select id="color_id" name="color_id" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for color in colors %}
-                        <option 
-                            value="{{ color.id }}" 
-                            {% if color_id == color.id %}selected{% endif %}
-                        >
-                            {{ color }}
-                        </option>
+                    <option value="{{ color.id }}" {% if color_id == color.id %}selected{% endif %}>{{ color }}</option>
                     {% endfor %}
                 </select>
             </div>
-
-            <!-- Leather Type -->
             <div class="col-md-3">
                 <label for="leather_type" class="form-label">{{LEATHER_TYPE}}</label>
-                <select id="leather_type" name="leather_type" class="form-control">
+                <select id="leather_type" name="leather_type" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for leather in leather_types %}
-                        <option 
-                            value="{{ leather.id }}" 
-                            {% if leather_type == leather.id %}selected{% endif %}
-                        >
-                            {{ leather }}
-                        </option>
+                    <option value="{{ leather.id }}" {% if leather_type == leather.id %}selected{% endif %}>{{ leather }}</option>
                     {% endfor %}
                 </select>
             </div>
-
-            <!-- Solo Type -->
             <div class="col-md-3">
                 <label for="solo_type" class="form-label">{{SOLE_TYPE}}</label>
-                <select id="solo_type" name="solo_type" class="form-control">
+                <select id="solo_type" name="solo_type" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for solo in sole_types %}
-                        <option 
-                            value="{{ solo.id }}" 
-                            {% if solo_type == solo.id %}selected{% endif %}
-                        >
-                            {{ solo }}
-                        </option>
+                    <option value="{{ solo.id }}" {% if solo_type == solo.id %}selected{% endif %}>{{ solo }}</option>
                     {% endfor %}
                 </select>
             </div>
-
-            <!-- Client -->
             <div class="col-md-3">
-                <label for="client" class="form-label">{{CLIENT}}</label>
-                <select id="client" name="client" class="form-control">
+                <label for="status" class="form-label">{{STATUS}}</label>
+                <select id="status" name="status" class="form-select">
                     <option value="">{{CHOOSE}}</option>
-                    {% for client in clients %}
-                        <option 
-                            value="{{ client.id }}" 
-                            {% if client == client.id %}selected{% endif %}
-                        >
-                            {{ client }}
-                        </option>
+                    {% for status_item in statuses %}
+                    <option value="{{ status_item.id }}" {% if status_id == status_item.id %}selected{% endif %}>{{ status_item.value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="order" class="form-label">{{ORDER}}</label>
+                <select id="order" name="order" class="form-select">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for o in warehouse_orders %}
+                    <option value="{{ o.id }}" {% if order_id == o.id %}selected{% endif %}>#{{ o.id }} — {{ o.date|date:"Y-m-d" }}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
 
-        <!-- Buttons -->
         <div class="mt-3 text-end">
             <button type="submit" class="btn btn-primary">{{FILTER}}</button>
-            <a href="{% url 'sale' %}" class="btn btn-secondary">{{CLEAN}}</a>
+            <a href="{% url 'warehouse' %}" class="btn btn-secondary">{{CLEAN}}</a>
         </div>
     </form>
-</div>
-    <div class="card mt-3">
-  
-        <div class="table-responsive text-nowrap">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>{{ID}}</th>
-                        <th>{{SHOE_MODEL}}</th>
-                        <th>{{QUANTITY}}</th>
-                        <th>{{PRICE}}</th>
-                        <th>{{TOTAL_PRICE}}</th>
-                        <th>{{COLOR}}</th>
-                        <th>{{LEATHER_TYPE}}</th>
-                        <th>{{SOLE_TYPE}}</th>
-                        <th>{{LINING}}</th>
-                    </tr>
-                </thead>
-        <tbody class="table-border-bottom-0">
-            {% for warehouse in warehouse_items %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ warehouse.model_id }}</td>
-                    <td>{{ warehouse.quantity }}</td>
-                    <td>{{ warehouse.price|floatformat:2|intcomma }}</td>
-                    <td>{{ warehouse.total_amount|floatformat:2|intcomma }}</td>
-                    <td>{{ warehouse.color_id }}</td>
-                    <td>{{ warehouse.leather_type }}</td>
-                    <td>{{ warehouse.sole_type_id}}</td>
-                    <td>{{ warehouse.lining_type_id}}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+  </div>
 
-{% with page_obj=warehouse_items page_param=warehouse_page_param filter_query=warehouse_filter_query %}
-{% include "partials/pagination.html" %}
-{% endwith %}
-
+  <div class="card mt-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">{{WAREHOUSE}} — {{CLIENT}}: {{WAREHOUSE|upper}}</h5>
     </div>
+    <div class="table-responsive text-nowrap">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>{{ID}}</th>
+            <th>{{ORDER}}</th>
+            <th>{{SHOE_MODEL}}</th>
+            <th>{{QUANTITY}}</th>
+            <th>{{PRICE}}</th>
+            <th>{{TOTAL_PRICE}}</th>
+            <th>{{COLOR}}</th>
+            <th>{{LEATHER_TYPE}}</th>
+            <th>{{SOLE_TYPE}}</th>
+            <th>{{LINING}}</th>
+            <th>{{STATUS}}</th>
+            <th>{{ACTIONS}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for line in warehouse_items %}
+          <tr>
+            <td>{{ forloop.counter0|add:warehouse_items.start_index }}</td>
+            <td>
+              <a href="{% url 'order_read' line.order_id.id %}">#{{ line.order_id.id }}</a>
+              <br><small class="text-muted">{{ line.order_id.date|date:"Y-m-d" }}</small>
+            </td>
+            <td>{{ line.model_id }}</td>
+            <td>{{ line.quantity }} {{ line.quantity_type_id }}</td>
+            <td>{{ line.price|floatformat:2|intcomma }}</td>
+            <td>{{ line.total_amount|floatformat:2|intcomma }}</td>
+            <td>{{ line.warehouse_materials.color }}</td>
+            <td>{{ line.warehouse_materials.leather }}</td>
+            <td>{{ line.warehouse_materials.sole }}</td>
+            <td>{{ line.warehouse_materials.lining }}</td>
+            <td>{{ line.order_id.status }}</td>
+            <td>
+              <a class="btn btn-sm btn-info" href="{% url 'order_read' line.order_id.id %}">
+                <i class="bx bx-show"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="12" class="text-center">{{WAREHOUSE}} {{NO_DATA}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% with page_obj=warehouse_items page_param=warehouse_page_param filter_query=warehouse_filter_query %}
+    {% include "partials/pagination.html" %}
+    {% endwith %}
+  </div>
 </div>
 {% endblock content %}

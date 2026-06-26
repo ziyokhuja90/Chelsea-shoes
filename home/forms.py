@@ -9,6 +9,12 @@ from . import models
 from collections import OrderedDict
 
 
+def _order_choice_label(order):
+    if order.client_id.name == system_variables.WAREHOUSE.upper():
+        return system_variables.WAREHOUSE.upper()
+    return f"Klient: {order.client_id.name} - Sana: {order.date.strftime('%Y-%m-%d')}"
+
+
 class shoe_model_forms(forms.ModelForm):
     class Meta:
         model = models.shoe_model
@@ -377,10 +383,7 @@ class DefaultProducementForms(forms.Form):
         self.instance = kwargs.pop('instance', None)
         super().__init__(*args, **kwargs)
 
-        self.fields['order_id'].label_from_instance = lambda obj: (
-            "SKLAT" if obj.client_id.name == system_variables.WAREHOUSE.upper() else f"Klient: {obj.client_id.name} - Sana: {obj.date.strftime('%d %m %Y')}"
-        )
-        # Now you can reorder inside the base form, because 'staff_id' exists
+        self.fields['order_id'].label_from_instance = _order_choice_label
         fields = list(self.fields.items())
         reordered_fields = []
         for key, value in fields:
@@ -442,11 +445,7 @@ class ProducementKroyForms(DefaultProducementForms):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['order_id'].label_from_instance = lambda obj: (
-            "SKLAT" if obj.client_id.name == system_variables.WAREHOUSE.upper() else f"Klient: {obj.client_id.name} - Sana: {obj.date.strftime('%d %m %Y')}"
-        )
-    
-    
+        self.fields['order_id'].label_from_instance = _order_choice_label
 
   # Custom label for order field
 

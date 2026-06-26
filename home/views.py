@@ -1068,12 +1068,7 @@ def _producement_data_from_form(form):
 def producement_view(request):
     professions = references.objects.filter(type=ReferenceType.PROFESSION.value, IsDeleted=False).order_by("order")
 
-    base_qs = _producement_queryset_base().filter(
-        ~Q(order_id__client_id__name=system_variables.WAREHOUSE.upper()),
-    )
-    sklat_base_qs = _producement_queryset_base().filter(
-        order_id__client_id__name=system_variables.WAREHOUSE.upper(),
-    )
+    base_qs = _producement_queryset_base()
 
     staff_list = staff.objects.filter(IsDeleted=False).order_by('id')
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
@@ -1085,8 +1080,6 @@ def producement_view(request):
     status = _safe_int(request.GET.get('status'))
     order = _safe_int(request.GET.get('order'))
 
-    valid_filters = {}
-    filter_kwargs = {}
     if any([staff_id, model, status, order]):
         filter_kwargs = {
             'staff_id': staff_id,
@@ -1096,7 +1089,6 @@ def producement_view(request):
         }
         valid_filters = {k: v for k, v in filter_kwargs.items() if v is not None}
         base_qs = base_qs.filter(**valid_filters)
-        sklat_base_qs = sklat_base_qs.filter(**valid_filters)
 
     profession_tabs = []
     for profession in professions:
@@ -1115,22 +1107,10 @@ def producement_view(request):
             'filter_query': urlencode(tab_params),
         })
 
-    sklat_page_key = 'page_sklat'
-    page_obj_sklat = Paginator(
-        sklat_base_qs.order_by('id'), 10,
-    ).get_page(request.GET.get(sklat_page_key, 1))
-    sklat_params = {
-        k: v for k, v in request.GET.items()
-        if v and k != sklat_page_key and not k.startswith('page_')
-    }
-
     active_tab = request.GET.get("active_tab", "#profession-1")
     context = {
         "professions": professions,
         "profession_tabs": profession_tabs,
-        "producement_sklat_list": page_obj_sklat,
-        "sklat_page_key": sklat_page_key,
-        "sklat_filter_query": urlencode(sklat_params),
         "staff_list": staff_list,
         "shoe_models": shoe_models,
         "statuses": statuses,
@@ -1395,10 +1375,12 @@ def order_detail_create(request, pk):
             prepared_data = []
 
             for part in parts_data.values():
+                model_part_def_id = _safe_int(part.get("model_part_definition_id"))
+                variant_id = _safe_int(part.get("material_variant_id"))
+                if not model_part_def_id or not variant_id:
+                    continue
 
-                model_part = Model_part_definition.objects.get(
-                    id=part["model_part_definition_id"]
-                )
+                model_part = Model_part_definition.objects.get(id=model_part_def_id)
 
                 order_qty = Decimal(new_order_detail.quantity)
                 per_pair = model_part.quantity_per_pair
@@ -1406,13 +1388,19 @@ def order_detail_create(request, pk):
 
                 required = order_qty * per_pair * (1 + waste / 100)
 
+                color_id = _safe_int(part.get("color_id"))
+                stock_filter = {
+                    'material_type_ref_id': model_part.material_type_ref_id,
+                    'variant_ref_id_id': variant_id,
+                    'is_deleted': False,
+                }
+                if color_id:
+                    stock_filter['color_ref_id_id'] = color_id
+                else:
+                    stock_filter['color_ref_id__isnull'] = True
+
                 try:
-                    stock = Material_stock.objects.get(
-                        material_type_ref_id=model_part.material_type_ref_id,
-                        variant_ref_id=part["material_variant_id"],
-                        color_ref_id=part["color_id"],
-                        is_deleted=False
-                    )
+                    stock = Material_stock.objects.get(**stock_filter)
                 except Material_stock.DoesNotExist:
                     messages.error(request, "Material stock topilmadi")
                     return redirect('order_read', pk=pk)
@@ -1492,39 +1480,120 @@ def order_detail_delete(request, pk):
     return redirect('order_read', pk=detail.order_id.pk)
 
 
+def _warehouse_line_materials(line):
+    materials = {
+        'color': '—',
+        'leather': '—',
+        'sole': '—',
+        'lining': '—',
+    }
+    for part in line.parts.all():
+        if part.is_deleted:
+            continue
+        stock = part.material_stock
+        if stock.color_ref_id and materials['color'] == '—':
+            materials['color'] = str(stock.color_ref_id)
+        mt_value = stock.material_type_ref_id.value
+        if mt_value == system_variables.LEATHER and materials['leather'] == '—':
+            materials['leather'] = str(stock.variant_ref_id)
+        elif mt_value == system_variables.SOLE and materials['sole'] == '—':
+            materials['sole'] = str(stock.variant_ref_id)
+        elif mt_value == system_variables.LINING and materials['lining'] == '—':
+            materials['lining'] = str(stock.variant_ref_id)
+    return materials
+
+
 # warehouse
+def _warehouse_order_details_queryset():
+    """Stock rows come from order lines for the system OMBOR client."""
+    parts_prefetch = Prefetch(
+        'parts',
+        queryset=Order_detail_parts.objects.filter(is_deleted=False).select_related(
+            'material_stock__material_type_ref_id',
+            'material_stock__variant_ref_id',
+            'material_stock__color_ref_id',
+        ),
+    )
+    return Order_details.objects.filter(
+        IsDeleted=False,
+        order_id__IsDeleted=False,
+        order_id__client_id__name=system_variables.WAREHOUSE.upper(),
+    ).select_related(
+        'model_id', 'quantity_type_id', 'order_id', 'order_id__status',
+    ).prefetch_related(parts_prefetch).order_by('-order_id__date', '-id')
+
+
 def warehouse_view(request):
-    staff_id = _safe_int(request.GET.get('staff_id'))
     model_id = _safe_int(request.GET.get('shoe_model_id'))
     color_id = _safe_int(request.GET.get('color_id'))
     leather_id = _safe_int(request.GET.get('leather_type'))
     sole_id = _safe_int(request.GET.get('solo_type'))
-    status = _safe_int(request.GET.get('status'))
+    status_id = _safe_int(request.GET.get('status'))
     order_id = _safe_int(request.GET.get('order'))
 
-    filters = {
-        'staff_id': staff_id,
-        'model_id': model_id,
-        'color_id': color_id,
-        'leather_type_id': leather_id,
-        'sole_type_id': sole_id,
-        'status': status,
-        'order_id': order_id,
-        'IsDeleted': False,
-    }
-    valid_filters = {key: value for key, value in filters.items() if value is not None}
+    details_qs = _warehouse_order_details_queryset()
 
-    warehouse_qs = Warehouse.objects.filter(**valid_filters).select_related(
-        'model_id', 'color_id', 'leather_type', 'sole_type_id', 'lining_type_id',
-    ).order_by('id')
+    if model_id:
+        details_qs = details_qs.filter(model_id_id=model_id)
+    if status_id:
+        details_qs = details_qs.filter(order_id__status_id=status_id)
+    if order_id:
+        details_qs = details_qs.filter(order_id_id=order_id)
 
-    warehouse_page, warehouse_fq, warehouse_page_param = _paginate(request, warehouse_qs, 'page')
+    active_parts = Q(parts__is_deleted=False)
+
+    if color_id:
+        details_qs = details_qs.filter(
+            active_parts,
+            parts__material_stock__color_ref_id_id=color_id,
+        )
+
+    if leather_id:
+        leather_material = references.objects.filter(
+            type=ReferenceType.MATERIAL_TYPE.value,
+            value=system_variables.LEATHER,
+            IsDeleted=False,
+        ).first()
+        leather_filter = {'parts__material_stock__variant_ref_id_id': leather_id}
+        if leather_material:
+            leather_filter['parts__material_stock__material_type_ref_id_id'] = leather_material.id
+        details_qs = details_qs.filter(active_parts, **leather_filter)
+
+    if sole_id:
+        sole_material = references.objects.filter(
+            type=ReferenceType.MATERIAL_TYPE.value,
+            value=system_variables.SOLE,
+            IsDeleted=False,
+        ).first()
+        sole_filter = {'parts__material_stock__variant_ref_id_id': sole_id}
+        if sole_material:
+            sole_filter['parts__material_stock__material_type_ref_id_id'] = sole_material.id
+        details_qs = details_qs.filter(active_parts, **sole_filter)
+
+    if color_id or leather_id or sole_id:
+        details_qs = details_qs.distinct()
+
+    warehouse_page, warehouse_fq, warehouse_page_param = _paginate(request, details_qs, 'page')
+    for line in warehouse_page:
+        line.warehouse_materials = _warehouse_line_materials(line)
 
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
-    colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value).order_by('id')
-    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value).order_by('id')
-    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value).order_by('id')
-    client_list = clients.objects.filter(IsDeleted=False).order_by('id')
+    colors = references.objects.filter(
+        IsDeleted=False, type=ReferenceType.COLOR.value,
+    ).order_by('id')
+    leather_types = references.objects.filter(
+        IsDeleted=False, type=ReferenceType.LEATHER_VARIANT.value,
+    ).order_by('id')
+    sole_types = references.objects.filter(
+        IsDeleted=False, type=ReferenceType.SOLE_VARIANT.value,
+    ).order_by('id')
+    statuses = references.objects.filter(
+        type=ReferenceType.STATUS.value, IsDeleted=False,
+    ).order_by('order')
+    warehouse_orders = Orders.objects.filter(
+        IsDeleted=False,
+        client_id__name=system_variables.WAREHOUSE.upper(),
+    ).order_by('-id')
 
     context = {
         "warehouse_items": warehouse_page,
@@ -1534,14 +1603,14 @@ def warehouse_view(request):
         "colors": colors,
         "leather_types": leather_types,
         "sole_types": sole_types,
-        "clients": client_list,
+        "statuses": statuses,
+        "warehouse_orders": warehouse_orders,
         "shoe_model_id": model_id,
         "color_id": color_id,
         "leather_type": leather_id,
         "solo_type": sole_id,
-        "status": status,
+        "status_id": status_id,
         "order_id": order_id,
-        "staff_id": staff_id,
     }
     return render(request, 'warehouse/warehouse.html', context=context)
 

@@ -62,7 +62,7 @@
             // Clear existing options in the order_detail_id dropdown
             orderDetailSelect.empty();
 
-            if (SelectedOrderText == "SKLAT"){
+            if (SelectedOrderText === "{{ WAREHOUSE|upper }}"){
                 orderDetailSelect.prop("disabled", true);
             }
 
