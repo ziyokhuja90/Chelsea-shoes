@@ -213,6 +213,13 @@ class Orders(models.Model):
     def __str__(self):
         return f"{self.client_id}"
 
+    def order_label(self):
+        return f"{self.client_id} — {self.date.strftime('%Y-%m-%d')}"
+
+    @property
+    def is_warehouse_order(self):
+        return self.client_id.name == system_variables.WAREHOUSE.upper()
+
 class Order_details(models.Model):
     order_id = models.ForeignKey(
         Orders,

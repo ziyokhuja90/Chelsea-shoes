@@ -150,6 +150,8 @@ STOCK_IN = "IN"
 STOCK_OUT = "OUT"
 STOCK_MOVEMENT = "Ombor harakati"
 STOCK_MOVEMENTS = "Ombor harakatlari"
+STOCK_MOVEMENT_CREATE = "Ombor harakati qo'shish"
+STOCK_MOVEMENT_OUT_ERROR = "Chiqim uchun omborda yetarli mavjud miqdor yo'q."
 MOVEMENT_TYPE = "Harakat turi"
 
 # Purchases

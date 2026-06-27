@@ -2038,6 +2038,67 @@ def material_stock_read(request, pk):
     return render(request, 'material_stock/read.html', context=context)
 
 
+def stock_movement_create(request, pk=None):
+    stock_item = None
+    cancel_url = f"{reverse('material_stock_view')}?active_tab=%23movement-panel"
+    if pk:
+        stock_item = get_object_or_404(
+            Material_stock.objects.select_related(
+                'material_type_ref_id', 'variant_ref_id', 'color_ref_id', 'unit_ref_id',
+            ),
+            pk=pk,
+            is_deleted=False,
+        )
+        cancel_url = reverse('material_stock_read', args=[pk])
+
+    material_locked = stock_item is not None
+    initial = {'material_id': stock_item} if stock_item else {}
+
+    if request.method == 'POST':
+        post_data = request.POST.copy()
+        if material_locked and stock_item:
+            post_data['material_id'] = stock_item.pk
+        form = StockMovementForm(post_data, material_locked=material_locked, initial=initial)
+        if form.is_valid():
+            with transaction.atomic():
+                material = Material_stock.objects.select_for_update().get(
+                    pk=form.cleaned_data['material_id'].pk,
+                )
+                quantity = form.cleaned_data['quantity']
+                movement_type = form.cleaned_data['movement_type_id']
+
+                if movement_type.value == system_variables.STOCK_OUT and material.available_quantity < quantity:
+                    form.add_error('quantity', system_variables.STOCK_MOVEMENT_OUT_ERROR)
+                else:
+                    if movement_type.value == system_variables.STOCK_IN:
+                        material.stock_quantity += quantity
+                    else:
+                        material.stock_quantity -= quantity
+                    material.save(update_fields=['stock_quantity'])
+
+                    Stock_movement.objects.create(
+                        material=material,
+                        quantity=quantity,
+                        movement_type=movement_type,
+                        order=None,
+                        purchase=None,
+                        created_at=form.cleaned_data['movement_date'],
+                    )
+
+            if not form.errors:
+                if stock_item:
+                    return redirect('material_stock_read', pk=stock_item.pk)
+                return redirect(f"{reverse('material_stock_view')}?active_tab=%23movement-panel")
+    else:
+        form = StockMovementForm(initial=initial, material_locked=material_locked)
+
+    return render(request, 'material_stock/stock_movement_form.html', {
+        'form': form,
+        'cancel_url': cancel_url,
+        'stock': stock_item,
+    })
+
+
 def get_material_variants(request):
     material_type_id = request.GET.get("material_type")
     variants = []

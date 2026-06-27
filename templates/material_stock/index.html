@@ -212,6 +212,11 @@
 
                 <!-- Tab 2: Stock movement history -->
                 <div class="tab-pane fade" id="movement-panel" role="tabpanel" aria-labelledby="movement-tab">
+                    <div class="d-flex justify-content-end mb-3">
+                        <a href="{% url 'stock_movement_create' %}" class="btn btn-primary">
+                            {{NEW}} {{STOCK_MOVEMENT|lower}} ioio
+                        </a>
+                    </div>
                     <form method="get" class="border rounded p-3 mb-3 bg-light">
                         <input type="hidden" name="active_tab" value="#movement-panel">
                         <div class="row g-3">

@@ -51,20 +51,13 @@
 
             // Get the selected order ID
             const selectedOrderId = $(this).val();
-            const SelectedOrderText = $(this).find(":selected").text();
             console.log("Selected Order ID: " + selectedOrderId);
-            
-
-
             // Reference the order_detail_id dropdown
             const orderDetailSelect = $('#id_order_detail_id');
 
             // Clear existing options in the order_detail_id dropdown
             orderDetailSelect.empty();
-
-            if (SelectedOrderText === "{{ WAREHOUSE|upper }}"){
-                orderDetailSelect.prop("disabled", true);
-            }
+            orderDetailSelect.prop("disabled", false);
 
             // Check if an order ID is selected
             if (selectedOrderId) {

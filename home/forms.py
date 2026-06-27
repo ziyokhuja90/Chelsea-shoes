@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.timezone import now
 from datetime import datetime
+from decimal import Decimal
 from django.forms.widgets import DateInput
 from django.db.models import Sum, Q, F
 
@@ -10,9 +11,7 @@ from collections import OrderedDict
 
 
 def _order_choice_label(order):
-    if order.client_id.name == system_variables.WAREHOUSE.upper():
-        return system_variables.WAREHOUSE.upper()
-    return f"Klient: {order.client_id.name} - Sana: {order.date.strftime('%Y-%m-%d')}"
+    return order.order_label()
 
 
 class shoe_model_forms(forms.ModelForm):
@@ -631,3 +630,65 @@ class Model_part_definition_forms(forms.ModelForm):
         self.fields['part_ref_id'].queryset = models.references.objects.filter(type=models.ReferenceType.MODEL_PART.value, IsDeleted=False)
         self.fields['material_type_ref_id'].queryset = models.references.objects.filter(type=models.ReferenceType.MATERIAL_TYPE.value, IsDeleted=False)
         self.fields['unit_ref_id'].queryset = models.references.objects.filter(type=models.ReferenceType.QUANTITY_TYPE.value, IsDeleted=False)
+
+
+def _material_stock_label(stock):
+    color = f" — {stock.color_ref_id}" if stock.color_ref_id else ""
+    return f"{stock.material_type_ref_id} / {stock.variant_ref_id}{color} ({stock.unit_ref_id})"
+
+
+class StockMovementForm(forms.Form):
+    material_id = forms.ModelChoiceField(
+        queryset=models.Material_stock.objects.filter(is_deleted=False).select_related(
+            'material_type_ref_id', 'variant_ref_id', 'color_ref_id', 'unit_ref_id',
+        ).order_by('id'),
+        empty_label=system_variables.EMPTY_LABEL,
+        label=system_variables.MATERIAL_STOCK,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    movement_type_id = forms.ModelChoiceField(
+        queryset=models.references.objects.filter(
+            type=models.ReferenceType.STOCK_MOVEMENT_TYPE.value,
+            IsDeleted=False,
+        ).order_by('order', 'value'),
+        empty_label=system_variables.EMPTY_LABEL,
+        label=system_variables.MOVEMENT_TYPE,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    quantity = forms.DecimalField(
+        min_value=Decimal('0.01'),
+        max_digits=10,
+        decimal_places=2,
+        label=system_variables.QUANTITY,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0.01'}),
+    )
+    movement_date = forms.DateField(
+        label=system_variables.DATE,
+        initial=now,
+        input_formats=['%Y-%m-%d'],
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+    )
+
+    def __init__(self, *args, material_locked=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.material_locked = material_locked
+        self.fields['material_id'].label_from_instance = _material_stock_label
+        if material_locked:
+            self.fields['material_id'].disabled = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        material = cleaned_data.get('material_id')
+        if self.material_locked and not material:
+            material = self.initial.get('material_id')
+            cleaned_data['material_id'] = material
+
+        movement_type = cleaned_data.get('movement_type_id')
+        quantity = cleaned_data.get('quantity')
+        if material and movement_type and quantity is not None:
+            if movement_type.value == system_variables.STOCK_OUT and material.available_quantity < quantity:
+                self.add_error(
+                    'quantity',
+                    system_variables.STOCK_MOVEMENT_OUT_ERROR,
+                )
+        return cleaned_data

@@ -73,7 +73,7 @@
                             value="{{ order.id }}" 
                             {% if order_id == order.id %}selected{% endif %}
                         >
-                            {{ order }}
+                            {{ order.order_label }}
                         </option>
                     {% endfor %}
                 </select>
