@@ -6,7 +6,10 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="mb-0">{{MATERIAL_STOCK}}</h1>
-        <a href="{% url 'purchase_create' %}" class="btn btn-primary">{{PURCHASE_MATERIALS}}</a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'stock_movement_create' %}" class="btn btn-outline-primary">{{STOCK_MOVEMENT_CREATE}}</a>
+            <a href="{% url 'purchase_create' %}" class="btn btn-primary">{{PURCHASE_MATERIALS}}</a>
+        </div>
     </div>
 
     <div class="card shadow-sm">
@@ -214,7 +217,7 @@
                 <div class="tab-pane fade" id="movement-panel" role="tabpanel" aria-labelledby="movement-tab">
                     <div class="d-flex justify-content-end mb-3">
                         <a href="{% url 'stock_movement_create' %}" class="btn btn-primary">
-                            {{NEW}} {{STOCK_MOVEMENT|lower}} ioio
+                            {{NEW}} {{STOCK_MOVEMENT|lower}}
                         </a>
                     </div>
                     <form method="get" class="border rounded p-3 mb-3 bg-light">
