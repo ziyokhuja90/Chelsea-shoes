@@ -8,6 +8,7 @@ from django.db.models import Sum, Q, F
 from config import system_variables
 from . import models
 from collections import OrderedDict
+from home.templatetags.filter import format_phone
 
 
 def _order_choice_label(order):
@@ -136,6 +137,11 @@ class supplier_forms(forms.ModelForm):
             }),
             'address': forms.TextInput(attrs={'class': 'form-control uppercase-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk and self.instance.phone_number:
+            self.initial['phone_number'] = format_phone(self.instance.phone_number)
 
 
 class orders_forms(forms.ModelForm):

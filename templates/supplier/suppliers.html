@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load filter %}
 {% load humanize %}
 
 {% block content %}
@@ -78,7 +79,7 @@
                     {% for supplier in suppliers_list %}
                     <tr>
                         <td><strong>{{ supplier.name }}</strong></td>
-                        <td>{{ supplier.phone_number }}</td>
+                        <td>{{ supplier.phone_number|format_phone }}</td>
                         <td>{{ supplier.address }}</td>
                         {% if supplier.balance|default:0 >= 0 %}
                         <td class="text-success">{{ supplier.balance|default:0|floatformat:2|intcomma }}</td>
