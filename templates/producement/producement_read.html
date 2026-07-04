@@ -1,34 +1,35 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Ish Tafsilotlari</h2>
+    <h2 class="mb-4">{{WORK_DETAILS}}</h2>
 
     <div class="card shadow-sm">
         <div class="card-header bg-info text-white mb-3">
-            <h5 class="mb-0 text-white">Ish ID: {{ producement.id }}</h5>
+            <h5 class="mb-0 text-white">{{PRODUCEMENT_ID}}: {{ producement.id }}</h5>
         </div>
         <div class="card-body">
             <div class="row">
                 <!-- Left Column -->
                 <div class="col-md-6">
-                    <h6 class="text-muted">Asosiy Tafsilotlar</h6>
+                    <h6 class="text-muted">{{MAIN_DETAILS}}</h6>
                     <ul class="list-group mb-4">
-                        <li class="list-group-item"><strong>Xodim:</strong> {{ producement.staff_id }}</li>
-                        <li class="list-group-item"><strong>Model:</strong> {{ producement.shoe_model_id }}</li>
-                        <li class="list-group-item"><strong>Ish Sanasi:</strong> {{ producement.date|date:"Y-m-d" }}</li>
+                        <li class="list-group-item"><strong>{{STAFF}}:</strong> {{ producement.staff_id }}</li>
+                        <li class="list-group-item"><strong>{{MODEL}}:</strong> {{ producement.shoe_model_id }}</li>
+                        <li class="list-group-item"><strong>{{WORK_DATE}}:</strong> {{ producement.date|date:"Y-m-d" }}</li>
                     </ul>
                 </div>
 
                 <!-- Right Column -->
                 <div class="col-md-6">
-                    <h6 class="text-muted">Ish Tafsilotlari</h6>
+                    <h6 class="text-muted">{{WORK_DETAILS}}</h6>
                     <ul class="list-group mb-4">
-                        <li class="list-group-item"><strong>Buyurtma:</strong> {{ producement.order_id|default:"—" }}</li>
-                        <li class="list-group-item"><strong>Buyurtma qatori:</strong> {{ producement.order_detail_id|default:"—" }}</li>
+                        <li class="list-group-item"><strong>{{ORDER}}:</strong> {{ producement.order_id|default:"—" }}</li>
+                        <li class="list-group-item"><strong>{{ORDER_LINE}}:</strong> {{ producement.order_detail_id|default:"—" }}</li>
                         {% if producement.order_detail_id %}
                             <li class="list-group-item">
-                                <strong>Materiallar:</strong>
+                                <strong>{{MATERIALS}}:</strong>
                                 <ul class="mb-0 mt-1">
                                     {% for part in producement.order_detail_id.parts.all %}
                                         {% if not part.is_deleted %}
@@ -38,33 +39,28 @@
                                 </ul>
                             </li>
                         {% endif %}
-                        <li class="list-group-item"><strong>Miqdor:</strong> {{ producement.quantity }} {{ producement.quantity_type_id }}</li>
-                        <li class="list-group-item"><strong>Birlik Narxi:</strong> {{ producement.price }}</li>
-                        <li class="list-group-item"><strong>Holati:</strong> {{ producement.status }}</li>
+                        <li class="list-group-item"><strong>{{QUANTITY}}:</strong> {{ producement.quantity }} {{ producement.quantity_type_id }}</li>
+                        <li class="list-group-item"><strong>{{UNIT_PRICE}}:</strong> {{ producement.price|floatformat:2|intcomma }}</li>
+                        <li class="list-group-item"><strong>{{STATUS}}:</strong> {{ producement.status }}</li>
                     </ul>
                 </div>
             </div>
 
             <!-- Action Buttons -->
             <div class="mt-3 d-flex justify-content-end gap-2">
-                <a href="{% url 'producement_update' producement.id %}" class="btn btn-warning text-white">
-                    <i class="bx bx-edit-alt"></i> Yangilash
-                </a>    
-                <a class="btn  btn-danger" href="#"
+                <a href="{% url 'producement_update' producement.id %}" class="btn btn-warning text-white" aria-label="{{UPDATE}}">
+                    <i class="bx bx-edit-alt"></i> {{UPDATE}}
+                </a>
+                <a class="btn btn-danger" href="#"
                 data-bs-toggle="modal"
                 data-bs-target="#deleteModal"
-                data-delete-url="{% url 'producement_delete' producement.id %}"> 
-
-                    <i class="bx bx-trash "></i>
-                    O'chirish
-                </a>    
-                <a href="{% if request.GET.next == 'shoe_model_read' %} 
-                {% url 'shoe_model_read' producement.shoe_model_id.id %}
-            {% else %} 
-                {% url 'producement_view' %}
-            {% endif %}" class="btn btn-secondary">
-                <i class="bx bx-arrow-back"></i> Orqaga
-            </a>
+                data-delete-url="{% url 'producement_delete' producement.id %}"
+                aria-label="{{DELETE}}">
+                    <i class="bx bx-trash"></i> {{DELETE}}
+                </a>
+                <a href="{% if request.GET.next == 'shoe_model_read' %}{% url 'shoe_model_read' producement.shoe_model_id.id %}{% else %}{% url 'producement_view' %}{% endif %}" class="btn btn-secondary">
+                    <i class="bx bx-arrow-back"></i> {{BACK}}
+                </a>
             </div>
         </div>
     </div>

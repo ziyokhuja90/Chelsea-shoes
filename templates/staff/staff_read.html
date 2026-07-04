@@ -61,7 +61,7 @@
                             <tr>
                                 <td>{{ payment.id }}</td>
                                 <td>{{ payment.amount|floatformat:2|intcomma }}</td>
-                                <td>{{ payment.date|date:"d.m.Y" }}</td>
+                                <td>{{ payment.date|date:"Y-m-d" }}</td>
                                 <td>
                                     <a class="btn btn-sm btn-warning text-white" href="{% url 'staff_payment_update' payment.id %}">
                                         <i class="bx bx-edit-alt"></i>
@@ -140,7 +140,7 @@
                                         —
                                     {% endif %}
                                 </td>
-                                <td>{{ work.date|date:"d.m.Y" }}</td>
+                                <td>{{ work.date|date:"Y-m-d" }}</td>
                                 <td>{{ work.price|floatformat:2|intcomma }}</td>
                                 <td>{{ work.quantity }}</td>
                                 <td>{{ work.price|multiply:work.quantity|floatformat:2|intcomma }}</td>

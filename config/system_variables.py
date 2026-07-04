@@ -9,11 +9,21 @@ PAGE = "Sahifa"
 NO_DATA = "Mavjud emas"
 EMPTY_LABEL = "---------"
 
+# Pagination
+PAGE_NAVIGATION = "Sahifa navigatsiyasi"
+PAGE_FIRST = "Birinchi"
+PAGE_PREVIOUS = "Oldingi"
+PAGE_NEXT = "Keyingi"
+PAGE_LAST = "Oxirgi"
+
 
 # ============================
 # AUTH / USER
 # ============================
 LOG_OUT = "Chiqish"
+LOG_IN = "Kirish"
+USERNAME = "Foydalanuvchi nomi"
+PASSWORD = "Parol"
 BACK = "Orqaga"
 
 
@@ -201,6 +211,13 @@ PRODUCEMENT_ID = "Ishlab chiqarish ID'si"
 ORDER_DETAILS = "Buyurtma tafsilotlari"
 MAIN_DETAILS = "Asosiy tafsilotlar"
 DETAIL = "Tafsilot"
+WORK_DETAILS = "Ish tafsilotlari"
+WORK_DATE = "Ish sanasi"
+UNIT_PRICE = "Birlik narxi"
+ORDER_LINE = "Buyurtma qatori"
+MATERIALS = "Materiallar"
+MATERIALS_NOT_ENTERED = "Materiallar kiritilmagan."
+QUANTITY_PER_PAIR = "Juftiga"
 MAX_ALLOWED_Q = "Bu tafsilot uchun ruxsat etilgan maksimal miqdor"
 ALREADY_PRODUCED = "Allaqachon ishlab chiqarilgan"
 PREVIOUS_PRODUCEMENT_REQUIRED = "Oldingi ishni tanlang"

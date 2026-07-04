@@ -1251,6 +1251,7 @@ def sales_view(request):
     sole_id = _safe_int(request.GET.get('solo_type'))
     status = _safe_int(request.GET.get('status'))
     order_id = _safe_int(request.GET.get('order'))
+    client_id = _safe_int(request.GET.get('client'))
 
     filters = {
         'warehouse__staff_id': staff_id,
@@ -1260,6 +1261,7 @@ def sales_view(request):
         'warehouse__sole_type_id': sole_id,
         'status': status,
         'order_id': order_id,
+        'client_id': client_id,
         'IsDeleted': False,
     }
     valid_filters = {key: value for key, value in filters.items() if value is not None}
@@ -1273,8 +1275,8 @@ def sales_view(request):
 
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
     colors = references.objects.filter(IsDeleted=False, type=ReferenceType.COLOR.value).order_by('id')
-    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_TYPE.value).order_by('id')
-    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLO_TYPE.value).order_by('id')
+    leather_types = references.objects.filter(IsDeleted=False, type=ReferenceType.LEATHER_VARIANT.value).order_by('id')
+    sole_types = references.objects.filter(IsDeleted=False, type=ReferenceType.SOLE_VARIANT.value).order_by('id')
     client_list = clients.objects.filter(IsDeleted=False).order_by('id')
 
     context = {
@@ -1293,6 +1295,7 @@ def sales_view(request):
         "status": status,
         "order_id": order_id,
         "staff_id": staff_id,
+        "client_id": client_id,
     }
     return render(request, 'Sale/sale.html', context=context)
 

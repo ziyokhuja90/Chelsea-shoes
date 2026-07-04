@@ -54,13 +54,13 @@ class staff_forms(forms.ModelForm):
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control uppercase-input"}),
             "birth_date": forms.DateInput(
-                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
-                format='%d %m %Y'
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'
             ),
             "gender": forms.Select(attrs={"class": "form-control"}),
             "entered_date": forms.DateInput(
-                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
-                format='%d %m %Y'
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'
             ),
             "profession": forms.Select(attrs={"class": "form-control"}),
             "phone_number": forms.TextInput(attrs={
@@ -76,8 +76,8 @@ class staff_forms(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['birth_date'].input_formats = ['%d %m %Y']
-        self.fields['entered_date'].input_formats = ['%d %m %Y']
+        self.fields['birth_date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
+        self.fields['entered_date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
         self.fields['entered_date'].initial = now()
 
 
@@ -152,11 +152,11 @@ class orders_forms(forms.ModelForm):
         widgets = {
             'client_id':forms.Select(attrs={'class':'form-control'}),
             'date':forms.DateInput(
-                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
-                format='%d %m %Y'),
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'),
             'complete_date':forms.DateInput(
-                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
-                format='%d %m %Y'),
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'),
             'status':forms.Select(attrs={'class':'form-control'}),
         }
 
@@ -164,8 +164,8 @@ class orders_forms(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['date'].initial = now()
-        self.fields['date'].input_formats = ['%d %m %Y']
-        self.fields['complete_date'].input_formats = ['%d %m %Y']
+        self.fields['date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
+        self.fields['complete_date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
 
         self.fields['status'].initial = models.references.objects.get(value=system_variables.CREATED)
         self.fields['status'].queryset = models.references.objects.filter(type=models.ReferenceType.STATUS.value)
@@ -233,8 +233,8 @@ class producement_forms(forms.ModelForm):
             "staff_id": forms.Select(attrs={'class': 'form-control'}),
             "shoe_model_id": forms.Select(attrs={"class": "form-control"}),
             "date": forms.DateInput(
-                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
-                format='%d %m %Y'
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'
             ),
             "quantity": forms.NumberInput(attrs={"class": "form-control", "min":0}),
             "quantity_type_id": forms.Select(attrs={"class": "form-control"}),
@@ -249,7 +249,7 @@ class producement_forms(forms.ModelForm):
 
         self.fields['status'].initial = models.references.objects.get(value=system_variables.CREATED)
         self.fields['date'].initial = now()
-        self.fields['date'].input_formats = ['%d %m %Y']
+        self.fields['date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
 
 
 
@@ -268,8 +268,8 @@ class staff_payments_forms(forms.ModelForm):
         widgets = {
             'staff_id':forms.Select(attrs={"class":"form-select"}),    
             'date': forms.DateInput(
-                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
-                format='%d %m %Y'
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'
             ),
             'amount':forms.NumberInput(attrs={"class":"form-control", "min":0}),
             'description':forms.Textarea(attrs={'class':'form-control'})   
@@ -279,7 +279,7 @@ class staff_payments_forms(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['date'].initial = now()
-        self.fields['date'].input_formats = ['%d %m %Y']
+        self.fields['date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
 
         self.fields['staff_id'].queryset = models.staff.objects.filter(IsDeleted=False)
 
@@ -290,8 +290,8 @@ class staff_payments_read_forms(forms.ModelForm):
         
         widgets = {
             'date': forms.DateInput(
-                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
-                format='%d %m %Y'
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'
             ),
             'amount':forms.NumberInput(attrs={"class":"form-control", "min":0}),
             'description':forms.Textarea(attrs={"class":"form-control"})
@@ -301,8 +301,8 @@ class staff_payments_read_forms(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Set the initial date value in the proper display format
 
-        self.fields['date'].initial = now().strftime('%d %m %Y')
-        self.fields['date'].input_formats = ['%d %m %Y']
+        self.fields['date'].initial = now().strftime('%Y-%m-%d')
+        self.fields['date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
 
 
 class DefaultProducementForms(forms.Form):
@@ -375,13 +375,13 @@ class DefaultProducementForms(forms.Form):
         widget=forms.DateInput(
             attrs={
                 "class": "form-control datepicker",
-                "placeholder": "dd mm yyyy",
+                "placeholder": "yyyy-mm-dd",
             },
-            format='%d %m %Y'  # Display format
+            format='%Y-%m-%d'  # Display format
         ),
         label=system_variables.DATE,
-        input_formats=['%d %m %Y'],  # Accepted input formats
-        initial=now().strftime('%d %m %Y')  # Initial value
+        input_formats=['%Y-%m-%d', '%d %m %Y'],  # Accepted input formats
+        initial=now().strftime('%Y-%m-%d')  # Initial value
     )
     
     def __init__(self, *args, **kwargs):
@@ -580,8 +580,8 @@ class SalesForm(forms.ModelForm):
             'price': forms.NumberInput(attrs={'class': 'form-control'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'date':forms.DateInput(
-                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
-                format='%d %m %Y'),
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'),
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -589,7 +589,7 @@ class SalesForm(forms.ModelForm):
         self.fields['warehouse'].queryset = models.Warehouse.objects.filter(IsDeleted=False)
         self.fields['client'].queryset = models.clients.objects.filter(IsDeleted=False)
         self.fields['date'].initial = now()
-        self.fields['date'].input_formats = ['%d %m %Y']
+        self.fields['date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
 
 
 class Client_payments_forms(forms.ModelForm):
@@ -600,8 +600,8 @@ class Client_payments_forms(forms.ModelForm):
         widgets = {
             'client_id':forms.Select(attrs={"class":"form-select"}),    
             'date': forms.DateInput(
-                attrs={"class": "form-control datepicker", "placeholder": "dd mm yyyy"},
-                format='%d %m %Y'
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'
             ),
             'amount':forms.NumberInput(attrs={"class":"form-control", "min":0}),
             'description':forms.Textarea(attrs={'class':'form-control'})   
@@ -611,7 +611,7 @@ class Client_payments_forms(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['date'].initial = now()
-        self.fields['date'].input_formats = ['%d %m %Y']
+        self.fields['date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
 
         self.fields['client_id'].queryset = models.clients.objects.filter(IsDeleted=False)
 

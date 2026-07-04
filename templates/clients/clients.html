@@ -3,13 +3,25 @@
 {% load filter %}
 
 {% block content %}
+{# Filter starts expanded only when at least one filter is active #}
+{% firstof request.GET.full_name request.GET.currency request.GET.address request.GET.phone '' as filters_active %}
 <div class="container">
 
-  <div class="card p-3 mt-3">
-    <h1 class="text-center mb-4">{{FILTER}}</h1>
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <h1 class="mb-0">{{CLIENTS}}</h1>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
+        aria-expanded="{% if filters_active %}true{% else %}false{% endif %}" aria-controls="filterCollapse">
+        <i class="bx bx-filter-alt"></i> {{FILTER}}
+      </button>
+      <a class="btn btn-primary" href="{% url "clients_create" %}">{{NEW}} {{CLIENT|lower}}</a>
+    </div>
+  </div>
 
+  <div class="collapse {% if filters_active %}show{% endif %} mt-3" id="filterCollapse">
+  <div class="card p-3">
         <!-- Filtering Form -->
-        <form id="filterForm" class="mb-4" method="get">
+        <form id="filterForm" class="mb-0" method="get">
             <div class="row g-3">
                 <!-- Full Name -->
                 <div class="col-md-3">
@@ -59,23 +71,13 @@
                 </div>
             </div>
         
-            <!-- Buttons -->
-            <div class="mt-3 text-end">
-                <button type="submit" class="btn btn-primary">{{FILTER}}</button>
-                <a href="{% url 'clients_view' %}" class="btn btn-secondary">{{CLEAN}}</a>
-            </div>
+            {% url 'clients_view' as filter_clean_url %}
+            {% include "partials/filter_buttons.html" %}
         </form>
-        
+  </div>
   </div>
 
-  {% comment %} table {% endcomment %}
 <div class="card mt-3">
-  <div class="d-flex justify-content-between align-items-center p-3">
-    
-    <h5 class="card-header p-0 bg-white border-0">{{CLIENT}}</h5>
-    <a class="btn btn-primary" href="{% url "clients_create" %}">{{NEW}} {{CLIENT}}</a>
-
-  </div>
     <div class="table-responsive text-nowrap">
       <table class="table table-hover">
         <thead>
@@ -94,7 +96,7 @@
           <tr>
             <td> <strong>{{client.name}}</strong></td>
             <td>
-              {{client.phone_number}}
+              {{client.phone_number|format_phone}}
             </td>
             <td>
                 {{client.address}}
@@ -225,7 +227,7 @@
                               <td>{{ payment.id }}</td>
                               <td>{{ payment.client_id }}</td>
                               <td>{{ payment.amount|floatformat:2|intcomma }}</td>
-                              <td>{{ payment.date|date:"Y.m.d" }}</td>
+                              <td>{{ payment.date|date:"Y-m-d" }}</td>
                               <td>
                                   <a class="btn btn-sm btn-warning text-white" href="{% url "client_payment_update" payment.id %}">
                                     <i class="bx bx-edit-alt "></i>
@@ -316,16 +318,8 @@
                                       {{ detail.order_id.status }}
                               </td>
                               <td>
-                                 <a class="btn btn-sm btn-warning" href="">
-                                     <i class="bx bx-edit-alt text-white"></i>
-                                 </a>
-
-                                  <a class="btn btn-sm btn-danger"  href="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#deleteModal"
-                                  data-delete-url="">
-                
-                                      <i class="bx bx-trash "></i>
+                                  <a class="btn btn-sm btn-info" href="{% url 'order_read' detail.order_id.pk %}" title="{{READ}}" aria-label="{{READ}}">
+                                      <i class="bx bx-show"></i>
                                   </a>
                               </td>
                           </tr>

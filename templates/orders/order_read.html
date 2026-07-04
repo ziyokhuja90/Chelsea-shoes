@@ -86,7 +86,7 @@
                                         <th>{{VARIANT_TYPE}}</th>
                                         <th>{{COLOR}}</th>
                                         <th>{{QUANTITY_TYPE}}</th>
-                                        <th>Juftiga</th>
+                                        <th>{{QUANTITY_PER_PAIR}}</th>
                                         <th>{{WASTE_PERCENT}}</th>
                                         <th>{{QUANTITY_REQUIRED}}</th>
                                     </tr>
@@ -108,7 +108,7 @@
                             </table>
                         </div>
                         {% else %}
-                        <p class="text-muted mb-0">Materiallar kiritilmagan.</p>
+                        <p class="text-muted mb-0">{{MATERIALS_NOT_ENTERED}}</p>
                         {% endif %}
                         {% endwith %}
                     </div>

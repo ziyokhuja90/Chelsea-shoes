@@ -2,27 +2,33 @@
 {% load humanize %}
 
 {% block content %}
+{# Filter starts expanded only when at least one filter is active #}
+{% firstof request.GET.shoe_model_id request.GET.color_id request.GET.leather_type request.GET.solo_type request.GET.client request.GET.status '' as filters_active %}
 <div class="container">
-  <div class="card p-3 my-3">
-    <h1 class="text-center mb-4">{{FILTER}}</h1>
 
-    <!-- Filtering Form -->
-    <form id="filterForm" class="mb-4" method="get">
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <h1 class="mb-0">{{ORDERS}}</h1>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
+        aria-expanded="{% if filters_active %}true{% else %}false{% endif %}" aria-controls="filterCollapse">
+        <i class="bx bx-filter-alt"></i> {{FILTER}}
+      </button>
+      <a class="btn btn-primary" href="{% url "orders_create" %}">{{NEW}} {{ORDER|lower}}</a>
+    </div>
+  </div>
 
+  <div class="collapse {% if filters_active %}show{% endif %} mt-3" id="filterCollapse">
+    <div class="card p-3">
+      <form id="filterForm" method="get">
         <div class="row g-3">
 
             <!-- Shoe Model -->
             <div class="col-md-3">
                 <label for="shoe_model_id" class="form-label">{{MODEL}}</label>
-                <select id="shoe_model_id" name="shoe_model_id" class="form-control">
+                <select id="shoe_model_id" name="shoe_model_id" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for model in shoe_models %}
-                        <option 
-                            value="{{ model.id }}" 
-                            {% if shoe_model_id == model.id %}selected{% endif %}
-                        >
-                            {{ model }}
-                        </option>
+                        <option value="{{ model.id }}" {% if shoe_model_id == model.id %}selected{% endif %}>{{ model }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -30,15 +36,10 @@
             <!-- Color -->
             <div class="col-md-3">
                 <label for="color_id" class="form-label">{{COLOR}}</label>
-                <select id="color_id" name="color_id" class="form-control">
+                <select id="color_id" name="color_id" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for color in colors %}
-                        <option 
-                            value="{{ color.id }}" 
-                            {% if color_id == color.id %}selected{% endif %}
-                        >
-                            {{ color }}
-                        </option>
+                        <option value="{{ color.id }}" {% if color_id == color.id %}selected{% endif %}>{{ color }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -46,31 +47,21 @@
             <!-- Leather Type -->
             <div class="col-md-3">
                 <label for="leather_type" class="form-label">{{LEATHER_TYPE}}</label>
-                <select id="leather_type" name="leather_type" class="form-control">
+                <select id="leather_type" name="leather_type" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for leather in leather_types %}
-                        <option 
-                            value="{{ leather.id }}" 
-                            {% if leather_type == leather.id %}selected{% endif %}
-                        >
-                            {{ leather }}
-                        </option>
+                        <option value="{{ leather.id }}" {% if leather_type == leather.id %}selected{% endif %}>{{ leather }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <!-- Solo Type -->
+            <!-- Sole Type -->
             <div class="col-md-3">
                 <label for="solo_type" class="form-label">{{SOLE_TYPE}}</label>
-                <select id="solo_type" name="solo_type" class="form-control">
+                <select id="solo_type" name="solo_type" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for solo in sole_types %}
-                        <option 
-                            value="{{ solo.id }}" 
-                            {% if solo_type == solo.id %}selected{% endif %}
-                        >
-                            {{ solo }}
-                        </option>
+                        <option value="{{ solo.id }}" {% if solo_type == solo.id %}selected{% endif %}>{{ solo }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -78,15 +69,10 @@
             <!-- Client -->
             <div class="col-md-3">
                 <label for="client" class="form-label">{{CLIENT}}</label>
-                <select id="client" name="client" class="form-control">
+                <select id="client" name="client" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for client in clients %}
-                        <option 
-                            value="{{ client.id }}" 
-                            {% if client_id == client.id %}selected{% endif %}
-                        >
-                            {{ client }}
-                        </option>
+                        <option value="{{ client.id }}" {% if client_id == client.id %}selected{% endif %}>{{ client }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -94,33 +80,22 @@
             <!-- Status -->
             <div class="col-md-3">
                 <label for="status" class="form-label">{{STATUS}}</label>
-                <select id="status" name="status" class="form-control">
+                <select id="status" name="status" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for status_item in statuses %}
-                        <option 
-                            value="{{ status_item.id }}" 
-                            {% if status_id == status_item.id %}selected{% endif %}
-                        >
-                            {{ status_item }}
-                        </option>
+                        <option value="{{ status_item.id }}" {% if status_id == status_item.id %}selected{% endif %}>{{ status_item }}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
 
-        <!-- Buttons -->
-        <div class="mt-3 text-end">
-            <button type="submit" class="btn btn-primary">{{FILTER}}</button>
-            <a href="{% url 'orders_view' %}" class="btn btn-secondary">{{CLEAN}}</a>
-        </div>
-    </form>
-</div>
+        {% url 'orders_view' as filter_clean_url %}
+        {% include "partials/filter_buttons.html" %}
+      </form>
+    </div>
+  </div>
 
   <div class="card mt-3">
-    <div class="d-flex justify-content-between align-items-center p-3">
-      <h5 class="card-header p-0 bg-white border-0">{{ORDERS}}</h5>
-      <a class="btn btn-primary" href="{% url "orders_create" %}">{{NEW}} {{ORDER}}</a>
-    </div>
     <div class="table-responsive text-nowrap">
       <table class="table table-hover">
         <thead>
@@ -137,122 +112,53 @@
         <tbody class="table-border-bottom-0">
           {% for order in orders_list %}
           <tr>
-            <td><strong>{{ forloop.counter }}</strong></td>
+            <td><strong>{{ forloop.counter0|add:orders_list.start_index }}</strong></td>
             <td>{{ order.client_id }}</td>
             <td>{{ order.total_amount|floatformat:2|intcomma }} {{order.client_id.currency}}</td>
-            <td>{{ order.date|date:"d.m.Y" }}</td>
-            <td>{{ order.complete_date|date:"d.m.Y" }}</td>
-            <!-- <td class="text-center">
-              <a href="{% url 'order_prev_status' order.id %}" class="btn btn-sm btn-outline-secondary p-1">
-                <i class='bx bx-chevron-left'></i>
-              </a>
-              <span class="mx-2">{{ order.status }}</span>
-              <a href="{% url 'order_next_status' order.id %}" class="btn btn-sm btn-outline-primary p-1">
-                <i class='bx bx-chevron-right'></i>
-              </a>
-            </td>-->
-              <td class="text-center">
-                  <select 
-                    name="status" 
-                    class="form-select form-select-sm d-inline w-auto text-center"
-                    data-order-id="{{ order.id }}"
-                    onchange="updateOrderStatus(this)"
-                    onfocus="previousStatus = this.value"
-                  >
+            <td>{{ order.date|date:"Y-m-d" }}</td>
+            <td>{{ order.complete_date|date:"Y-m-d" }}</td>
+            <td class="text-center">
+                <select
+                  name="status"
+                  class="form-select form-select-sm d-inline w-auto text-center"
+                  data-order-id="{{ order.id }}"
+                  onchange="updateOrderStatus(this)"
+                  onfocus="this.dataset.prev = this.value"
+                >
+                {% for s in statuses %}
+                  <option value="{{ s.id }}" {% if s.id == order.status.id %}selected{% endif %}>
+                    {{ s.value }}
+                  </option>
+                {% endfor %}
+              </select>
+            </td>
 
-                  {% for s in statuses %}
-                    <option value="{{ s.id }}" {% if s.id == order.status.id %}selected{% endif %}>
-                      {{ s.value }}
-                    </option>
-                  {% endfor %}
-                </select>
-              </td>
-              
-              <td> 
-                
-                <a class="btn btn-sm btn-info" href="{% url "order_read" order.id %}"> <i class="bx  bx-show "></i></a>
-                <a class="btn btn-sm btn-warning" href="{% url "orders_update" order.id %}"> <i class="bx bx-edit-alt text-white"></i></a>
-                <a class="btn btn-sm btn-danger"
+            <td>
+              <a class="btn btn-sm btn-info" href="{% url "order_read" order.id %}" title="{{READ}}" aria-label="{{READ}}"><i class="bx bx-show"></i></a>
+              <a class="btn btn-sm btn-warning" href="{% url "orders_update" order.id %}" title="{{UPDATE}}" aria-label="{{UPDATE}}"><i class="bx bx-edit-alt text-white"></i></a>
+              <a class="btn btn-sm btn-danger"
                 href="#"
                 data-bs-toggle="modal"
-                data-bs-target="#deleteModal" 
-                data-delete-url="{% url 'orders_delete' order.id %}"> 
+                data-bs-target="#deleteModal"
+                data-delete-url="{% url 'orders_delete' order.id %}"
+                title="{{DELETE}}" aria-label="{{DELETE}}">
                 <i class="bx bx-trash"></i></a>
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="8" class="text-center">{{ORDERS}} {{NO_DATA}}</td>
+            <td colspan="7" class="text-center">{{ORDERS}} {{NO_DATA}}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
-      <nav aria-label="Sahifa navigatsiyasi" class="my-4">
-        <ul class="pagination justify-content-center">
-          <!-- Oldingi tugmalar -->
-          {% if orders_list.has_previous %}
-            <li class="page-item">
-              <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page=1" aria-label="Birinchi">
-                <i class="bx bx-chevrons-left"></i> 
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ orders_list.previous_page_number }}" aria-label="Oldingi">
-                <i class="bx bx-chevron-left"></i> 
-              </a>
-            </li>
-          {% else %}
-            <li class="page-item disabled">
-              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                <i class="bx bx-chevrons-left"></i> 
-              </a>
-            </li>
-            <li class="page-item disabled">
-              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                <i class="bx bx-chevron-left"></i> 
-              </a>
-            </li>
-          {% endif %}
-      
-          <!-- Joriy sahifa ma'lumoti -->
-          <li class="page-item disabled">
-            <a class="page-link">
-              {{PAGE}} {{ orders_list.number }} / {{ orders_list.paginator.num_pages }}
-            </a>
-          </li>
-      
-          <!-- Keyingi tugmalar -->
-          {% if orders_list.has_next %}
-            <li class="page-item">
-              <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ orders_list.next_page_number }}" aria-label="Keyingi">
-                 <i class="bx bx-chevron-right"></i>
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ orders_list.paginator.num_pages }}" aria-label="Oxirgi">
-                 <i class="bx bx-chevrons-right"></i>
-              </a>
-            </li>
-          {% else %}
-            <li class="page-item disabled">
-              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                 <i class="bx bx-chevron-right"></i>
-              </a>
-            </li>
-            <li class="page-item disabled">
-              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                 <i class="bx bx-chevrons-right"></i>
-              </a>
-            </li>
-          {% endif %}
-        </ul>
-      </nav>
-      
-      
+
+      {% with page_obj=orders_list page_param="page" %}
+      {% include "partials/pagination.html" %}
+      {% endwith %}
     </div>
   </div>
 </div>
-
 
 <script>
   function getCSRFToken() {
@@ -281,15 +187,16 @@ function updateOrderStatus(select) {
         select.classList.add("border-success");
         setTimeout(() => select.classList.remove("border-success"), 800);
       } else {
-        alert(data.message || "Failed to update status");
+        // Restore the previous value so the UI never shows a state that wasn't saved
+        if (select.dataset.prev) select.value = select.dataset.prev;
+        alert(data.message || "{{STATUS}} {{NO_DATA}}");
       }
     })
     .catch(error => {
+      if (select.dataset.prev) select.value = select.dataset.prev;
       console.error("Error:", error);
     });
 }
-
-
 </script>
 
 {% endblock content %}

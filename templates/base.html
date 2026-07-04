@@ -4,7 +4,7 @@
 
 <html
 
-  lang="en"
+  lang="uz"
   class="light-style layout-menu-fixed"
   dir="ltr"
   data-theme="theme-default"
@@ -13,25 +13,14 @@
 >
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
-    />
-    <title>
-      
-      {{TITLE}}
-     
-     </title>
- 
-    <style>            
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{TITLE}}</title>
 
     <meta name="description" content="" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{% static "chelsea-shoes.png" %}" />
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -51,9 +40,6 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{% static '/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}" />
 
-    <link rel="stylesheet" href="{% static '/assets/vendor/libs/apex-charts/apex-charts.css' %}" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
     <!-- Page CSS -->
     
     <!-- Helpers -->
@@ -84,8 +70,12 @@
             {{DELETE_CONFIRMATION_INFO}}
           </div>
           <div class="modal-footer">
-            <button type="button" id="confirmDeleteBtn" class="btn btn-danger">{{DELETE_CONFIRMATION_BUTTON}}</button>
-            <a id="confirmDeleteLink" href="#" class="btn btn-danger" style="display: none;">{{DELETE_CONFIRMATION_BUTTON}}</a>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{CLOSE}}</button>
+            <!-- Delete happens via POST so destructive actions are CSRF-protected -->
+            <form method="post" id="deleteModalForm" class="mb-0">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">{{DELETE_CONFIRMATION_BUTTON}}</button>
+            </form>
           </div>
         </div>
       </div>
@@ -230,56 +220,6 @@
             </li>
             
 
-            <li class="menu-item disabled">
-              <a href="#"
-                class="menu-link text-decoration-none disabled"
-                tabindex="-1"
-                aria-disabled="true"
-                onclick="return false;">
-
-                <div data-i18n="Basic">
-                  <i class="menu-icon tf-icons bx bx-money"></i>
-                  <span class="fw-bolder">
-                    {{ INCOME }}
-                  </span>
-                </div>
-              </a>
-            </li>
-
-            
-            <li class="menu-item disabled">
-              <a href="#"
-                class="menu-link text-decoration-none disabled"
-                tabindex="-1"
-                aria-disabled="true"
-                onclick="return false;">
-                
-                <div data-i18n="Basic">
-                  <i class="menu-icon tf-icons bx bx-credit-card"></i>
-                  <span class="fw-bolder">
-                    {{ DEBTS }}
-                  </span>
-                </div>
-              </a>
-            </li>
-            
-            <li class="menu-item disabled">
-              <a href="#"
-                class="menu-link text-decoration-none disabled"
-                tabindex="-1"
-                aria-disabled="true"
-                onclick="return false;">
-
-                <div data-i18n="Basic">
-                  <i class="menu-icon tf-icons bx bx-wallet"></i>
-                  <span class="fw-bolder">
-                    {{ EXPENSES }}
-                  </span>
-                </div>
-              </a>
-            </li>
-
-
           </ul>
         </aside>
         <!-- / Menu -->
@@ -299,20 +239,6 @@
             </div>
 
             <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-              <!-- Search -->
-              <div class="navbar-nav align-items-center">
-                <div class="nav-item d-flex align-items-center">
-                  <i class="bx bx-search fs-4 lh-0"></i>
-                  <input
-                    type="text"
-                    class="form-control border-0 shadow-none"
-                    placeholder="{{SEARCH}}"
-                    aria-label="Search..."
-                  />
-                </div>
-              </div>
-              <!-- /Search -->
-
               <ul class="navbar-nav flex-row align-items-center ms-auto">
                 <!-- Place this tag where you want the button to render. -->
                 
@@ -331,6 +257,17 @@
 
           <!-- Content wrapper -->
           <div class="content-wrapper">
+            <!-- Global flash messages: every view's success/error is shown here -->
+            {% if messages %}
+            <div class="container mt-3">
+              {% for message in messages %}
+              <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{CLOSE}}"></button>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
 {% block content %}
 {% endblock content %}  
 
@@ -356,86 +293,17 @@
     <script src="{% static "/assets/vendor/js/menu.js" %}"></script>
     <!-- endbuild -->
 
-    <!-- Vendors JS -->
-    <script src="{% static "/assets/vendor/libs/apex-charts/apexcharts.js" %}"></script>
-
     <!-- Main JS -->
     <script src="{% static "/assets/js/main.js" %}"></script>
 
-    <!-- Page JS -->
-    <script src="{% static "/assets/js/dashboards-analytics.js" %}"></script>
-
-    <!-- Place this tag in your head or just before your close body tag. -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
-  
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const deleteModal = document.getElementById("deleteModal");
-        const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-        const confirmDeleteLink = document.getElementById("confirmDeleteLink");
-        let formToSubmit = null;
-    
-        // Handle form-based delete buttons
-        document.querySelectorAll('button[data-bs-target="#deleteModal"]').forEach((button) => {
-          button.addEventListener("click", function () {
-            formToSubmit = this.closest("form"); // Capture the form
-            confirmDeleteBtn.style.display = "inline-block"; // Show the form button
-            confirmDeleteLink.style.display = "none"; // Hide the link button
+        // Any element with data-delete-url opens the shared modal; confirming submits a POST form
+        const deleteForm = document.getElementById("deleteModalForm");
+        document.querySelectorAll('[data-bs-target="#deleteModal"]').forEach((trigger) => {
+          trigger.addEventListener("click", function () {
+            deleteForm.setAttribute("action", this.getAttribute("data-delete-url") || "#");
           });
-        });
-    
-        // Handle link-based delete buttons
-        document.querySelectorAll('a[data-bs-target="#deleteModal"]').forEach((link) => {
-          link.addEventListener("click", function () {
-            const deleteUrl = this.getAttribute("data-delete-url"); // Capture the URL
-            confirmDeleteLink.setAttribute("href", deleteUrl); // Set the URL on the modal button
-            confirmDeleteBtn.style.display = "none"; // Hide the form button
-            confirmDeleteLink.style.display = "inline-block"; // Show the link button
-            formToSubmit = null; // Reset form submission
-          });
-        });
-    
-        // Submit the form when the "Yes, Delete" button is clicked for forms
-        confirmDeleteBtn.addEventListener("click", function () {
-          if (formToSubmit) {
-            formToSubmit.submit();
-          }
-        });
-      });
-    </script>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const deleteModal = document.getElementById("completeModal");
-        const confirmDeleteBtn = document.getElementById("completeDeleteBtn");
-        const confirmDeleteLink = document.getElementById("completeDeleteLink");
-        let formToSubmit = null;
-    
-        // Handle form-based delete buttons
-        document.querySelectorAll('button[data-bs-target="#completeModal"]').forEach((button) => {
-          button.addEventListener("click", function () {
-            formToSubmit = this.closest("form"); // Capture the form
-            confirmDeleteBtn.style.display = "inline-block"; // Show the form button
-            confirmDeleteLink.style.display = "none"; // Hide the link button
-          });
-        });
-    
-        // Handle link-based delete buttons
-        document.querySelectorAll('a[data-bs-target="#completeModal"]').forEach((link) => {
-          link.addEventListener("click", function () {
-            const deleteUrl = this.getAttribute("data-complete-url"); // Capture the URL
-            confirmDeleteLink.setAttribute("href", deleteUrl); // Set the URL on the modal button
-            confirmDeleteBtn.style.display = "none"; // Hide the form button
-            confirmDeleteLink.style.display = "inline-block"; // Show the link button
-            formToSubmit = null; // Reset form submission
-          });
-        });
-    
-        // Submit the form when the "Yes, Delete" button is clicked for forms
-        confirmDeleteBtn.addEventListener("click", function () {
-          if (formToSubmit) {
-            formToSubmit.submit();
-          }
         });
       });
     </script>
@@ -612,7 +480,7 @@ inputs.forEach(input => {
   });
 
   flatpickr(".datepicker", {
-    dateFormat: "d m Y",
+    dateFormat: "Y-m-d",
     locale: flatpickr.l10ns.default,  // apply our custom localization
     allowInput: true
   });

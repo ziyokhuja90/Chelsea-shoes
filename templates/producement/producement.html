@@ -5,13 +5,21 @@
 
 
 {% block content %}
+{# Filter starts expanded only when at least one filter is active #}
+{% firstof request.GET.staff_id request.GET.shoe_model_id request.GET.status request.GET.order '' as filters_active %}
 <div class="container">
 
-  <div class="card p-3 my-3">
-    <h1 class="text-center mb-4">{{FILTER}}</h1>
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <h1 class="mb-0">{{PRODUCEMENT}}</h1>
+    <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
+      aria-expanded="{% if filters_active %}true{% else %}false{% endif %}" aria-controls="filterCollapse">
+      <i class="bx bx-filter-alt"></i> {{FILTER}}
+    </button>
+  </div>
 
-    <!-- Filtering Form -->
-    <form id="filterForm" class="mb-4" method="get">
+  <div class="collapse {% if filters_active %}show{% endif %} mt-3" id="filterCollapse">
+    <div class="card p-3">
+    <form id="filterForm" method="get">
     <input type="hidden" name="active_tab" id="active-tab" value="{{ active_tab|default:'#profession-1' }}">
 
         <div class="row g-3">
@@ -19,15 +27,10 @@
             <!-- Staff ID -->
             <div class="col-md-3">
                 <label for="staff_id" class="form-label">{{STAFF}}</label>
-                <select id="staff_id" name="staff_id" class="form-control">
+                <select id="staff_id" name="staff_id" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for staff in staff_list %}
-                        <option 
-                            value="{{ staff.id }}" 
-                            {% if staff_id == staff.id %}selected{% endif %}
-                            >
-                            {{ staff }}
-                        </option>
+                        <option value="{{ staff.id }}" {% if staff_id == staff.id %}selected{% endif %}>{{ staff }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -35,15 +38,10 @@
             <!-- Shoe Model -->
             <div class="col-md-3">
                 <label for="shoe_model_id" class="form-label">{{MODEL}}</label>
-                <select id="shoe_model_id" name="shoe_model_id" class="form-control">
+                <select id="shoe_model_id" name="shoe_model_id" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for model in shoe_models %}
-                        <option 
-                            value="{{ model.id }}" 
-                            {% if shoe_model_id == model.id %}selected{% endif %}
-                        >
-                            {{ model }}
-                        </option>
+                        <option value="{{ model.id }}" {% if shoe_model_id == model.id %}selected{% endif %}>{{ model }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -51,42 +49,30 @@
             <!-- Status -->
             <div class="col-md-3">
                 <label for="status" class="form-label">{{STATUS}}</label>
-                <select id="status" name="status" class="form-control">
+                <select id="status" name="status" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for status_item in statuses %}
-                        <option 
-                            value="{{ status_item.id }}" 
-                            {% if status == status_item.id %}selected{% endif %}
-                        >
-                            {{ status_item }}
-                        </option>
+                        <option value="{{ status_item.id }}" {% if status == status_item.id %}selected{% endif %}>{{ status_item }}</option>
                     {% endfor %}
                 </select>
             </div>
             <!-- Order -->
             <div class="col-md-3">
                 <label for="order" class="form-label">{{ORDER}}</label>
-                <select id="order" name="order" class="form-control">
+                <select id="order" name="order" class="form-select">
                     <option value="">{{CHOOSE}}</option>
                     {% for order in order_list %}
-                        <option 
-                            value="{{ order.id }}" 
-                            {% if order_id == order.id %}selected{% endif %}
-                        >
-                            {{ order.order_label }}
-                        </option>
+                        <option value="{{ order.id }}" {% if order_id == order.id %}selected{% endif %}>{{ order.order_label }}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
 
-        <!-- Buttons -->
-        <div class="mt-3 text-end">
-            <button type="submit" class="btn btn-primary">{{FILTER}}</button>
-            <a href="{% url 'producement_view' %}" class="btn btn-secondary">{{CLEAN}}</a>
-        </div>
+        {% url 'producement_view' as filter_clean_url %}
+        {% include "partials/filter_buttons.html" %}
     </form>
-</div>
+    </div>
+  </div>
     <div class="card mt-3">
 
 
@@ -137,6 +123,7 @@
             {% endif %}
             >{{NEW}} {{PRODUCEMENT|lower}}</a>
         </div>
+            <div class="table-responsive text-nowrap">
             <table class="table table-hover">
                 <thead>
                     <tr>
@@ -170,8 +157,8 @@
                         <td>
                             {% if producement.order_id %}
                             <strong>{{CLIENT}}:</strong> {{ producement.order_id.client_id }}<br>
-                            <strong>{{DEADLINE}}:</strong> {{ producement.order_id.complete_date|date:"d.m.Y" }}<br>
-                            <strong>{{DATE}}:</strong> {{ producement.order_id.date|date:"Y.m.d" }}
+                            <strong>{{DEADLINE}}:</strong> {{ producement.order_id.complete_date|date:"Y-m-d" }}<br>
+                            <strong>{{DATE}}:</strong> {{ producement.order_id.date|date:"Y-m-d" }}
                             {% else %}
                             —
                             {% endif %}
@@ -185,7 +172,7 @@
                             class="form-select form-select-sm d-inline w-auto text-center"
                             data-producement-id="{{ producement.id }}"
                             onchange="updateProducementStatus(this)"
-                            onfocus="previousStatus = this.value"
+                            onfocus="this.dataset.prev = this.value"
                           >
                           {% for s in statuses %}
                             <option value="{{ s.id }}" {% if s.id == producement.status.id %}selected{% endif %}>
@@ -195,12 +182,11 @@
                         </select>
                       </td>
 
-                        <td class="d-flex flex-column gap-2 align-items-center ">
-                            <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}">
+                        <td>
+                            <a class="btn btn-sm btn-info" href="{% url 'producement_read' producement.id %}" title="{{READ}}" aria-label="{{READ}}">
                                 <i class="bx bx-show"></i>
                             </a>
-                            
-                            <a class="btn btn-sm btn-warning text-white"
+                            <a class="btn btn-sm btn-warning text-white" title="{{UPDATE}}" aria-label="{{UPDATE}}"
                             {% if profession.order == 1 %}
                                href="{% url 'producement_update_kroy' producement.id %}"
                             {% elif profession.order == 2 %}
@@ -217,7 +203,7 @@
                              >
                                 <i class="bx bx-edit-alt"></i>
                             </a>
-                            <a class="btn btn-sm btn-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" data-delete-url="{% url 'producement_delete' producement.id %}">
+                            <a class="btn btn-sm btn-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" data-delete-url="{% url 'producement_delete' producement.id %}" title="{{DELETE}}" aria-label="{{DELETE}}">
                                 <i class="bx bx-trash"></i>
                             </a>
                         </td>
@@ -233,6 +219,7 @@
             {% with page_obj=tab.producement_list page_param=tab.page_key filter_query=tab.filter_query %}
             {% include "partials/pagination.html" %}
             {% endwith %}
+            </div>
         </div>
         {% endwith %}
         {% endfor %}
@@ -292,10 +279,13 @@ function updateProducementStatus(select) {
         select.classList.add("border-success");
         setTimeout(() => select.classList.remove("border-success"), 800);
       } else {
-        alert(data.message || "Failed to update status");
+        // Restore the previous value so the UI never shows a state that wasn't saved
+        if (select.dataset.prev) select.value = select.dataset.prev;
+        alert(data.message || "{{STATUS}} {{NO_DATA}}");
       }
     })
     .catch(error => {
+      if (select.dataset.prev) select.value = select.dataset.prev;
       console.error("Error:", error);
     });
 }

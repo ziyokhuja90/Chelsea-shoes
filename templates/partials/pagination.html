@@ -1,13 +1,14 @@
-<nav aria-label="Sahifa navigatsiyasi" class="my-4">
+{% if page_obj.paginator.num_pages > 1 %}
+<nav aria-label="{{PAGE_NAVIGATION}}" class="my-4">
   <ul class="pagination justify-content-center">
     {% if page_obj.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}=1" aria-label="Birinchi">
+        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}=1" aria-label="{{PAGE_FIRST}}">
           <i class="bx bx-chevrons-left"></i>
         </a>
       </li>
       <li class="page-item">
-        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}={{ page_obj.previous_page_number }}" aria-label="Oldingi">
+        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}={{ page_obj.previous_page_number }}" aria-label="{{PAGE_PREVIOUS}}">
           <i class="bx bx-chevron-left"></i>
         </a>
       </li>
@@ -32,12 +33,12 @@
 
     {% if page_obj.has_next %}
       <li class="page-item">
-        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}={{ page_obj.next_page_number }}" aria-label="Keyingi">
+        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}={{ page_obj.next_page_number }}" aria-label="{{PAGE_NEXT}}">
           <i class="bx bx-chevron-right"></i>
         </a>
       </li>
       <li class="page-item">
-        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}={{ page_obj.paginator.num_pages }}" aria-label="Oxirgi">
+        <a class="page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}{{ page_param }}={{ page_obj.paginator.num_pages }}" aria-label="{{PAGE_LAST}}">
           <i class="bx bx-chevrons-right"></i>
         </a>
       </li>
@@ -55,3 +56,4 @@
     {% endif %}
   </ul>
 </nav>
+{% endif %}
