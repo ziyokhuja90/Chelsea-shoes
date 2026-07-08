@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-3">
+    <form method="post">
+        {% csrf_token %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-info">
+                <h3 class="mb-0 text-white">{{ form_title }}</h3>
+                <small class="text-white-50">{{ shoe_model_item.name }} ({{ shoe_model_item.code }})</small>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for field in form %}
+                    <div class="col-md-4">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex gap-3 justify-content-end mt-4">
+                    <a href="{{ cancel_url }}" class="btn btn-secondary">{{CANCEL}}</a>
+                    <button type="submit" class="btn btn-primary">{{SAVE}}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Profession is only selectable for ISH HAQI (labor) rows
+    const laborTypeId = "{{ labor_type_id|default:'' }}";
+    const typeSelect = document.getElementById('id_model_expenses_type');
+    const professionSelect = document.getElementById('id_profession_type');
+
+    function toggleProfession() {
+        const isLabor = laborTypeId && typeSelect.value === laborTypeId;
+        professionSelect.disabled = !isLabor;
+        if (!isLabor) {
+            professionSelect.value = '';
+        }
+    }
+
+    typeSelect.addEventListener('change', toggleProfession);
+    toggleProfession();
+});
+</script>
+{% endblock content %}

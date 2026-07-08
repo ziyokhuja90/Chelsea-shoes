@@ -592,6 +592,67 @@ class SalesForm(forms.ModelForm):
         self.fields['date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
 
 
+class ModelExpenseForm(forms.ModelForm):
+    class Meta:
+        model = models.Model_expenses
+        fields = ['model_expenses_type', 'profession_type', 'price']
+
+        widgets = {
+            'model_expenses_type': forms.Select(attrs={'class': 'form-select'}),
+            'profession_type': forms.Select(attrs={'class': 'form-select'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': '0.01'}),
+        }
+
+    def __init__(self, *args, shoe_model_item=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.shoe_model_item = shoe_model_item or (
+            self.instance.model_id if self.instance and self.instance.pk else None
+        )
+
+        self.fields['model_expenses_type'].queryset = models.references.objects.filter(
+            type=models.ReferenceType.MODEL_EXPENSES_TYPE.value, IsDeleted=False,
+        ).order_by('order', 'value')
+        self.fields['model_expenses_type'].empty_label = system_variables.EMPTY_LABEL
+        self.fields['model_expenses_type'].label = system_variables.EXPENSE_TYPE
+
+        self.fields['profession_type'].queryset = models.references.objects.filter(
+            type=models.ReferenceType.PROFESSION.value, IsDeleted=False,
+        ).order_by('order', 'value')
+        self.fields['profession_type'].empty_label = system_variables.EMPTY_LABEL
+        self.fields['profession_type'].label = system_variables.PROFESSION
+        self.fields['profession_type'].required = False
+
+        self.fields['price'].label = system_variables.PRICE
+
+    def clean(self):
+        cleaned_data = super().clean()
+        expense_type = cleaned_data.get('model_expenses_type')
+        profession = cleaned_data.get('profession_type')
+
+        if expense_type:
+            if expense_type.value == system_variables.MODEL_EXPENSE_LABOR:
+                if not profession:
+                    self.add_error('profession_type', system_variables.MODEL_EXPENSE_PROFESSION_REQUIRED)
+            else:
+                # Overhead rows never carry a profession
+                cleaned_data['profession_type'] = None
+                profession = None
+
+        if expense_type and self.shoe_model_item:
+            duplicates = models.Model_expenses.objects.filter(
+                model_id=self.shoe_model_item,
+                model_expenses_type=expense_type,
+                profession_type=profession,
+                is_deleted=False,
+            )
+            if self.instance and self.instance.pk:
+                duplicates = duplicates.exclude(pk=self.instance.pk)
+            if duplicates.exists():
+                self.add_error('model_expenses_type', system_variables.MODEL_EXPENSE_DUPLICATE)
+
+        return cleaned_data
+
+
 def _stock_sale_detail_label(detail):
     return (
         f"#{detail.order_id_id} — {detail.model_id} "

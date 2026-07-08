@@ -155,6 +155,18 @@ RESERVED_QUANTITY = "Band qilingan"
 AVAILABLE_QUANTITY = "Mavjud miqdor"
 UPDATED_AT = "Yangilangan sana"
 
+# Model expenses (tannarx)
+MODEL_EXPENSES = "Model xarajatlari"
+MODEL_EXPENSE_CREATE = "Xarajat qo'shish"
+MODEL_EXPENSE_LABOR = "ISH HAQI"
+MODEL_EXPENSE_OVERHEAD = "USTAMA XARAJAT"
+EXPENSE_TYPE = "Xarajat turi"
+COST_PRICE = "Tannarx"
+LABOR_TOTAL = "Ish haqi jami"
+OVERHEAD_TOTAL = "Ustama xarajat jami"
+MODEL_EXPENSE_PROFESSION_REQUIRED = "ISH HAQI uchun kasb tanlanishi shart."
+MODEL_EXPENSE_DUPLICATE = "Bu model uchun bunday xarajat allaqachon mavjud."
+
 # Stock sale (warehouse sale)
 STOCK_SALE = "Ombor sotuvi"
 STOCK_SALES = "Ombor sotuvlari"

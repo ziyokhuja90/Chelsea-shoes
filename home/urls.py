@@ -103,6 +103,12 @@ urlpatterns = [
     path('stock_sale/update/<int:pk>/', views.stock_sale_update, name='stock_sale_update'),
     path('stock_sale/delete/<int:pk>/', views.stock_sale_delete, name='stock_sale_delete'),
 
+    # model expenses (tannarx)
+    path('model_expense/create/<int:pk>/', views.model_expense_create, name='model_expense_create'),
+    path('model_expense/update/<int:pk>/', views.model_expense_update, name='model_expense_update'),
+    path('model_expense/delete/<int:pk>/', views.model_expense_delete, name='model_expense_delete'),
+    path('model_expense/labor-price/', views.get_model_expense_price, name='get_model_expense_price'),
+
     # model_parts
     path('model_part/create/<int:pk>/', views.model_part_create, name='model_part_create'),
     path('model_part/update/<int:pk>/', views.model_part_update, name='model_part_update'),

@@ -124,5 +124,30 @@
     if ($('#id_producement_id').length && $('#id_producement_id').val()) {
         applyChainSelection($('#id_producement_id').val());
     }
+
+    // Pre-fill price from the model's planned labor rate (Model_expenses),
+    // but never overwrite a value the user typed manually.
+    let lastAutofilledPrice = null;
+
+    function prefillPrice() {
+        const staffId = $('#id_staff_id').val();
+        const modelId = $('#id_shoe_model_id').val();
+        const priceInput = $('#id_price');
+        if (!staffId || !modelId || !priceInput.length) return;
+
+        const current = priceInput.val();
+        const untouched = !current || current === '0' || parseFloat(current) === 0 || current === lastAutofilledPrice;
+        if (!untouched) return;
+
+        $.getJSON("{% url 'get_model_expense_price' %}", { model_id: modelId, staff_id: staffId })
+            .done(function (data) {
+                if (data.price !== null && data.price !== undefined) {
+                    priceInput.val(data.price);
+                    lastAutofilledPrice = data.price;
+                }
+            });
+    }
+
+    $('#id_staff_id, #id_shoe_model_id').on('change', prefillPrice);
 })();
 </script>

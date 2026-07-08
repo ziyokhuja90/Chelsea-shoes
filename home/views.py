@@ -311,11 +311,30 @@ def shoe_model_read(request, pk):
 
     parts_page, parts_fq, parts_page_param = _paginate(request, parts_qs, 'page')
 
+    # model expenses (tannarx)
+    expenses_qs = Model_expenses.objects.filter(
+        model_id=shoe_model_item, is_deleted=False,
+    ).select_related('model_expenses_type', 'profession_type').order_by(
+        'model_expenses_type__order', 'profession_type__order', 'id',
+    )
+    labor_total = sum(
+        e.price for e in expenses_qs
+        if e.model_expenses_type.value == system_variables.MODEL_EXPENSE_LABOR
+    )
+    overhead_total = sum(
+        e.price for e in expenses_qs
+        if e.model_expenses_type.value != system_variables.MODEL_EXPENSE_LABOR
+    )
+
     context = {
         "shoe_model_item": shoe_model_item,
         "model_part_definations": parts_page,
         "parts_page_param": parts_page_param,
         "parts_filter_query": parts_fq,
+        "model_expenses": expenses_qs,
+        "labor_total": labor_total,
+        "overhead_total": overhead_total,
+        "expense_total": labor_total + overhead_total,
         "parts_list": references.objects.filter(
             type=ReferenceType.MODEL_PART.value, IsDeleted=False,
         ).order_by('order', 'value'),
@@ -327,6 +346,86 @@ def shoe_model_read(request, pk):
         "is_required": is_required,
     }
     return render(request, 'shoe_model/shoe_model_read.html', context=context)
+
+# model expenses (tannarx)
+def _labor_expense_type_id():
+    ref = references.objects.filter(
+        type=ReferenceType.MODEL_EXPENSES_TYPE.value,
+        value=system_variables.MODEL_EXPENSE_LABOR,
+        IsDeleted=False,
+    ).first()
+    return ref.id if ref else None
+
+
+def model_expense_create(request, pk):
+    shoe_model_item = get_object_or_404(shoe_model, pk=pk, IsDeleted=False)
+
+    if request.method == "POST":
+        form = ModelExpenseForm(request.POST, shoe_model_item=shoe_model_item)
+        if form.is_valid():
+            expense = form.save(commit=False)
+            expense.model_id = shoe_model_item
+            expense.save()
+            return redirect('shoe_model_read', pk=pk)
+    else:
+        form = ModelExpenseForm(shoe_model_item=shoe_model_item)
+
+    return render(request, 'shoe_model/model_expense_form.html', {
+        'form': form,
+        'form_title': system_variables.MODEL_EXPENSE_CREATE,
+        'shoe_model_item': shoe_model_item,
+        'labor_type_id': _labor_expense_type_id(),
+        'cancel_url': reverse('shoe_model_read', args=[pk]),
+    })
+
+
+def model_expense_update(request, pk):
+    expense = get_object_or_404(Model_expenses, pk=pk, is_deleted=False)
+    shoe_model_item = expense.model_id
+
+    if request.method == "POST":
+        form = ModelExpenseForm(request.POST, instance=expense)
+        if form.is_valid():
+            form.save()
+            return redirect('shoe_model_read', pk=shoe_model_item.pk)
+    else:
+        form = ModelExpenseForm(instance=expense)
+
+    return render(request, 'shoe_model/model_expense_form.html', {
+        'form': form,
+        'form_title': f"{system_variables.MODEL_EXPENSES} — {system_variables.UPDATE}",
+        'shoe_model_item': shoe_model_item,
+        'labor_type_id': _labor_expense_type_id(),
+        'cancel_url': reverse('shoe_model_read', args=[shoe_model_item.pk]),
+    })
+
+
+def model_expense_delete(request, pk):
+    expense = get_object_or_404(Model_expenses, pk=pk, is_deleted=False)
+    expense.is_deleted = True
+    expense.save()
+    return redirect('shoe_model_read', pk=expense.model_id_id)
+
+
+def get_model_expense_price(request):
+    """Planned labor rate for producement price pre-fill (model + staff's profession)."""
+    model_id = _safe_int(request.GET.get('model_id'))
+    staff_id = _safe_int(request.GET.get('staff_id'))
+    if not model_id or not staff_id:
+        return JsonResponse({'price': None})
+
+    staff_item = staff.objects.filter(pk=staff_id, IsDeleted=False).first()
+    if not staff_item:
+        return JsonResponse({'price': None})
+
+    expense = Model_expenses.objects.filter(
+        model_id_id=model_id,
+        profession_type_id=staff_item.profession_id,
+        model_expenses_type__value=system_variables.MODEL_EXPENSE_LABOR,
+        is_deleted=False,
+    ).first()
+    return JsonResponse({'price': str(expense.price) if expense else None})
+
 
 def shoe_model_update(request, pk):
     shoe_model_item = shoe_model.objects.get(pk=pk)

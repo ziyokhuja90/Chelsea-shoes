@@ -16,6 +16,7 @@ class ReferenceType(Enum):
 
     MATERIAL_TYPE = 20       # system
     STOCK_MOVEMENT_TYPE = 21 # system
+    MODEL_EXPENSES_TYPE = 22
 
     # VARIANT TYPES (not materials!)
 
@@ -129,6 +130,37 @@ class Model_part_definition(models.Model):
 
     class Meta: 
         db_table = "model_part_definition"
+
+class Model_expenses(models.Model):
+    model_id = models.ForeignKey(
+        shoe_model,
+        on_delete=models.CASCADE,
+        related_name="model_expenses",
+    )
+    profession_type = models.ForeignKey(
+        references,  # PROFESSION — set only for ISH HAQI (labor) rows
+        on_delete=models.CASCADE,
+        related_name="profession_model_expenses",
+        null=True,
+        blank=True,
+    )
+    model_expenses_type = models.ForeignKey(
+        references,  # MODEL_EXPENSES_TYPE
+        on_delete=models.CASCADE,
+        related_name="type_model_expenses",
+    )
+    price = models.DecimalField(max_digits=20, decimal_places=2)
+
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "model_expenses"
+
+    def __str__(self):
+        return f"{self.model_id} - {self.model_expenses_type} - {self.price}"
+
 
 class Material_stock(models.Model):
     material_type_ref_id = models.ForeignKey(references, on_delete=models.CASCADE, related_name="material_type_ref_id_stock")

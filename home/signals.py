@@ -213,6 +213,9 @@ def create_system_data(sender, **kwargs):
         # stock movement type (IN / OUT)
         references.objects.get_or_create(type=ReferenceType.STOCK_MOVEMENT_TYPE.value, value=system_variables.STOCK_IN, IsSystem=True, order=1)
         references.objects.get_or_create(type=ReferenceType.STOCK_MOVEMENT_TYPE.value, value=system_variables.STOCK_OUT, IsSystem=True, order=2)
+        # model expenses type (labor / overhead)
+        references.objects.get_or_create(type=ReferenceType.MODEL_EXPENSES_TYPE.value, value=system_variables.MODEL_EXPENSE_LABOR, IsSystem=True, order=1)
+        references.objects.get_or_create(type=ReferenceType.MODEL_EXPENSES_TYPE.value, value=system_variables.MODEL_EXPENSE_OVERHEAD, IsSystem=True, order=2)
         # currency
         references.objects.get_or_create(type=ReferenceType.CURRENCY.value, value=system_variables.USD, IsSystem=True)
         references.objects.get_or_create(type=ReferenceType.CURRENCY.value, value=system_variables.UZS, IsSystem=True)

@@ -181,6 +181,83 @@
             {% include "partials/pagination.html" %}
             {% endwith %}
 
+            <!-- Model Expenses (tannarx) -->
+            <div class="d-flex align-items-center justify-content-between mt-4">
+                <h6 class="text-muted mb-0">{{ MODEL_EXPENSES }}</h6>
+
+                <a href="{% url 'model_expense_create' shoe_model_item.pk %}"
+                   class="btn btn-primary">
+                    {{ MODEL_EXPENSE_CREATE }}
+                </a>
+            </div>
+
+            <div class="row g-3 my-1">
+                <div class="col-md-4">
+                    <div class="border rounded p-3 bg-light">
+                        <div class="text-muted small">{{ LABOR_TOTAL }}</div>
+                        <div class="fs-5 fw-bold">{{ labor_total|floatformat:2|intcomma }} {{UZS}}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3 bg-light">
+                        <div class="text-muted small">{{ OVERHEAD_TOTAL }}</div>
+                        <div class="fs-5 fw-bold">{{ overhead_total|floatformat:2|intcomma }} {{UZS}}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3 bg-light border-primary">
+                        <div class="text-muted small">{{ COST_PRICE }}</div>
+                        <div class="fs-5 fw-bold text-primary">{{ expense_total|floatformat:2|intcomma }} {{UZS}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>{{ EXPENSE_TYPE }}</th>
+                            <th>{{ PROFESSION }}</th>
+                            <th>{{ PRICE }}</th>
+                            <th>{{ ACTIONS }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in model_expenses %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ expense.model_expenses_type }}</td>
+                            <td>{{ expense.profession_type|default:"—" }}</td>
+                            <td>{{ expense.price|floatformat:2|intcomma }}</td>
+                            <td>
+                                <a class="btn btn-sm btn-warning"
+                                   href="{% url 'model_expense_update' expense.pk %}"
+                                   title="{{ UPDATE }}" aria-label="{{ UPDATE }}">
+                                    <i class="bx bx-edit-alt text-white"></i>
+                                </a>
+
+                                <a class="btn btn-sm btn-danger"
+                                   href="#"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#deleteModal"
+                                   data-delete-url="{% url 'model_expense_delete' expense.pk %}"
+                                   title="{{ DELETE }}" aria-label="{{ DELETE }}">
+                                    <i class="bx bx-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                {{ MODEL_EXPENSES }} {{ NO_DATA }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </div>
 </div>
