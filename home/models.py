@@ -515,3 +515,19 @@ class Sales(models.Model):
     def __str__(self):
         return f"{self.quantity} - {self.total_price}"
 
+class SupplierPayments(models.Model):
+    supplier = models.ForeignKey(
+        Supplier,
+        on_delete=models.CASCADE,
+        related_name="supplier_payments",
+    )
+    amount = models.DecimalField(max_digits=20, decimal_places=2)
+    date = models.DateField(default=now)
+    description = models.TextField(verbose_name=system_variables.DESCRIPTION, null=True, blank=True)
+    IsDeleted = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "supplier_payments"
+
+    def __str__(self):
+        return f"{self.supplier} - {self.amount} - {self.date}"
