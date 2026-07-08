@@ -592,6 +592,67 @@ class SalesForm(forms.ModelForm):
         self.fields['date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
 
 
+def _stock_sale_detail_label(detail):
+    return (
+        f"#{detail.order_id_id} — {detail.model_id} "
+        f"({detail.quantity} {detail.quantity_type_id})"
+    )
+
+
+class StockSaleForm(forms.ModelForm):
+    class Meta:
+        model = models.Stock_sale
+        fields = ['order_detail', 'client', 'date', 'price', 'quantity']
+
+        widgets = {
+            'order_detail': forms.Select(attrs={'class': 'form-select'}),
+            'client': forms.Select(attrs={'class': 'form-select'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': '0.01'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'date': forms.DateInput(
+                attrs={"class": "form-control datepicker", "placeholder": "yyyy-mm-dd"},
+                format='%Y-%m-%d'),
+        }
+
+    def __init__(self, *args, detail_locked=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.detail_locked = detail_locked
+
+        self.fields['order_detail'].queryset = models.Order_details.objects.filter(
+            IsDeleted=False,
+            order_id__IsDeleted=False,
+            order_id__client_id__name=system_variables.WAREHOUSE.upper(),
+        ).select_related('order_id', 'model_id', 'quantity_type_id').order_by('-id')
+        self.fields['order_detail'].label_from_instance = _stock_sale_detail_label
+        self.fields['order_detail'].empty_label = system_variables.EMPTY_LABEL
+        self.fields['order_detail'].label = system_variables.WAREHOUSE
+
+        self.fields['client'].queryset = models.clients.objects.filter(
+            IsDeleted=False, is_system=False,
+        )
+        self.fields['client'].empty_label = system_variables.EMPTY_LABEL
+        self.fields['client'].label = system_variables.CLIENT
+
+        self.fields['date'].initial = now()
+        self.fields['date'].input_formats = ['%Y-%m-%d', '%d %m %Y']
+
+        if detail_locked:
+            self.fields['order_detail'].disabled = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        detail = cleaned_data.get('order_detail')
+        quantity = cleaned_data.get('quantity')
+        if detail and quantity:
+            remaining = detail.stock_remaining_quantity(exclude_sale_pk=self.instance.pk)
+            if quantity > remaining:
+                self.add_error(
+                    'quantity',
+                    f"{system_variables.STOCK_SALE_QTY_ERROR} {remaining}",
+                )
+        return cleaned_data
+
+
 class Client_payments_forms(forms.ModelForm):
     class Meta:
         model  = models.client_payments

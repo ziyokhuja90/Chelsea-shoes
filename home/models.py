@@ -249,6 +249,15 @@ class Order_details(models.Model):
     def __str__(self):
         return f"{self.model_id} -- {self.IsDeleted}"
 
+    def stock_sold_quantity(self, exclude_sale_pk=None):
+        qs = self.stock_sales.filter(IsDeleted=False)
+        if exclude_sale_pk:
+            qs = qs.exclude(pk=exclude_sale_pk)
+        return qs.aggregate(total=models.Sum('quantity'))['total'] or 0
+
+    def stock_remaining_quantity(self, exclude_sale_pk=None):
+        return self.quantity - self.stock_sold_quantity(exclude_sale_pk)
+
 
 class Stock_movement(models.Model):
     material = models.ForeignKey(
@@ -514,6 +523,35 @@ class Sales(models.Model):
     
     def __str__(self):
         return f"{self.quantity} - {self.total_price}"
+
+class Stock_sale(models.Model):
+    """Sale of finished shoes from the OMBOR (warehouse) stock to a real client."""
+    order_detail = models.ForeignKey(
+        Order_details,
+        on_delete=models.CASCADE,
+        related_name="stock_sales",
+        verbose_name=system_variables.WAREHOUSE,
+    )
+    client = models.ForeignKey(
+        clients,
+        on_delete=models.CASCADE,
+        related_name="client_stock_sales",
+        verbose_name=system_variables.CLIENT,
+    )
+    quantity = models.IntegerField(verbose_name=system_variables.QUANTITY)
+    price = models.DecimalField(max_digits=20, decimal_places=2, verbose_name=system_variables.PRICE)
+    total_price = models.DecimalField(max_digits=20, decimal_places=2)
+    date = models.DateField(default=now, verbose_name=system_variables.DATE)
+
+    created_at = models.DateField(auto_now_add=True)
+    IsDeleted = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "stock_sale"
+
+    def __str__(self):
+        return f"{self.client} - {self.quantity} - {self.total_price}"
+
 
 class SupplierPayments(models.Model):
     supplier = models.ForeignKey(

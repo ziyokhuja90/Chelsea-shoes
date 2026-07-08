@@ -155,6 +155,15 @@ RESERVED_QUANTITY = "Band qilingan"
 AVAILABLE_QUANTITY = "Mavjud miqdor"
 UPDATED_AT = "Yangilangan sana"
 
+# Stock sale (warehouse sale)
+STOCK_SALE = "Ombor sotuvi"
+STOCK_SALES = "Ombor sotuvlari"
+STOCK_SALE_CREATE = "Ombor sotuvi qo'shish"
+SELL_ACTION = "Sotish"
+SOLD_QUANTITY = "Sotilgan"
+REMAINING_QUANTITY = "Qolgan"
+STOCK_SALE_QTY_ERROR = "Omborda yetarli mahsulot yo'q. Qolgan miqdor:"
+
 # Stock movement
 STOCK_IN = "IN"
 STOCK_OUT = "OUT"

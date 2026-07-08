@@ -8,10 +8,13 @@
 
   <div class="d-flex justify-content-between align-items-center mt-3">
     <h1 class="mb-0">{{WAREHOUSE}}</h1>
-    <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
-      aria-expanded="{% if filters_active %}true{% else %}false{% endif %}" aria-controls="filterCollapse">
-      <i class="bx bx-filter-alt"></i> {{FILTER}}
-    </button>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
+        aria-expanded="{% if filters_active %}true{% else %}false{% endif %}" aria-controls="filterCollapse">
+        <i class="bx bx-filter-alt"></i> {{FILTER}}
+      </button>
+      <a class="btn btn-primary" href="{% url 'stock_sale_create' %}">{{STOCK_SALE_CREATE}}</a>
+    </div>
   </div>
 
   <div class="collapse {% if filters_active %}show{% endif %} mt-3" id="filterCollapse">
@@ -81,59 +84,178 @@
   </div>
 
   <div class="card mt-3">
-    <div class="table-responsive text-nowrap">
-      <table class="table table-hover mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>{{ID}}</th>
-            <th>{{ORDER}}</th>
-            <th>{{SHOE_MODEL}}</th>
-            <th>{{QUANTITY}}</th>
-            <th>{{PRICE}}</th>
-            <th>{{TOTAL_PRICE}}</th>
-            <th>{{COLOR}}</th>
-            <th>{{LEATHER_TYPE}}</th>
-            <th>{{SOLE_TYPE}}</th>
-            <th>{{LINING}}</th>
-            <th>{{STATUS}}</th>
-            <th>{{ACTIONS}}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for line in warehouse_items %}
-          <tr>
-            <td>{{ forloop.counter0|add:warehouse_items.start_index }}</td>
-            <td>
-              <a href="{% url 'order_read' line.order_id.id %}">#{{ line.order_id.id }}</a>
-              <br><small class="text-muted">{{ line.order_id.date|date:"Y-m-d" }}</small>
-            </td>
-            <td>{{ line.model_id }}</td>
-            <td>{{ line.quantity }} {{ line.quantity_type_id }}</td>
-            <td>{{ line.price|floatformat:2|intcomma }}</td>
-            <td>{{ line.total_amount|floatformat:2|intcomma }}</td>
-            <td>{{ line.warehouse_materials.color }}</td>
-            <td>{{ line.warehouse_materials.leather }}</td>
-            <td>{{ line.warehouse_materials.sole }}</td>
-            <td>{{ line.warehouse_materials.lining }}</td>
-            <td>{{ line.order_id.status }}</td>
-            <td>
-              <a class="btn btn-sm btn-info" href="{% url 'order_read' line.order_id.id %}" title="{{READ}}" aria-label="{{READ}}">
-                <i class="bx bx-show"></i>
-              </a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="12" class="text-center">{{WAREHOUSE}} {{NO_DATA}}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <div class="card-body">
+      <!-- Tabs Navigation -->
+      <ul class="nav nav-tabs" id="warehouseTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="stock-panel-tab" data-bs-toggle="tab" data-bs-target="#stock-panel" type="button" role="tab" aria-controls="stock-panel" aria-selected="true">
+            {{WAREHOUSE}}
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="sales-panel-tab" data-bs-toggle="tab" data-bs-target="#sales-panel" type="button" role="tab" aria-controls="sales-panel" aria-selected="false">
+            {{STOCK_SALES}}
+          </button>
+        </li>
+      </ul>
 
-    {% with page_obj=warehouse_items page_param=warehouse_page_param filter_query=warehouse_filter_query %}
-    {% include "partials/pagination.html" %}
-    {% endwith %}
+      <!-- Tabs Content -->
+      <div class="tab-content mt-3" id="warehouseTabsContent">
+
+        <!-- Stock Tab -->
+        <div class="tab-pane fade show active" id="stock-panel" role="tabpanel" aria-labelledby="stock-panel-tab">
+          <div class="table-responsive text-nowrap">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>{{ID}}</th>
+                  <th>{{ORDER}}</th>
+                  <th>{{SHOE_MODEL}}</th>
+                  <th>{{QUANTITY}}</th>
+                  <th>{{SOLD_QUANTITY}}</th>
+                  <th>{{REMAINING_QUANTITY}}</th>
+                  <th>{{PRICE}}</th>
+                  <th>{{COLOR}}</th>
+                  <th>{{LEATHER_TYPE}}</th>
+                  <th>{{SOLE_TYPE}}</th>
+                  <th>{{LINING}}</th>
+                  <th>{{STATUS}}</th>
+                  <th>{{ACTIONS}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for line in warehouse_items %}
+                <tr>
+                  <td>{{ forloop.counter0|add:warehouse_items.start_index }}</td>
+                  <td>
+                    <a href="{% url 'order_read' line.order_id.id %}">#{{ line.order_id.id }}</a>
+                    <br><small class="text-muted">{{ line.order_id.date|date:"Y-m-d" }}</small>
+                  </td>
+                  <td>{{ line.model_id }}</td>
+                  <td>{{ line.quantity }} {{ line.quantity_type_id }}</td>
+                  <td>{{ line.sold_quantity }}</td>
+                  <td>
+                    {% if line.remaining_quantity > 0 %}
+                    <span class="text-success fw-bold">{{ line.remaining_quantity }}</span>
+                    {% else %}
+                    <span class="text-muted">0</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ line.price|floatformat:2|intcomma }}</td>
+                  <td>{{ line.warehouse_materials.color }}</td>
+                  <td>{{ line.warehouse_materials.leather }}</td>
+                  <td>{{ line.warehouse_materials.sole }}</td>
+                  <td>{{ line.warehouse_materials.lining }}</td>
+                  <td>{{ line.order_id.status }}</td>
+                  <td>
+                    <a class="btn btn-sm btn-info" href="{% url 'order_read' line.order_id.id %}" title="{{READ}}" aria-label="{{READ}}">
+                      <i class="bx bx-show"></i>
+                    </a>
+                    {% if line.remaining_quantity > 0 %}
+                    <a class="btn btn-sm btn-success" href="{% url 'stock_sale_create_for_detail' line.id %}" title="{{SELL_ACTION}}" aria-label="{{SELL_ACTION}}">
+                      <i class="bx bx-cart"></i> {{SELL_ACTION}}
+                    </a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="13" class="text-center">{{WAREHOUSE}} {{NO_DATA}}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          {% with page_obj=warehouse_items page_param=warehouse_page_param filter_query=warehouse_filter_query %}
+          {% include "partials/pagination.html" %}
+          {% endwith %}
+        </div>
+
+        <!-- Stock Sales Tab -->
+        <div class="tab-pane fade" id="sales-panel" role="tabpanel" aria-labelledby="sales-panel-tab">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">{{STOCK_SALES}}</h5>
+            <a class="btn btn-primary" href="{% url 'stock_sale_create' %}">{{STOCK_SALE_CREATE}}</a>
+          </div>
+
+          <form method="get" class="border rounded p-3 mb-3 bg-light">
+            <input type="hidden" name="active_tab" value="#sales-panel">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label for="sale_client" class="form-label">{{CLIENT}}</label>
+                <select id="sale_client" name="sale_client" class="form-select">
+                  <option value="">{{CHOOSE}}</option>
+                  {% for c in clients_list %}
+                  <option value="{{ c.id }}" {% if sale_client_id == c.id %}selected{% endif %}>{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            {% url 'warehouse' as filter_clean_url %}
+            {% include "partials/filter_buttons.html" %}
+          </form>
+
+          <div class="table-responsive text-nowrap">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>{{ID}}</th>
+                  <th>{{CLIENT}}</th>
+                  <th>{{ORDER}}</th>
+                  <th>{{SHOE_MODEL}}</th>
+                  <th>{{QUANTITY}}</th>
+                  <th>{{PRICE}}</th>
+                  <th>{{TOTAL_PRICE}}</th>
+                  <th>{{DATE}}</th>
+                  <th>{{ACTIONS}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for sale in stock_sales %}
+                <tr>
+                  <td>{{ forloop.counter0|add:stock_sales.start_index }}</td>
+                  <td>{{ sale.client }}</td>
+                  <td>
+                    <a href="{% url 'order_read' sale.order_detail.order_id_id %}">#{{ sale.order_detail.order_id_id }}</a>
+                  </td>
+                  <td>{{ sale.order_detail.model_id }}</td>
+                  <td>{{ sale.quantity }} {{ sale.order_detail.quantity_type_id }}</td>
+                  <td>{{ sale.price|floatformat:2|intcomma }}</td>
+                  <td>{{ sale.total_price|floatformat:2|intcomma }}</td>
+                  <td>{{ sale.date|date:"Y-m-d" }}</td>
+                  <td>
+                    <a class="btn btn-sm btn-warning" href="{% url 'stock_sale_update' sale.id %}" title="{{UPDATE}}" aria-label="{{UPDATE}}">
+                      <i class="bx bx-edit-alt text-white"></i>
+                    </a>
+                    <a class="btn btn-sm btn-danger" href="#"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteModal"
+                      data-delete-url="{% url 'stock_sale_delete' sale.id %}"
+                      title="{{DELETE}}" aria-label="{{DELETE}}">
+                      <i class="bx bx-trash"></i>
+                    </a>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="9" class="text-center">{{STOCK_SALES}} {{NO_DATA}}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          {% with page_obj=stock_sales page_param=stock_sales_page_param filter_query=stock_sales_filter_query %}
+          {% include "partials/pagination.html" %}
+          {% endwith %}
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>
+
+<input type="hidden" id="active-tab" value="{{ active_tab|default:'#stock-panel' }}">
+{% include "partials/tab_active_script.html" %}
 {% endblock content %}

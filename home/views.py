@@ -1579,6 +1579,19 @@ def warehouse_view(request):
     warehouse_page, warehouse_fq, warehouse_page_param = _paginate(request, details_qs, 'page')
     for line in warehouse_page:
         line.warehouse_materials = _warehouse_line_materials(line)
+        line.sold_quantity = line.stock_sold_quantity()
+        line.remaining_quantity = line.quantity - line.sold_quantity
+
+    # stock sales tab
+    sale_client_id = _safe_int(request.GET.get('sale_client'))
+    stock_sales_qs = Stock_sale.objects.filter(IsDeleted=False).select_related(
+        'client', 'order_detail', 'order_detail__model_id',
+        'order_detail__order_id', 'order_detail__quantity_type_id',
+    ).order_by('-id')
+    if sale_client_id:
+        stock_sales_qs = stock_sales_qs.filter(client_id=sale_client_id)
+
+    stock_sales_page, stock_sales_fq, stock_sales_page_param = _paginate(request, stock_sales_qs, 'sales_page')
 
     shoe_models = shoe_model.objects.filter(IsDeleted=False).order_by('id')
     colors = references.objects.filter(
@@ -1598,10 +1611,17 @@ def warehouse_view(request):
         client_id__name=system_variables.WAREHOUSE.upper(),
     ).order_by('-id')
 
+    client_list = clients.objects.filter(IsDeleted=False, is_system=False).order_by('id')
+
     context = {
         "warehouse_items": warehouse_page,
         "warehouse_page_param": warehouse_page_param,
         "warehouse_filter_query": warehouse_fq,
+        "stock_sales": stock_sales_page,
+        "stock_sales_page_param": stock_sales_page_param,
+        "stock_sales_filter_query": stock_sales_fq,
+        "sale_client_id": sale_client_id,
+        "clients_list": client_list,
         "shoe_models": shoe_models,
         "colors": colors,
         "leather_types": leather_types,
@@ -1614,8 +1634,66 @@ def warehouse_view(request):
         "solo_type": sole_id,
         "status_id": status_id,
         "order_id": order_id,
+        "active_tab": request.GET.get("active_tab", "#stock-panel"),
     }
     return render(request, 'warehouse/warehouse.html', context=context)
+
+
+# stock sales (warehouse sales)
+def _stock_sales_redirect():
+    return redirect(f"{reverse('warehouse')}?active_tab=%23sales-panel")
+
+
+def stock_sale_create(request, detail_pk=None):
+    detail = None
+    if detail_pk:
+        detail = get_object_or_404(Order_details, pk=detail_pk, IsDeleted=False)
+
+    detail_locked = detail is not None
+    initial = {'order_detail': detail} if detail else {}
+
+    if request.method == 'POST':
+        form = StockSaleForm(request.POST, detail_locked=detail_locked, initial=initial)
+        if form.is_valid():
+            sale = form.save(commit=False)
+            sale.total_price = sale.quantity * sale.price
+            sale.save()
+            return _stock_sales_redirect()
+    else:
+        form = StockSaleForm(detail_locked=detail_locked, initial=initial)
+
+    return render(request, 'warehouse/stock_sale_form.html', {
+        'form': form,
+        'form_title': system_variables.STOCK_SALE_CREATE,
+        'detail': detail,
+    })
+
+
+def stock_sale_update(request, pk):
+    sale = get_object_or_404(Stock_sale, pk=pk, IsDeleted=False)
+
+    if request.method == 'POST':
+        form = StockSaleForm(request.POST, instance=sale)
+        if form.is_valid():
+            sale = form.save(commit=False)
+            sale.total_price = sale.quantity * sale.price
+            sale.save()
+            return _stock_sales_redirect()
+    else:
+        form = StockSaleForm(instance=sale)
+
+    return render(request, 'warehouse/stock_sale_form.html', {
+        'form': form,
+        'form_title': f"{system_variables.STOCK_SALE} — {system_variables.UPDATE}",
+        'detail': sale.order_detail,
+    })
+
+
+def stock_sale_delete(request, pk):
+    sale = get_object_or_404(Stock_sale, pk=pk, IsDeleted=False)
+    sale.IsDeleted = True
+    sale.save()
+    return _stock_sales_redirect()
 
 # next
 def order_next_status(request, pk):

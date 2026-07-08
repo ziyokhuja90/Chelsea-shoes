@@ -97,6 +97,12 @@ urlpatterns = [
     # warehouse
     path("warehouse/", views.warehouse_view, name="warehouse"),
 
+    # stock sales (warehouse sales)
+    path('stock_sale/create/', views.stock_sale_create, name='stock_sale_create'),
+    path('stock_sale/create/<int:detail_pk>/', views.stock_sale_create, name='stock_sale_create_for_detail'),
+    path('stock_sale/update/<int:pk>/', views.stock_sale_update, name='stock_sale_update'),
+    path('stock_sale/delete/<int:pk>/', views.stock_sale_delete, name='stock_sale_delete'),
+
     # model_parts
     path('model_part/create/<int:pk>/', views.model_part_create, name='model_part_create'),
     path('model_part/update/<int:pk>/', views.model_part_update, name='model_part_update'),
