@@ -29,6 +29,7 @@ SYSTEM_REFERENCE_TYPES = {
     ReferenceType.CURRENCY,
     ReferenceType.MATERIAL_TYPE,
     ReferenceType.STOCK_MOVEMENT_TYPE,
+    ReferenceType.MODEL_EXPENSES_TYPE,
     ReferenceType.PROFESSION,
 }
 
@@ -72,6 +73,7 @@ REFERENCE_TYPE_UI_KEY = {
     ReferenceType.CURRENCY: "CURRENCY",
     ReferenceType.MATERIAL_TYPE: "MATERIAL_TYPE",
     ReferenceType.STOCK_MOVEMENT_TYPE: "MOVEMENT_TYPE",
+    ReferenceType.MODEL_EXPENSES_TYPE: "MODEL_EXPENSES_TYPE",
 
     ReferenceType.LEATHER_VARIANT: "LEATHER_TYPE",
     ReferenceType.SOLE_VARIANT: "SOLE_TYPE",
@@ -892,6 +894,13 @@ def orders_view(request):
     if status_id:
         orders = orders.filter(status_id=status_id)
 
+    start_date = _safe_date(request.GET.get('start_date'))
+    end_date = _safe_date(request.GET.get('end_date'))
+    if start_date:
+        orders = orders.filter(date__gte=start_date)
+    if end_date:
+        orders = orders.filter(date__lte=end_date)
+
     active_details = Q(order_id_orders__IsDeleted=False)
 
     if shoe_model_id:
@@ -1189,6 +1198,13 @@ def producement_view(request):
         valid_filters = {k: v for k, v in filter_kwargs.items() if v is not None}
         base_qs = base_qs.filter(**valid_filters)
 
+    start_date = _safe_date(request.GET.get('start_date'))
+    end_date = _safe_date(request.GET.get('end_date'))
+    if start_date:
+        base_qs = base_qs.filter(date__gte=start_date)
+    if end_date:
+        base_qs = base_qs.filter(date__lte=end_date)
+
     profession_tabs = []
     for profession in professions:
         page_key = f'page_{profession.order}'
@@ -1369,6 +1385,13 @@ def sales_view(request):
         'client', 'warehouse', 'warehouse__model_id', 'warehouse__color_id',
         'warehouse__sole_type_id', 'warehouse__lining_type_id',
     ).order_by('id')
+
+    start_date = _safe_date(request.GET.get('start_date'))
+    end_date = _safe_date(request.GET.get('end_date'))
+    if start_date:
+        sold_qs = sold_qs.filter(date__gte=start_date)
+    if end_date:
+        sold_qs = sold_qs.filter(date__lte=end_date)
 
     sold_page, sold_fq, sold_page_param = _paginate(request, sold_qs, 'page')
 
@@ -1689,6 +1712,13 @@ def warehouse_view(request):
     ).order_by('-id')
     if sale_client_id:
         stock_sales_qs = stock_sales_qs.filter(client_id=sale_client_id)
+
+    sale_start_date = _safe_date(request.GET.get('sale_start_date'))
+    sale_end_date = _safe_date(request.GET.get('sale_end_date'))
+    if sale_start_date:
+        stock_sales_qs = stock_sales_qs.filter(date__gte=sale_start_date)
+    if sale_end_date:
+        stock_sales_qs = stock_sales_qs.filter(date__lte=sale_end_date)
 
     stock_sales_page, stock_sales_fq, stock_sales_page_param = _paginate(request, stock_sales_qs, 'sales_page')
 
@@ -2097,23 +2127,32 @@ def material_stock_view(request):
 
     purchase_supplier = _safe_int(request.GET.get('purchase_supplier'))
     purchase_status = _safe_int(request.GET.get('purchase_status'))
-    purchase_date = _safe_date(request.GET.get('purchase_date'))
+    purchase_start_date = _safe_date(request.GET.get('purchase_start_date'))
+    purchase_end_date = _safe_date(request.GET.get('purchase_end_date'))
     if purchase_supplier:
         purchases_qs = purchases_qs.filter(supplier_id_id=purchase_supplier)
     if purchase_status:
         purchases_qs = purchases_qs.filter(status_id=purchase_status)
-    if purchase_date:
-        purchases_qs = purchases_qs.filter(purchase_date=purchase_date)
+    if purchase_start_date:
+        purchases_qs = purchases_qs.filter(purchase_date__gte=purchase_start_date)
+    if purchase_end_date:
+        purchases_qs = purchases_qs.filter(purchase_date__lte=purchase_end_date)
 
     movement_type = _safe_int(request.GET.get('movement_type'))
     movement_material_type = _safe_int(request.GET.get('movement_material_type'))
     movement_order = _safe_int(request.GET.get('movement_order'))
+    movement_start_date = _safe_date(request.GET.get('movement_start_date'))
+    movement_end_date = _safe_date(request.GET.get('movement_end_date'))
     if movement_type:
         movements_qs = movements_qs.filter(movement_type_id=movement_type)
     if movement_material_type:
         movements_qs = movements_qs.filter(material__material_type_ref_id_id=movement_material_type)
     if movement_order:
         movements_qs = movements_qs.filter(order_id=movement_order)
+    if movement_start_date:
+        movements_qs = movements_qs.filter(created_at__gte=movement_start_date)
+    if movement_end_date:
+        movements_qs = movements_qs.filter(created_at__lte=movement_end_date)
 
     active_tab = request.GET.get('active_tab', '#stock-panel')
 
@@ -2162,7 +2201,10 @@ def material_stock_view(request):
         "stock_unit": stock_unit,
         "purchase_supplier": purchase_supplier,
         "purchase_status": purchase_status,
-        "purchase_date": request.GET.get('purchase_date', ''),
+        "purchase_start_date": request.GET.get('purchase_start_date', ''),
+        "purchase_end_date": request.GET.get('purchase_end_date', ''),
+        "movement_start_date": request.GET.get('movement_start_date', ''),
+        "movement_end_date": request.GET.get('movement_end_date', ''),
         "movement_type": movement_type,
         "movement_material_type": movement_material_type,
         "movement_order": movement_order,

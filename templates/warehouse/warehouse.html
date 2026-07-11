@@ -191,6 +191,14 @@
                   {% endfor %}
                 </select>
               </div>
+              <div class="col-md-4">
+                <label for="sale_start_date" class="form-label">{{FROM_DATE}}</label>
+                <input type="date" id="sale_start_date" name="sale_start_date" class="form-control" value="{{ request.GET.sale_start_date }}">
+              </div>
+              <div class="col-md-4">
+                <label for="sale_end_date" class="form-label">{{TO_DATE}}</label>
+                <input type="date" id="sale_end_date" name="sale_end_date" class="form-control" value="{{ request.GET.sale_end_date }}">
+              </div>
             </div>
             {% url 'warehouse' as filter_clean_url %}
             {% include "partials/filter_buttons.html" %}

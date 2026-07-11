@@ -145,8 +145,12 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label for="purchase_date" class="form-label">{{DATE}}</label>
-                                <input type="date" id="purchase_date" name="purchase_date" class="form-control" value="{{ purchase_date }}">
+                                <label for="purchase_start_date" class="form-label">{{FROM_DATE}}</label>
+                                <input type="date" id="purchase_start_date" name="purchase_start_date" class="form-control" value="{{ purchase_start_date }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="purchase_end_date" class="form-label">{{TO_DATE}}</label>
+                                <input type="date" id="purchase_end_date" name="purchase_end_date" class="form-control" value="{{ purchase_end_date }}">
                             </div>
                         </div>
                         {% url 'material_stock_view' as filter_clean_url %}
@@ -249,6 +253,14 @@
                                     <option value="{{ o.id }}" {% if movement_order == o.id %}selected{% endif %}>#{{ o.id }} — {{ o.client_id }}</option>
                                     {% endfor %}
                                 </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="movement_start_date" class="form-label">{{FROM_DATE}}</label>
+                                <input type="date" id="movement_start_date" name="movement_start_date" class="form-control" value="{{ movement_start_date }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="movement_end_date" class="form-label">{{TO_DATE}}</label>
+                                <input type="date" id="movement_end_date" name="movement_end_date" class="form-control" value="{{ movement_end_date }}">
                             </div>
                         </div>
                         {% url 'material_stock_view' as filter_clean_url %}

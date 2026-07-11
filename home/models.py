@@ -16,7 +16,7 @@ class ReferenceType(Enum):
 
     MATERIAL_TYPE = 20       # system
     STOCK_MOVEMENT_TYPE = 21 # system
-    MODEL_EXPENSES_TYPE = 22
+    MODEL_EXPENSES_TYPE = 22 # system
 
     # VARIANT TYPES (not materials!)
 
