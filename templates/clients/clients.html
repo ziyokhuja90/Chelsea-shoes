@@ -204,8 +204,12 @@
                               </select>
                           </div>
                           <div class="col-md-4">
-                              <label for="payment_date" class="form-label">{{DATE}}</label>
-                              <input type="date" id="payment_date" name="payment_date" class="form-control" value="{{ payment_date }}">
+                              <label for="payment_start_date" class="form-label">{{FROM_DATE}}</label>
+                              <input type="date" id="payment_start_date" name="payment_start_date" class="form-control" value="{{ payment_start_date }}">
+                          </div>
+                          <div class="col-md-4">
+                              <label for="payment_end_date" class="form-label">{{TO_DATE}}</label>
+                              <input type="date" id="payment_end_date" name="payment_end_date" class="form-control" value="{{ payment_end_date }}">
                           </div>
                       </div>
                       {% url 'clients_view' as filter_clean_url %}

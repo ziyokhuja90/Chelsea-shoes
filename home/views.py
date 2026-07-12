@@ -663,11 +663,14 @@ def clients_view(request):
 
     payments_qs = client_payments.objects.filter(IsDeleted=False).select_related('client_id').order_by('-date', '-id')
     payment_client = _safe_int(request.GET.get('payment_client'))
-    payment_date = _safe_date(request.GET.get('payment_date'))
+    payment_start_date = _safe_date(request.GET.get('payment_start_date'))
+    payment_end_date = _safe_date(request.GET.get('payment_end_date'))
     if payment_client:
         payments_qs = payments_qs.filter(client_id_id=payment_client)
-    if payment_date:
-        payments_qs = payments_qs.filter(date=payment_date)
+    if payment_start_date:
+        payments_qs = payments_qs.filter(date__gte=payment_start_date)
+    if payment_end_date:
+        payments_qs = payments_qs.filter(date__lte=payment_end_date)
     payments_page, payments_fq, payments_page_param = _paginate(
         request, payments_qs, 'page_payments', {'active_tab': '#payments'},
     )
@@ -706,7 +709,8 @@ def clients_view(request):
         "shoe_models": shoe_models,
         "order_list": order_list,
         "payment_client": payment_client,
-        "payment_date": request.GET.get('payment_date', ''),
+        "payment_start_date": request.GET.get('payment_start_date', ''),
+        "payment_end_date": request.GET.get('payment_end_date', ''),
         "detail_client": detail_client,
         "detail_model": detail_model,
         "detail_order": detail_order,
