@@ -45,6 +45,50 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <div class="col-md-4">
+                        <label for="line_part" class="form-label">{{MODEL_PART}}</label>
+                        <select id="line_part" name="line_part" class="form-select">
+                            <option value="">{{CHOOSE}}</option>
+                            {% for p in model_parts %}
+                            <option value="{{ p.id }}" {% if line_part == p.id %}selected{% endif %}>{{ p.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="line_material_type" class="form-label">{{MATERIAL_TYPE}}</label>
+                        <select id="line_material_type" name="line_material_type" class="form-select">
+                            <option value="">{{CHOOSE}}</option>
+                            {% for mt in material_types %}
+                            <option value="{{ mt.id }}" {% if line_material_type == mt.id %}selected{% endif %}>{{ mt.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="line_variant" class="form-label">{{VARIANT_TYPE}}</label>
+                        <select id="line_variant" name="line_variant" class="form-select">
+                            <option value="">{{CHOOSE}}</option>
+                            {% for v in variants %}
+                            <option value="{{ v.id }}" {% if line_variant == v.id %}selected{% endif %}>{{ v.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="line_color" class="form-label">{{COLOR}}</label>
+                        <select id="line_color" name="line_color" class="form-select">
+                            <option value="">{{CHOOSE}}</option>
+                            {% for c in colors %}
+                            <option value="{{ c.id }}" {% if line_color == c.id %}selected{% endif %}>{{ c.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="start_date" class="form-label">{{FROM_DATE}}</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="end_date" class="form-label">{{TO_DATE}}</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+                    </div>
                 </div>
                 {% url 'order_read' order.pk as filter_clean_url %}
                 {% include "partials/filter_buttons.html" %}

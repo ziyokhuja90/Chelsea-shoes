@@ -1039,6 +1039,31 @@ def order_read(request, pk):
     if line_model:
         order_lines_qs = order_lines_qs.filter(model_id_id=line_model)
 
+    line_part = _safe_int(request.GET.get('line_part'))
+    line_material_type = _safe_int(request.GET.get('line_material_type'))
+    line_variant = _safe_int(request.GET.get('line_variant'))
+    line_color = _safe_int(request.GET.get('line_color'))
+
+    part_conditions = {}
+    if line_part:
+        part_conditions['parts__model_part_definition__part_ref_id_id'] = line_part
+    if line_material_type:
+        part_conditions['parts__material_stock__material_type_ref_id_id'] = line_material_type
+    if line_variant:
+        part_conditions['parts__material_stock__variant_ref_id_id'] = line_variant
+    if line_color:
+        part_conditions['parts__material_stock__color_ref_id_id'] = line_color
+    if part_conditions:
+        part_conditions['parts__is_deleted'] = False
+        order_lines_qs = order_lines_qs.filter(**part_conditions).distinct()
+
+    start_date = _safe_date(request.GET.get('start_date'))
+    end_date = _safe_date(request.GET.get('end_date'))
+    if start_date:
+        order_lines_qs = order_lines_qs.filter(created_at__gte=start_date)
+    if end_date:
+        order_lines_qs = order_lines_qs.filter(created_at__lte=end_date)
+
     order_lines_page, order_lines_fq, order_lines_page_param = _paginate(request, order_lines_qs, 'page')
 
     context = {
@@ -1047,7 +1072,21 @@ def order_read(request, pk):
         "order_lines_page_param": order_lines_page_param,
         "order_lines_filter_query": order_lines_fq,
         "shoe_models": shoe_model.objects.filter(IsDeleted=False).order_by('id'),
+        "model_parts": references.objects.filter(
+            type=ReferenceType.MODEL_PART.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        "material_types": references.objects.filter(
+            type=ReferenceType.MATERIAL_TYPE.value, IsDeleted=False,
+        ).order_by('order', 'value'),
+        "variants": _stock_filter_variants(line_material_type),
+        "colors": references.objects.filter(
+            type=ReferenceType.COLOR.value, IsDeleted=False,
+        ).order_by('order', 'value'),
         "line_model": line_model,
+        "line_part": line_part,
+        "line_material_type": line_material_type,
+        "line_variant": line_variant,
+        "line_color": line_color,
     }
     return render(request, "orders/order_read.html", context=context)
 
