@@ -490,6 +490,13 @@ def staff_view(request):
             IsDeleted=False,
         ).order_by('id')
 
+    start_date = _safe_date(request.GET.get('start_date'))
+    end_date = _safe_date(request.GET.get('end_date'))
+    if start_date:
+        staff_qs = staff_qs.filter(entered_date__gte=start_date)
+    if end_date:
+        staff_qs = staff_qs.filter(entered_date__lte=end_date)
+
     balance = sum(i.balance for i in staff_qs)
 
     staff_page, staff_fq, staff_page_param = _paginate(request, staff_qs, 'page_staff')
