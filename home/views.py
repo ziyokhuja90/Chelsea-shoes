@@ -894,8 +894,9 @@ def orders_view(request):
 
     shoe_model_id = _safe_int(request.GET.get('shoe_model_id'))
     color_id = _safe_int(request.GET.get('color_id'))
-    leather_type_id = _safe_int(request.GET.get('leather_type'))
-    sole_type_id = _safe_int(request.GET.get('solo_type'))
+    part_id = _safe_int(request.GET.get('part'))
+    material_type_id = _safe_int(request.GET.get('material_type'))
+    variant_id = _safe_int(request.GET.get('variant'))
     client_id = _safe_int(request.GET.get('client'))
     status_id = _safe_int(request.GET.get('status'))
 
@@ -922,37 +923,18 @@ def orders_view(request):
         order_id_orders__IsDeleted=False,
     )
 
+    # all part criteria must match the same order detail part
+    part_conditions = {}
+    if part_id:
+        part_conditions['order_id_orders__parts__model_part_definition__part_ref_id_id'] = part_id
+    if material_type_id:
+        part_conditions['order_id_orders__parts__material_stock__material_type_ref_id_id'] = material_type_id
+    if variant_id:
+        part_conditions['order_id_orders__parts__material_stock__variant_ref_id_id'] = variant_id
     if color_id:
-        orders = orders.filter(
-            active_parts,
-            order_id_orders__parts__material_stock__color_ref_id=color_id,
-        )
-
-    if leather_type_id:
-        leather_material = references.objects.filter(
-            type=ReferenceType.MATERIAL_TYPE.value,
-            value=system_variables.LEATHER,
-            IsDeleted=False,
-        ).first()
-        leather_filter = {
-            'order_id_orders__parts__material_stock__variant_ref_id': leather_type_id,
-        }
-        if leather_material:
-            leather_filter['order_id_orders__parts__material_stock__material_type_ref_id'] = leather_material.id
-        orders = orders.filter(active_parts, **leather_filter)
-
-    if sole_type_id:
-        sole_material = references.objects.filter(
-            type=ReferenceType.MATERIAL_TYPE.value,
-            value=system_variables.SOLE,
-            IsDeleted=False,
-        ).first()
-        sole_filter = {
-            'order_id_orders__parts__material_stock__variant_ref_id': sole_type_id,
-        }
-        if sole_material:
-            sole_filter['order_id_orders__parts__material_stock__material_type_ref_id'] = sole_material.id
-        orders = orders.filter(active_parts, **sole_filter)
+        part_conditions['order_id_orders__parts__material_stock__color_ref_id_id'] = color_id
+    if part_conditions:
+        orders = orders.filter(active_parts, **part_conditions)
 
     orders = orders.distinct().order_by('status_order', 'complete_date')
 
@@ -961,14 +943,14 @@ def orders_view(request):
         type=ReferenceType.COLOR.value,
         IsDeleted=False,
     ).order_by('id')
-    leather_types = references.objects.filter(
-        type=ReferenceType.LEATHER_VARIANT.value,
+    model_parts = references.objects.filter(
+        type=ReferenceType.MODEL_PART.value,
         IsDeleted=False,
-    ).order_by('id')
-    sole_types = references.objects.filter(
-        type=ReferenceType.SOLE_VARIANT.value,
+    ).order_by('order', 'value')
+    material_types = references.objects.filter(
+        type=ReferenceType.MATERIAL_TYPE.value,
         IsDeleted=False,
-    ).order_by('id')
+    ).order_by('order', 'value')
     clients_list = clients.objects.filter(
         is_system=False,
         IsDeleted=False,
@@ -986,14 +968,16 @@ def orders_view(request):
         "completed_status_id": completed_id.pk,
         "shoe_models": shoe_models,
         "colors": colors,
-        "leather_types": leather_types,
-        "sole_types": sole_types,
+        "model_parts": model_parts,
+        "material_types": material_types,
+        "variants": _stock_filter_variants(material_type_id),
         "clients": clients_list,
         "filter_query": filter_query,
         "shoe_model_id": shoe_model_id,
         "color_id": color_id,
-        "leather_type": leather_type_id,
-        "solo_type": sole_type_id,
+        "part_id": part_id,
+        "material_type_id": material_type_id,
+        "variant_id": variant_id,
         "client_id": client_id,
         "status_id": status_id,
     }

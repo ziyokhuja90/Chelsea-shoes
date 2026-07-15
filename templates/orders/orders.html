@@ -3,7 +3,7 @@
 
 {% block content %}
 {# Filter starts expanded only when at least one filter is active #}
-{% firstof request.GET.shoe_model_id request.GET.color_id request.GET.leather_type request.GET.solo_type request.GET.client request.GET.status request.GET.start_date request.GET.end_date '' as filters_active %}
+{% firstof request.GET.shoe_model_id request.GET.color_id request.GET.part request.GET.material_type request.GET.variant request.GET.client request.GET.status request.GET.start_date request.GET.end_date '' as filters_active %}
 <div class="container">
 
   <div class="d-flex justify-content-between align-items-center mt-3">
@@ -44,24 +44,35 @@
                 </select>
             </div>
 
-            <!-- Leather Type -->
+            <!-- Model Part -->
             <div class="col-md-3">
-                <label for="leather_type" class="form-label">{{LEATHER_TYPE}}</label>
-                <select id="leather_type" name="leather_type" class="form-select">
+                <label for="part" class="form-label">{{MODEL_PART}}</label>
+                <select id="part" name="part" class="form-select">
                     <option value="">{{CHOOSE}}</option>
-                    {% for leather in leather_types %}
-                        <option value="{{ leather.id }}" {% if leather_type == leather.id %}selected{% endif %}>{{ leather }}</option>
+                    {% for p in model_parts %}
+                        <option value="{{ p.id }}" {% if part_id == p.id %}selected{% endif %}>{{ p.value }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <!-- Sole Type -->
+            <!-- Material Type -->
             <div class="col-md-3">
-                <label for="solo_type" class="form-label">{{SOLE_TYPE}}</label>
-                <select id="solo_type" name="solo_type" class="form-select">
+                <label for="material_type" class="form-label">{{MATERIAL_TYPE}}</label>
+                <select id="material_type" name="material_type" class="form-select">
                     <option value="">{{CHOOSE}}</option>
-                    {% for solo in sole_types %}
-                        <option value="{{ solo.id }}" {% if solo_type == solo.id %}selected{% endif %}>{{ solo }}</option>
+                    {% for mt in material_types %}
+                        <option value="{{ mt.id }}" {% if material_type_id == mt.id %}selected{% endif %}>{{ mt.value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Variant -->
+            <div class="col-md-3">
+                <label for="variant" class="form-label">{{VARIANT_TYPE}}</label>
+                <select id="variant" name="variant" class="form-select">
+                    <option value="">{{CHOOSE}}</option>
+                    {% for v in variants %}
+                        <option value="{{ v.id }}" {% if variant_id == v.id %}selected{% endif %}>{{ v.value }}</option>
                     {% endfor %}
                 </select>
             </div>
