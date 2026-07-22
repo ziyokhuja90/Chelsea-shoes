@@ -137,7 +137,7 @@ function renderParts(parts) {
     let html = `
         <div class="card mt-3">
             <div class="card-header fw-bold">
-                Model qismlari
+                {{ MODEL_PARTS }}
             </div>
             <div class="card-body">
     `;
@@ -147,7 +147,7 @@ function renderParts(parts) {
         // VARIANT OPTIONS
 
         let variantOptions =
-            `<option value="">Tanlang</option>`;
+            `<option value="">{{ CHOOSE }}</option>`;
 
         part.variants.forEach(v => {
 
@@ -162,7 +162,7 @@ function renderParts(parts) {
         // COLOR OPTIONS
 
         let colorOptions =
-            `<option value="">Ixtiyoriy</option>`;
+            `<option value="">{{ OPTIONAL }}</option>`;
 
         part.colors.forEach(c => {
 

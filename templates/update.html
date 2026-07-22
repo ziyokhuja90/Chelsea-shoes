@@ -22,7 +22,7 @@
                             {% if field.name == "image" and shoe_model_item.image %}
                             <div class="mt-2">
                                 <img src="{{ shoe_model_item.image.url }}" 
-                                alt="Current Image"
+                                alt="{{CURRENT_IMAGE}}"
                                 style="max-width: 150px; border-radius: 8px;">
                             </div>
                             {% endif %}

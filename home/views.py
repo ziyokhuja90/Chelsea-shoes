@@ -267,7 +267,7 @@ def update_reference(request, pk):
             reference_item.save()  # Save the changes
             return redirect("reference")  # Redirect to the reference list page after update
         except references.DoesNotExist:
-            return HttpResponse("Item not found", status=404)
+            return HttpResponse(system_variables.ITEM_NOT_FOUND, status=404)
 
 def delete_reference(request, pk):
     try:
@@ -276,7 +276,7 @@ def delete_reference(request, pk):
         reference_item.save()
         return redirect("reference")
     except references.DoesNotExist:
-        return HttpResponse("Item not found", status=404)
+        return HttpResponse(system_variables.ITEM_NOT_FOUND, status=404)
 
 # shoemodel
 def shoe_model_create(request):
@@ -1561,7 +1561,7 @@ def order_detail_create(request, pk):
                 try:
                     stock = Material_stock.objects.get(**stock_filter)
                 except Material_stock.DoesNotExist:
-                    messages.error(request, "Material stock topilmadi")
+                    messages.error(request, system_variables.MATERIAL_STOCK_NOT_FOUND)
                     return redirect('order_read', pk=pk)
 
                 if stock.available_quantity < required:
@@ -1897,13 +1897,13 @@ def update_order_status(request):
             status = references.objects.get(id=status_id)
             order.status = status
             order.save()
-            return JsonResponse({"success": True, "message": "Status updated"})
+            return JsonResponse({"success": True, "message": system_variables.STATUS_UPDATED})
         except Orders.DoesNotExist:
-            return JsonResponse({"success": False, "message": "Order not found"})
+            return JsonResponse({"success": False, "message": system_variables.ORDER_NOT_FOUND})
         except references.DoesNotExist:
-            return JsonResponse({"success": False, "message": "Invalid status"})
+            return JsonResponse({"success": False, "message": system_variables.INVALID_STATUS})
 
-    return JsonResponse({"success": False, "message": "Invalid request"})
+    return JsonResponse({"success": False, "message": system_variables.INVALID_REQUEST})
 
 
 @csrf_exempt
@@ -1920,13 +1920,13 @@ def update_producement_status(request):
             print(producement_id, status_id)
             print("--------------------------------------------")
             print("--------------------------------------------")
-            return JsonResponse({"success": True, "message": "Status updated"})
+            return JsonResponse({"success": True, "message": system_variables.STATUS_UPDATED})
         except Orders.DoesNotExist:
-            return JsonResponse({"success": False, "message": "Producement not found"})
+            return JsonResponse({"success": False, "message": system_variables.PRODUCEMENT_NOT_FOUND})
         except references.DoesNotExist:
-            return JsonResponse({"success": False, "message": "Invalid status"})
+            return JsonResponse({"success": False, "message": system_variables.INVALID_STATUS})
 
-    return JsonResponse({"success": False, "message": "Invalid request"})
+    return JsonResponse({"success": False, "message": system_variables.INVALID_REQUEST})
 
 # client_payments
 def client_payment_create(request):
@@ -2617,7 +2617,7 @@ def get_material_stock(request):
                 is_deleted=False,
             )
             if str(model_part.material_type_ref_id_id) != str(material_type):
-                return {"required_error": "Material type mos emas"}
+                return {"required_error": system_variables.MATERIAL_TYPE_MISMATCH}
             per_pair = model_part.quantity_per_pair
             waste = model_part.waste_percent
             required = order_qty * per_pair * (Decimal("1") + waste / Decimal("100"))

@@ -176,7 +176,7 @@
 
         var modal = $(this);
         if (action === 'edit') {
-          modal.find('.modal-title').text('Edit Ma\'lumotnoma');
+          modal.find('.modal-title').text('{{ UPDATE }} {{ REFERENCE }}');
           modal.find('input[name="value"]').val(value); // Set the value in the input
 
           modal.find('select[name="type"]')
@@ -185,7 +185,7 @@
                  
           modal.find('form').attr('action', "{% url 'update_reference' 0 %}".replace('0', id)); // Set form action to the correct update URL with the ID
         } else {
-          modal.find('.modal-title').text("{{NEW}} Ma'lumotnoma");
+          modal.find('.modal-title').text("{{ NEW }} {{ REFERENCE }}");
           modal.find('input[name="value"]').val('');
           modal.find('select[name="type"]').parent().show(); // Show the type field
           modal.find('select[name="type"]').val('--------');

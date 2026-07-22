@@ -100,8 +100,8 @@
                         <label for="is_required" class="form-label">{{ REQUIRED }}</label>
                         <select id="is_required" name="is_required" class="form-select">
                             <option value="">{{ CHOOSE }}</option>
-                            <option value="1" {% if is_required == '1' %}selected{% endif %}>Yes</option>
-                            <option value="0" {% if is_required == '0' %}selected{% endif %}>No</option>
+                            <option value="1" {% if is_required == '1' %}selected{% endif %}>{{ YES }}</option>
+                            <option value="0" {% if is_required == '0' %}selected{% endif %}>{{ NO }}</option>
                         </select>
                     </div>
                 </div>
@@ -145,9 +145,9 @@
 
                             <td>
                                 {% if part.is_required %}
-                                    <span class="badge bg-success">Yes</span>
+                                    <span class="badge bg-success">{{ YES }}</span>
                                 {% else %}
-                                    <span class="badge bg-secondary">No</span>
+                                    <span class="badge bg-secondary">{{ NO }}</span>
                                 {% endif %}
                             </td>
 

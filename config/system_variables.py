@@ -59,8 +59,23 @@ LOCATION = "Manzili"
 PHONE_NUMBER = "Telefon raqami"
 CHOOSE = "Tanlang..."
 REQUIRED = "Majburiy"
+OPTIONAL = "Ixtiyoriy"
+YES = "Ha"
+NO = "Yo'q"
 QUANTITY_REQUIRED = "Kerak"
 WASTE_PERCENT = "Qoldiq foizi"
+CURRENT_IMAGE = "Joriy rasm"
+REFERENCE_TYPE = "Ma'lumotnoma turi"
+IS_DELETED = "O'chirilgan"
+IS_SYSTEM = "Tizim yozuvi"
+SORT_ORDER = "Tartib"
+AMOUNT = "Summa"
+DEBITOR = "Qarzdor"
+DEBT = "Qarz"
+REMAINING_BALANCE = "Qoldiq"
+ORDER_DATE = "Buyurtma sanasi"
+TOTAL_AMOUNT = "Jami summa"
+LINING_TYPE = "Astar turi"
 
 # ============================
 # MENU / NAVIGATION
@@ -136,6 +151,7 @@ CHOOSE_IMAGE = "Rasm tanlash"
 MODEL_IMAGE_HINT = "JPG yoki PNG format tavsiya etiladi."
 MODEL = "Model"
 MODEL_PART = "Model qismi"
+MODEL_PARTS = "Model qismlari"
 PRICE = "Narxi"
 QUANTITY = "Miqdori"
 TOTAL_QUANTITY = "Umumiy miqdori"
@@ -179,8 +195,8 @@ REMAINING_QUANTITY = "Qolgan"
 STOCK_SALE_QTY_ERROR = "Omborda yetarli mahsulot yo'q. Qolgan miqdor:"
 
 # Stock movement
-STOCK_IN = "IN"
-STOCK_OUT = "OUT"
+STOCK_IN = "KIRIM"
+STOCK_OUT = "CHIQIM"
 STOCK_MOVEMENT = "Ombor harakati"
 STOCK_MOVEMENTS = "Ombor harakatlari"
 STOCK_MOVEMENT_CREATE = "Ombor harakati qo'shish"
@@ -276,8 +292,21 @@ DELETE_CONFIRMATION_BUTTON = "Ha, o'chirib tashla"
 SYSTEM_RECORD_DELETE_FORBIDDEN = "Tizim yozuvini o'chirib bo'lmaydi"
 
 COMPLETE_CONFIRMATION_TITLE = "Yakunlashni tasdiqlash"
-COMPLETE_CONFIRMATION_INFO = "lorem ipsum dolar sit amet <br>"
+COMPLETE_CONFIRMATION_INFO = "Haqiqatan ham bu buyurtmani yakunlamoqchimisiz?"
 COMPLETE_CONFIRMATION_BUTTON = "Ha, o'zgartir"
+
+
+# ============================
+# FLASH / AJAX MESSAGES
+# ============================
+STATUS_UPDATED = "Holat yangilandi"
+ORDER_NOT_FOUND = "Buyurtma topilmadi"
+PRODUCEMENT_NOT_FOUND = "Ishlab chiqarish topilmadi"
+ITEM_NOT_FOUND = "Yozuv topilmadi"
+INVALID_STATUS = "Noto'g'ri holat"
+INVALID_REQUEST = "Noto'g'ri so'rov"
+MATERIAL_STOCK_NOT_FOUND = "Material ombori topilmadi"
+MATERIAL_TYPE_MISMATCH = "Material turi mos emas"
 
 
 # ============================
